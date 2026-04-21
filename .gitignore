@@ -1,0 +1,12 @@
+.vscode/
+/venv/
+/.venv/
+media/
+local_settings.py
+__pycache__
+*.pyc
+/.env*
+.idea
+src/db.sqlite3
+src/db.sqlite3-journal
+docker-compose.override.yml
