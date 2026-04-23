@@ -25,9 +25,9 @@ piplock:
 	sudo chown -R $USER:$(id -gn $USER) backend/Pipfile.lock
 
 lint:
-	isort ./backend
-	black --config ./pyproject.toml ./backend
-	flake8 --config ./setup.cfg ./backend
+	python -m isort ./backend
+	python -m black --config ./pyproject.toml ./backend
+	python -m flake8 --config ./setup.cfg ./backend
 
 build:
 	docker image build -t $(IMAGE_BACKEND) .
