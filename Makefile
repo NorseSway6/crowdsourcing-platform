@@ -1,3 +1,9 @@
+REGISTRY := ghcr.io
+REPO_NAME := $(shell echo $(GITHUB_REPOSITORY) | tr '[:upper:]' '[:lower:]')
+SHA := $(shell echo $(GITHUB_SHA) | cut -c1-7)
+
+IMAGE_APP := $(REGISTRY)/$(REPO_NAME)-backend:$(SHA)
+
 migrate:
 	docker compose -f docker-compose.prod.yml run --rm backend python3 manage.py migrate
 
@@ -17,6 +23,20 @@ dev:
 piplock:
 	pipenv install
 	sudo chown -R $USER:$(id -gn $USER) backend/Pipfile.lock
+
+lint:
+	docker run --rm $(IMAGE_APP) isort .
+	docker run --rm $(IMAGE_APP) flake8 --config ../setup.cfg .
+	docker run --rm $(IMAGE_APP) black --config ../pyproject.toml .
+
+build:
+	docker image build -t $(IMAGE_APP) .
+
+push:
+	docker push $(IMAGE_APP)
+
+pull:
+	docker pull $(IMAGE_APP)
 
 up:
 	docker compose -f docker-compose.prod.yml up -d
