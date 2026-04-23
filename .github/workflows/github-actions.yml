@@ -28,7 +28,6 @@ jobs:
     needs: lint
     runs-on: ubuntu-latest
     environment: prod
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     permissions:
       contents: read
       packages: write
@@ -45,4 +44,6 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Image via Makefile
-        run: make build pull
+        run: |
+          make build
+          if [ "${{ github.event_name }}" == "push" ]; then make push; fi
