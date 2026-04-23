@@ -30,7 +30,7 @@ lint:
 	docker run --rm $(IMAGE_APP) black --config ../pyproject.toml ./backend
 
 build:
-	docker image build -t $(IMAGE_BACKEND) .
+	docker image build -t $(IMAGE_BACKEND) ./backend
 
 push:
 	docker push $(IMAGE_BACKEND)
