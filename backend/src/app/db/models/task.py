@@ -13,4 +13,4 @@ class Task(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="created_at")
 
     def __str__(self):
-        return {self.task_id}
+        return f"{self.task_id}"

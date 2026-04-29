@@ -16,4 +16,4 @@ class AuditLog(models.Model):
     ip_address = models.GenericIPAddressField(verbose_name="ip_address")
 
     def __str__(self):
-        return {self.audit_id}
+        return f"{self.audit_id}"

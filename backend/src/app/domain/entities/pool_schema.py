@@ -7,11 +7,11 @@ from app.domain.entities.skill_schema import SkillSchema
 
 
 class PoolSchema(Schema):
-    points: PositiveInt = Field(..., default=0)
-    skills: List[SkillSchema] = Field(..., default=[])
-    overlap: PositiveInt = Field(..., default=1)
+    points: int = Field(...)
+    skills: List[SkillSchema] = Field(...)
+    overlap: PositiveInt = Field(...)
     created_at: PastDatetime = Field(...)
-    is_active: bool = Field(..., default=True)
+    is_active: bool = Field(...)
 
 
 class PoolIn(PoolSchema):

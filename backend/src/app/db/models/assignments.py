@@ -23,4 +23,4 @@ class Assignment(models.Model):
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.IN_PROGRESS, verbose_name="status")
 
     def __str__(self):
-        return {self.assignment_id}
+        return f"{self.assignment_id}"
