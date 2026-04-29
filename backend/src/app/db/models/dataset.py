@@ -1,6 +1,6 @@
 from django.db import models
 
-from app.internal.models.platform_user import PlatformUser
+from app.db.models.platform_user import PlatformUser
 
 
 class Dataset(models.Model):

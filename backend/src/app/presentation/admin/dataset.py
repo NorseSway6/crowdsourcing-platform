@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from app.internal.models.dataset import Dataset
+from app.db.models.dataset import Dataset
 
 
 @admin.register(Dataset)
