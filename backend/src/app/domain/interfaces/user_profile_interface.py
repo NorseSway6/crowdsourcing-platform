@@ -10,8 +10,5 @@ class IProfileRepository:
     def set_profile(self, user: UserIn, profile_data: dict) -> ProfileSchema:
         pass
 
-    def set_skills(self, profile: ProfileSchema, skills_data: List[SkillSchema]) -> None:
-        pass
-
     def update_user_profile(self, user_id: UUID, profile_data: ProfileSchema) -> ProfileSchema:
         pass

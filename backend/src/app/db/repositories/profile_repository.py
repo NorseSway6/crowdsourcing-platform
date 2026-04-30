@@ -14,14 +14,6 @@ class ProfileRepository(IProfileRepository):
         profile, _ = UserProfile.objects.update_or_create(user=user, defaults=profile_data)
         return profile
 
-    def set_skills(self, profile: ProfileSchema, skills_data: List[SkillSchema]) -> None:
-        if not skills_data:
-            profile.skills.clear()
-        else:
-            names = [s.get("name") for s in skills_data]
-            skills_qs = Skill.objects.filter(name__in=names)
-            profile.skills.set(skills_qs)
-
     def update_profile(self, user_id: UUID, profile_data: ProfileSchema) -> ProfileSchema:
         profile, _ = UserProfile.objects.update_or_create(user__user_id=user_id, defaults=profile_data)
         return profile

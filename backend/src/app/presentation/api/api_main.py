@@ -28,7 +28,7 @@ def get_api():
     # Users build
     user_repo = UserRepository()
     profile_repo = ProfileRepository()
-    user_service = UserService(user_repo, profile_repo)
+    user_service = UserService(user_repo, profile_repo, skill_repo)
     user_handlers = UserHandlers(user_service)
     add_users_router(api, user_handlers)
 
