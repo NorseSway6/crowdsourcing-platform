@@ -19,6 +19,12 @@ def get_api():
         version="1.0.0",
     )
 
+    # Skills build
+    skill_repo = SkillRepository()
+    skill_service = SkillService(skill_repo)
+    skill_handlers = SkillHandlers(skill_service)
+    add_skills_router(api, skill_handlers)
+
     # Users build
     user_repo = UserRepository()
     profile_repo = ProfileRepository()
@@ -28,15 +34,9 @@ def get_api():
 
     # Pools build
     pool_repo = PoolRepository()
-    pool_service = PoolService(pool_repo)
+    pool_service = PoolService(pool_repo, skill_repo)
     pool_handlers = PoolHandlers(pool_service)
     add_pools_router(api, pool_handlers)
-
-    # Skills build
-    skill_repo = SkillRepository()
-    skill_service = SkillService(skill_repo)
-    skill_handlers = SkillHandlers(skill_service)
-    add_skills_router(api, skill_handlers)
 
     return api
 

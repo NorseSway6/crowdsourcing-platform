@@ -14,9 +14,5 @@ class PoolSchema(Schema):
     is_active: bool = Field(...)
 
 
-class PoolIn(PoolSchema):
-    pool_id: int = Field(...)
-
-
 class PoolOut(PoolSchema):
     pool_id: int = Field(...)

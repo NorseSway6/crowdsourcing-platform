@@ -4,7 +4,7 @@ from app.db.models.skill import Skill
 
 
 class Pool(models.Model):
-    pool_id = models.BigIntegerField(primary_key=True, verbose_name="pool_id")
+    pool_id = models.BigAutoField(primary_key=True, verbose_name="pool_id")
     points = models.IntegerField(default=0, verbose_name="points")
     skills = models.ManyToManyField(Skill, related_name="pool_skill", verbose_name="skills")
     overlap = models.IntegerField(default=1, verbose_name="overlap")

@@ -9,9 +9,5 @@ class TaskSchema(Schema):
     created_at: PastDatetime = Field(...)
 
 
-class TaskIn(TaskSchema):
-    task_id: int = Field(...)
-
-
 class TaskOut(TaskSchema):
     task_id: int = Field(...)

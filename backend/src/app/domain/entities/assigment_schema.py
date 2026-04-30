@@ -14,9 +14,5 @@ class AssigmentSchema(Schema):
     status: str = Field(..., max_length=20)
 
 
-class AssigmentIn(AssigmentSchema):
-    assignment_id: int = Field(...)
-
-
 class AssigmentOut(AssigmentSchema):
     assignment_id: int = Field(...)

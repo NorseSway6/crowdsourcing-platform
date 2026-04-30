@@ -1,5 +1,5 @@
 ## Запуск локально
-``bash
+```bash
 make up
 make migrate
 make createsuperuser

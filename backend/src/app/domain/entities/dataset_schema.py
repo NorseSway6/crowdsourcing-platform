@@ -9,9 +9,5 @@ class DatasetSchema(Schema):
     created_at: PastDatetime = Field(...)
 
 
-class DatasetIn(DatasetSchema):
-    dataset_id: int = Field(...)
-
-
 class DatasetOut(DatasetSchema):
     dataset_id: int = Field(...)

@@ -4,7 +4,7 @@ from uuid import UUID
 from ninja import Body, Path
 
 from app.domain.entities.platform_user_schema import UserIn, UserOut
-from app.domain.entities.pool_schema import PoolOut
+from app.domain.entities.pool_schema import PoolOut, PoolSchema
 from app.domain.entities.skill_schema import SkillSchema
 from app.domain.entities.user_profile_schema import ProfileSchema
 from app.domain.services.platform_user_service import UserService
@@ -26,6 +26,12 @@ class PoolHandlers:
 
     def get_all_pools(self, request) -> List[PoolOut]:
         return self._pool_service.get_all_pools()
+
+    def create_pool(self, request, pool_data: PoolSchema) -> PoolOut:
+        return self._pool_service.create_pool(pool_data)
+
+    def update_pool(self, request, pool_id: int, pool_data: PoolSchema) -> PoolSchema:
+        return self._pool_service.update_pool(pool_id, pool_data)
 
 
 class UserHandlers:

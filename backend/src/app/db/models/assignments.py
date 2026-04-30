@@ -12,7 +12,7 @@ class Assignment(models.Model):
         APPROVED = "APPROVED", _("Approved")
         REJECTED = "REJECTED", _("Rejected")
 
-    assignment_id = models.BigIntegerField(primary_key=True, verbose_name="assignment_id")
+    assignment_id = models.BigAutoField(primary_key=True, verbose_name="assignment_id")
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="assignment_task", verbose_name="task")
     user = models.ForeignKey(
         PlatformUser, on_delete=models.CASCADE, related_name="assignment_user", verbose_name="user"

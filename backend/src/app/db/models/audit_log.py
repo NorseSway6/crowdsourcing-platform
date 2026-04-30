@@ -6,7 +6,7 @@ from app.db.models.task import Task
 
 
 class AuditLog(models.Model):
-    audit_id = models.BigIntegerField(primary_key=True, verbose_name="audit_id")
+    audit_id = models.BigAutoField(primary_key=True, verbose_name="audit_id")
     user = models.ForeignKey(PlatformUser, on_delete=models.CASCADE, related_name="audit_user", verbose_name="user")
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="audit_task", verbose_name="task")
     pool = models.ForeignKey(Pool, on_delete=models.CASCADE, related_name="audit_pool", verbose_name="pool")

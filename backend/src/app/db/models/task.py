@@ -6,7 +6,7 @@ from app.db.models.pool import Pool
 
 
 class Task(models.Model):
-    task_id = models.BigIntegerField(primary_key=True, verbose_name="task_id")
+    task_id = models.BigAutoField(primary_key=True, verbose_name="task_id")
     pool = models.ForeignKey(Pool, on_delete=models.CASCADE, related_name="task_pool", verbose_name="pool")
     dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE, related_name="task_dataset", verbose_name="dataset")
     image_url = models.URLField()

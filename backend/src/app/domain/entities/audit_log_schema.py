@@ -13,9 +13,5 @@ class AuditLogSchema(Schema):
     ip_address: IPvAnyAddress = Field(...)
 
 
-class AuditLogIn(AuditLogSchema):
-    audit_id: int = Field(...)
-
-
 class AuditLogOut(AuditLogSchema):
     audit_id: int = Field(...)
