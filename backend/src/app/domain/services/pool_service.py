@@ -1,4 +1,4 @@
-from app.domain.interfaces.pool_repository_interface import IPoolRepository
+from app.domain.interfaces.pool_interface import IPoolRepository
 
 
 class PoolService:

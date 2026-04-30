@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "c615a1139065b75154110dd4387e1b1aa5160cf3968570cd8853b7cadd61b043"
+            "sha256": "c395db3c397d51bff3f03f96ed262c79d004d2760c6056bd593d18d0413e079c"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -101,6 +101,21 @@
             "markers": "python_version >= '3.7'",
             "version": "==1.6.2"
         },
+        "dnspython": {
+            "hashes": [
+                "sha256:01d9bbc4a2d76bf0db7c1f729812ded6d912bd318d3b1cf81d30c0f845dbf3af",
+                "sha256:181d3c6996452cb1189c4046c61599b84a5a86e099562ffde77d26984ff26d0f"
+            ],
+            "markers": "python_version >= '3.10'",
+            "version": "==2.8.0"
+        },
+        "email-validator": {
+            "hashes": [
+                "sha256:80f13f623413e6b197ae73bb10bf4eb0908faf509ad8362c5edeb0be7fd450b4",
+                "sha256:9fc05c37f2f6cf439ff414f8fc46d917929974a82244c20eb10231ba60c54426"
+            ],
+            "version": "==2.3.0"
+        },
         "flake8": {
             "hashes": [
                 "sha256:479b1304f72536a55948cb40a32dce8bb0ffe3501e26eaf292c7e60eb5e0428d",
@@ -109,6 +124,14 @@
             "index": "pypi",
             "markers": "python_version >= '3.6'",
             "version": "==4.0.1"
+        },
+        "idna": {
+            "hashes": [
+                "sha256:585ea8fe5d69b9181ec1afba340451fba6ba764af97026f92a91d4eef164a242",
+                "sha256:892ea0cde124a99ce773decba204c5552b69c3c67ffd5f232eb7696135bc8bb3"
+            ],
+            "markers": "python_version >= '3.8'",
+            "version": "==3.13"
         },
         "isort": {
             "hashes": [
@@ -241,6 +264,9 @@
             "version": "==2.8.0"
         },
         "pydantic": {
+            "extras": [
+                "email"
+            ],
             "hashes": [
                 "sha256:6db14ac8dfc9a1e57f87ea2c0de670c251240f43cb0c30a5130e9720dc612927",
                 "sha256:af09e9d1d09f4e7fe37145c1f577e1d61ceb9a41924bf0094a36506285d0a84d"

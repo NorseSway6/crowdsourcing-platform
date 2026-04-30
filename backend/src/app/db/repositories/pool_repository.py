@@ -1,6 +1,6 @@
 from app.db.models.pool import Pool
 from app.domain.entities.pool_schema import PoolOut
-from app.domain.interfaces.pool_repository_interface import IPoolRepository
+from app.domain.interfaces.pool_interface import IPoolRepository
 
 
 class PoolRepository(IPoolRepository):

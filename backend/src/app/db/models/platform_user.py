@@ -17,4 +17,4 @@ class PlatformUser(models.Model):
     is_active = models.BooleanField(default=True, verbose_name="is_active")
 
     def __str__(self):
-        return {self.user_id}
+        return f"{self.user_id}"

@@ -1,4 +1,5 @@
 import uuid
+from enum import Enum
 from typing import Optional
 
 from ninja import Schema
@@ -7,12 +8,18 @@ from pydantic import EmailStr, Field, PastDatetime
 from app.domain.entities.user_profile_schema import ProfileSchema
 
 
+class UserRole(str, Enum):
+    STUDENT = "STUDENT"
+    ADMIN = "ADMIN"
+    VALIDATOR = "VALIDATOR"
+
+
 class UserSchema(Schema):
     email: EmailStr = Field(...)
-    role: str = Field(..., max_length=10)
+    role: UserRole = Field(...)
     created_at: PastDatetime = Field(...)
-    is_active: bool = Field(..., default=True)
-    profile: Optional[ProfileSchema] = Field(None)
+    is_active: bool = Field(default=True)
+    profile: Optional[ProfileSchema] = Field(None, alias="user_profile")
 
 
 class UserIn(UserSchema):

@@ -1,8 +1,10 @@
+from typing import List
+
 from app.db.models.skill import Skill
 from app.domain.entities.skill_schema import SkillSchema
-from app.domain.interfaces.skill_repository_interface import ISkillRepository
+from app.domain.interfaces.skill_interface import ISkillRepository
 
 
 class SkillRepository(ISkillRepository):
-    def get_all_skills(self) -> SkillSchema:
+    def get_all_skills(self) -> List[SkillSchema]:
         return Skill.objects.all()
