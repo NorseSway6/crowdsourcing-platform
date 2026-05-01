@@ -17,8 +17,6 @@ class UserRole(str, Enum):
 class UserSchema(Schema):
     email: EmailStr = Field(...)
     role: UserRole = Field(...)
-    created_at: PastDatetime = Field(...)
-    is_active: bool = Field(default=True)
     profile: Optional[ProfileSchema] = Field(None, alias="user_profile")
 
 
@@ -28,3 +26,5 @@ class UserIn(UserSchema):
 
 class UserOut(UserSchema):
     user_id: uuid.UUID = Field(...)
+    created_at: PastDatetime = Field(...)
+    is_active: bool = Field(default=True)

@@ -3,11 +3,11 @@ from pydantic import Field, HttpUrl, PastDatetime
 
 
 class TaskSchema(Schema):
-    pool: int = Field(...)
-    dataset: int = Field(...)
+    dataset_id: int = Field(...)
     image_url: HttpUrl = Field(...)
-    created_at: PastDatetime = Field(...)
 
 
 class TaskOut(TaskSchema):
     task_id: int = Field(...)
+    pool_id: int = Field(...)
+    created_at: PastDatetime = Field(...)

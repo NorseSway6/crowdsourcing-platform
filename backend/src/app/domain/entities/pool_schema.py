@@ -10,9 +10,9 @@ class PoolSchema(Schema):
     points: int = Field(...)
     skills: List[SkillSchema] = Field(...)
     overlap: PositiveInt = Field(...)
-    created_at: PastDatetime = Field(...)
-    is_active: bool = Field(...)
 
 
 class PoolOut(PoolSchema):
     pool_id: int = Field(...)
+    created_at: PastDatetime = Field(...)
+    is_active: bool = Field(default=True)

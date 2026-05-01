@@ -12,16 +12,6 @@ from app.presentation.api.handlers import UserHandlers
 def get_users_router(user_handlers: UserHandlers):
     router = Router(tags=["users"])
 
-    def create_user(request, data: UserIn) -> UserOut:
-        return user_handlers.get_or_create_user(request, data)
-
-    router.add_api_operation(
-        "/",
-        ["POST"],
-        create_user,
-        response={201: UserOut},
-    )
-
     router.add_api_operation(
         "/",
         ["GET"],
@@ -29,7 +19,6 @@ def get_users_router(user_handlers: UserHandlers):
         response={200: List[UserOut], 404: ErrorResponse},
     )
 
-    # доступен только с авторизацией (будет позже), передача id временно
     def get_user_by_id(request, data: UUID) -> UserOut:
         return user_handlers.get_user_by_id(request, data)
 
@@ -40,7 +29,16 @@ def get_users_router(user_handlers: UserHandlers):
         response={200: UserOut, 401: ErrorResponse},
     )
 
-    # доступен только с авторизацией (будет позже), передача id временно
+    def create_user(request, data: UserIn) -> UserOut:
+        return user_handlers.get_or_create_user(request, data)
+
+    router.add_api_operation(
+        "/",
+        ["POST"],
+        create_user,
+        response={201: UserOut},
+    )
+
     def update_user_profile(request, id: UUID, data: ProfileSchema) -> UserOut:
         return user_handlers.update_user_profile(request, id, data)
 

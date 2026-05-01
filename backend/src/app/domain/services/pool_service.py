@@ -1,4 +1,5 @@
 from app.domain.entities.pool_schema import PoolOut, PoolSchema
+from app.domain.entities.task_schema import TaskOut, TaskSchema
 from app.domain.interfaces.pool_interface import IPoolRepository
 from app.domain.interfaces.skill_interface import ISkillRepository
 
@@ -10,6 +11,9 @@ class PoolService:
 
     def get_all_pools(self):
         return self._pool_repo.get_all_pools()
+
+    def get_pool_by_id(self, pool_id: int) -> PoolOut:
+        return self._pool_repo.get_pool_by_id(pool_id)
 
     def create_pool(self, pool_data: PoolSchema) -> PoolOut:
         data = pool_data.dict()
@@ -32,3 +36,8 @@ class PoolService:
             self._skill_repo.set_skills(pool, skills_data)
 
         return pool
+
+    def create_task(self, pool_id: int, task_data: TaskSchema) -> TaskOut:
+        data = task_data.dict()
+        dataset_id = data.pop("dataset_id")
+        return self._pool_repo.create_task(pool_id, dataset_id, data)
