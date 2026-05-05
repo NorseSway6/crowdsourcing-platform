@@ -1,17 +1,27 @@
 from ninja import NinjaAPI
 
+from app.db.repositories.assignment_repository import AssignmentRepository
 from app.db.repositories.dataset_repository import DatasetRepository
 from app.db.repositories.platform_user_repository import UserRepository
 from app.db.repositories.pool_repository import PoolRepository
 from app.db.repositories.profile_repository import ProfileRepository
 from app.db.repositories.skill_repository import SkillRepository
 from app.db.repositories.task_repository import TaskRepository
+from app.domain.services.assignment_service import AssignmentService
 from app.domain.services.dataset_service import DatasetService
 from app.domain.services.platform_user_service import UserService
 from app.domain.services.pool_service import PoolService
 from app.domain.services.skill_service import SkillService
 from app.domain.services.task_service import TaskService
-from app.presentation.api.handlers import DatasetHandlers, PoolHandlers, SkillHandlers, TaskHandlers, UserHandlers
+from app.presentation.api.handlers import (
+    AssignmentHandlers,
+    DatasetHandlers,
+    PoolHandlers,
+    SkillHandlers,
+    TaskHandlers,
+    UserHandlers,
+)
+from app.presentation.routers.assignments_router import add_assignments_router
 from app.presentation.routers.dataset_router import add_datasets_router
 from app.presentation.routers.platforn_user_router import add_users_router
 from app.presentation.routers.pool_router import add_pools_router
@@ -55,6 +65,12 @@ def get_api():
     task_service = TaskService(task_repo)
     task_handlers = TaskHandlers(task_service)
     add_tasks_router(api, task_handlers)
+
+    # Assignment build
+    assignment_repo = AssignmentRepository()
+    assignment_service = AssignmentService(assignment_repo)
+    assignment_handlers = AssignmentHandlers(assignment_service)
+    add_assignments_router(api, assignment_handlers)
 
     return api
 

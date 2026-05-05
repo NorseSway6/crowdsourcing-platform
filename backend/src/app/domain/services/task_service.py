@@ -1,4 +1,5 @@
 from typing import List
+from uuid import UUID
 
 from app.domain.entities.task_schema import TaskOut, TaskSchema
 from app.domain.interfaces.task_interface import ITaskRepository
@@ -13,3 +14,7 @@ class TaskService:
 
     def get_task_by_id(self, task_id: int) -> TaskOut:
         return self._task_repo.get_task_by_id(task_id)
+
+    def create_task(self, pool_id: int, user_id: UUID, task_data: TaskSchema) -> TaskOut:
+        data = task_data.dict()
+        return self._task_repo.create_task(pool_id, user_id, data)

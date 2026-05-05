@@ -1,4 +1,5 @@
 from typing import List
+from uuid import UUID
 
 from ninja import NinjaAPI, Router
 
@@ -25,6 +26,16 @@ def get_tasks_router(task_handlers: TaskHandlers):
         ["GET"],
         get_task_by_id,
         response={200: TaskOut, 404: ErrorResponse},
+    )
+
+    def create_task(request, pool_id: int, user_id: UUID, data: TaskSchema) -> TaskOut:
+        return task_handlers.create_task(request, pool_id, user_id, data)
+
+    router.add_api_operation(
+        "/",
+        ["POST"],
+        create_task,
+        response={200: TaskOut},
     )
 
     return router

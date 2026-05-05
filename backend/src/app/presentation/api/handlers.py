@@ -3,12 +3,14 @@ from uuid import UUID
 
 from ninja import Body, Path
 
+from app.domain.entities.assigment_schema import AssignmentOut, AssignmentSchema
 from app.domain.entities.dataset_schema import DatasetOut, DatasetSchema
 from app.domain.entities.platform_user_schema import UserIn, UserOut
 from app.domain.entities.pool_schema import PoolOut, PoolSchema
 from app.domain.entities.skill_schema import SkillSchema
 from app.domain.entities.task_schema import TaskOut, TaskSchema
 from app.domain.entities.user_profile_schema import ProfileSchema
+from app.domain.services.assignment_service import AssignmentService
 from app.domain.services.dataset_service import DatasetService
 from app.domain.services.platform_user_service import UserService
 from app.domain.services.pool_service import PoolService
@@ -87,3 +89,28 @@ class TaskHandlers:
 
     def get_task_by_id(self, request, task_id: int) -> TaskOut:
         return self._task_service.get_task_by_id(task_id)
+
+    def create_task(self, request, pool_id: int, user_id: UUID, task_data: TaskSchema) -> TaskOut:
+        return self._task_service.create_task(pool_id, user_id, task_data)
+
+
+class AssignmentHandlers:
+    def __init__(self, assignment_service: AssignmentService):
+        self._assignment_service = assignment_service
+
+    def get_all_assignments(self, request) -> List[AssignmentOut]:
+        return self._assignment_service.get_all_assignments()
+
+    def get_assignment_tasks(self, request, user_id: UUID) -> List[AssignmentOut]:
+        return self._assignment_service.get_assignment_tasks(user_id)
+
+    def create_assignment(self, request, user_id: UUID, pool_id: int) -> AssignmentOut:
+        return self._assignment_service.create_assignment(user_id, pool_id)
+
+    def update_assignment(
+        self, request, user_id: UUID, assignment_id: int, annotation_data: AssignmentSchema
+    ) -> AssignmentOut:
+        return self._assignment_service.update_assignment(user_id, assignment_id, annotation_data)
+
+    def update_assignment_status(self, request, user_id: UUID, assignment_id: int, status: str) -> AssignmentOut:
+        return self._assignment_service.update_assignment_status(user_id, assignment_id, status)
