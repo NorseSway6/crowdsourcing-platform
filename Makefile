@@ -12,7 +12,7 @@ makemigrations:
 	sudo chown -R $USER:$(id -gn $USER) backend/src/app/migrations/
 
 createsuperuser:
-	docker compose -f docker-compose.prod.yml exec -T backend python3 manage.py createsuperuser
+	docker compose -f docker-compose.prod.yml exec backend python3 manage.py createsuperuser
 
 collectstatic:
 	docker compose -f docker-compose.prod.yml exec -T backend python3 manage.py collectstatic --no-input

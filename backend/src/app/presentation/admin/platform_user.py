@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from app.internal.models.platform_user import PlatformUser
+from app.db.models.platform_user import PlatformUser
 
 
 @admin.register(PlatformUser)
