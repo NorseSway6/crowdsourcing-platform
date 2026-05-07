@@ -2,8 +2,8 @@ from typing import List
 
 from ninja import NinjaAPI, Router
 
-from app.domain.entities.error_response import ErrorResponse
 from app.domain.entities.pool_schema import PoolOut, PoolSchema
+from app.domain.entities.response_schema import ErrorResponse, SuccessResponse
 from app.domain.entities.task_schema import TaskOut, TaskSchema
 from app.presentation.api.handlers import PoolHandlers
 
@@ -35,7 +35,7 @@ def get_pools_router(pool_handlers: PoolHandlers):
         "/",
         ["POST"],
         create_pool,
-        response={201: PoolOut},
+        response={201: PoolOut, 400: ErrorResponse, 409: ErrorResponse},
     )
 
     def create_task(request, pool_id: int, data: TaskSchema) -> TaskOut:
@@ -45,10 +45,10 @@ def get_pools_router(pool_handlers: PoolHandlers):
         "/{int:pool_id}/tasks/",
         ["POST"],
         create_task,
-        response={200: TaskOut},
+        response={201: TaskOut, 400: ErrorResponse, 409: ErrorResponse},
     )
 
-    def update_pool(request, pool_id: int, data: PoolSchema) -> PoolSchema:
+    def update_pool(request, pool_id: int, data: PoolSchema) -> PoolOut:
         return pool_handlers.update_pool(request, pool_id, data)
 
     router.add_api_operation(
@@ -56,6 +56,16 @@ def get_pools_router(pool_handlers: PoolHandlers):
         ["PATCH"],
         update_pool,
         response={200: PoolOut, 404: ErrorResponse},
+    )
+
+    def delete_pool(request, pool_id: int) -> bool:
+        return pool_handlers.delete_pool(request, pool_id)
+
+    router.add_api_operation(
+        "/{int:pool_id}",
+        ["DELETE"],
+        delete_pool,
+        response={200: SuccessResponse, 404: ErrorResponse},
     )
 
     return router

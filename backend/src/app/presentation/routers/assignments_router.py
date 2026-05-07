@@ -4,7 +4,7 @@ from uuid import UUID
 from ninja import NinjaAPI, Router
 
 from app.domain.entities.assigment_schema import AssignmentOut, AssignmentSchema
-from app.domain.entities.error_response import ErrorResponse
+from app.domain.entities.response_schema import ErrorResponse
 
 
 def get_assignments_router(assigment_handlers):
@@ -17,13 +17,13 @@ def get_assignments_router(assigment_handlers):
         response={200: List[AssignmentOut], 404: ErrorResponse},
     )
 
-    def get_asignment_tasks(request, user_id: UUID) -> List[AssignmentOut]:
-        return assigment_handlers.get_assignment_tasks(request, user_id)
+    def get_assignments_by_user(request, user_id: UUID) -> List[AssignmentOut]:
+        return assigment_handlers.get_assignments_by_user(request, user_id)
 
     router.add_api_operation(
         "/my",
         ["GET"],
-        get_asignment_tasks,
+        get_assignments_by_user,
         response={200: List[AssignmentOut], 404: ErrorResponse},
     )
 
@@ -34,7 +34,7 @@ def get_assignments_router(assigment_handlers):
         "/next",
         ["POST"],
         create_assignment,
-        response={200: AssignmentOut},
+        response={201: AssignmentOut, 404: ErrorResponse, 409: ErrorResponse},
     )
 
     def update_assignment(request, user_id: UUID, assignment_id: int, data: AssignmentSchema) -> AssignmentOut:
@@ -44,7 +44,7 @@ def get_assignments_router(assigment_handlers):
         "/{int:assignment_id}",
         ["PATCH"],
         update_assignment,
-        response={200: AssignmentOut},
+        response={200: AssignmentOut, 404: ErrorResponse, 409: ErrorResponse},
     )
 
     def update_assignment_status(request, user_id: UUID, assignment_id: int, status: str) -> AssignmentOut:
@@ -54,7 +54,7 @@ def get_assignments_router(assigment_handlers):
         "/{int:assignment_id}/status",
         ["PATCH"],
         update_assignment_status,
-        response={200: AssignmentOut},
+        response={200: AssignmentOut, 404: ErrorResponse, 409: ErrorResponse},
     )
 
     return router

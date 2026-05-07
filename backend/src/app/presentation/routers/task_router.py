@@ -3,8 +3,8 @@ from uuid import UUID
 
 from ninja import NinjaAPI, Router
 
-from app.domain.entities.error_response import ErrorResponse
-from app.domain.entities.task_schema import TaskOut, TaskSchema
+from app.domain.entities.response_schema import ErrorResponse, SuccessResponse
+from app.domain.entities.task_schema import TaskOut
 from app.presentation.api.handlers import TaskHandlers
 
 
@@ -28,14 +28,14 @@ def get_tasks_router(task_handlers: TaskHandlers):
         response={200: TaskOut, 404: ErrorResponse},
     )
 
-    def create_task(request, pool_id: int, user_id: UUID, data: TaskSchema) -> TaskOut:
-        return task_handlers.create_task(request, pool_id, user_id, data)
+    def delete_task(request, task_id: int) -> bool:
+        return task_handlers.delete_task(request, task_id)
 
     router.add_api_operation(
-        "/",
-        ["POST"],
-        create_task,
-        response={200: TaskOut},
+        "/{int:task_id}",
+        ["DELETE"],
+        delete_task,
+        response={200: SuccessResponse, 404: ErrorResponse},
     )
 
     return router

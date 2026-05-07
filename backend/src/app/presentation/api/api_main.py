@@ -4,7 +4,6 @@ from app.db.repositories.assignment_repository import AssignmentRepository
 from app.db.repositories.dataset_repository import DatasetRepository
 from app.db.repositories.platform_user_repository import UserRepository
 from app.db.repositories.pool_repository import PoolRepository
-from app.db.repositories.profile_repository import ProfileRepository
 from app.db.repositories.skill_repository import SkillRepository
 from app.db.repositories.task_repository import TaskRepository
 from app.domain.services.assignment_service import AssignmentService
@@ -43,8 +42,7 @@ def get_api():
 
     # Users build
     user_repo = UserRepository()
-    profile_repo = ProfileRepository()
-    user_service = UserService(user_repo, profile_repo, skill_repo)
+    user_service = UserService(user_repo, skill_repo)
     user_handlers = UserHandlers(user_service)
     add_users_router(api, user_handlers)
 

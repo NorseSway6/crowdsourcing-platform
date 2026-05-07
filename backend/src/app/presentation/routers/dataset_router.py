@@ -4,7 +4,7 @@ from uuid import UUID
 from ninja import NinjaAPI, Router
 
 from app.domain.entities.dataset_schema import DatasetOut, DatasetSchema
-from app.domain.entities.error_response import ErrorResponse
+from app.domain.entities.response_schema import ErrorResponse, SuccessResponse
 from app.presentation.api.handlers import DatasetHandlers
 
 
@@ -35,7 +35,7 @@ def get_datasets_router(dataset_handlers: DatasetHandlers):
         "/",
         ["POST"],
         create_dataset,
-        response={200: DatasetOut},
+        response={201: DatasetOut, 404: ErrorResponse, 409: ErrorResponse},
     )
 
     def update_dataset(request, dataset_id: int, data: DatasetSchema) -> DatasetOut:
@@ -46,6 +46,16 @@ def get_datasets_router(dataset_handlers: DatasetHandlers):
         ["PATCH"],
         update_dataset,
         response={200: DatasetOut, 404: ErrorResponse},
+    )
+
+    def delete_dataset(request, dataset_id: int) -> bool:
+        return dataset_handlers.delete_dataset(request, dataset_id)
+
+    router.add_api_operation(
+        "/{int:dataset_id}",
+        ["DELETE"],
+        delete_dataset,
+        response={200: SuccessResponse, 404: ErrorResponse},
     )
 
     return router

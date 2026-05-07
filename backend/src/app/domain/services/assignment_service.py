@@ -12,8 +12,8 @@ class AssignmentService:
     def get_all_assignments(self) -> List[AssignmentOut]:
         return self._assignment_repo.get_all_assignments()
 
-    def get_assignment_tasks(self, user_id: UUID) -> List[AssignmentOut]:
-        return self._assignment_repo.get_assignment_tasks(user_id)
+    def get_assignments_by_user(self, user_id: UUID) -> List[AssignmentOut]:
+        return self._assignment_repo.get_assignments_by_user(user_id)
 
     def create_assignment(self, user_id: UUID, pool_id: int) -> AssignmentOut:
         return self._assignment_repo.create_assignment(user_id, pool_id)

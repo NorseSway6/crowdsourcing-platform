@@ -16,9 +16,10 @@ class DatasetService:
         return self._dataset_repo.get_dataset_by_id(dataset_id)
 
     def create_dataset(self, owner_id: UUID, dataset_data: DatasetSchema) -> DatasetOut:
-        data = dataset_data.dict()
-        return self._dataset_repo.create_dataset(owner_id, data)
+        return self._dataset_repo.create_dataset(owner_id, dataset_data)
 
     def update_dataset(self, dataset_id: int, dataset_data: DatasetSchema) -> DatasetOut:
-        data = dataset_data.dict()
-        return self._dataset_repo.update_dataset(dataset_id, data)
+        return self._dataset_repo.update_dataset(dataset_id, dataset_data)
+
+    def delete_dataset(self, dataset_id: int) -> bool:
+        return self._dataset_repo.delete_dataset(dataset_id)

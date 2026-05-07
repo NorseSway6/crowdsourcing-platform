@@ -9,3 +9,9 @@ class ISkillRepository:
 
     def set_skills(self, obj: Any, skills_data: dict) -> None:
         pass
+
+    def create_skill(self, skill_data: SkillSchema) -> SkillSchema:
+        pass
+
+    def delete_skill(self, skill_data: SkillSchema) -> bool:
+        pass

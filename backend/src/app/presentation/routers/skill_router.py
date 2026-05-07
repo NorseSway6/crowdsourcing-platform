@@ -2,7 +2,7 @@ from typing import List
 
 from ninja import NinjaAPI, Router
 
-from app.domain.entities.error_response import ErrorResponse
+from app.domain.entities.response_schema import ErrorResponse, SuccessResponse
 from app.domain.entities.skill_schema import SkillSchema
 from app.presentation.api.handlers import SkillHandlers
 
@@ -15,6 +15,26 @@ def get_skills_router(skill_handlers: SkillHandlers):
         ["GET"],
         lambda request: skill_handlers.get_all_skills(request),
         response={200: List[SkillSchema], 404: ErrorResponse},
+    )
+
+    def create_skill(request, data: SkillSchema) -> SkillSchema:
+        return skill_handlers.create_skill(request, data)
+
+    router.add_api_operation(
+        "/",
+        ["POST"],
+        create_skill,
+        response={201: SkillSchema, 404: ErrorResponse, 409: ErrorResponse},
+    )
+
+    def delete_skill(request, data: SkillSchema) -> bool:
+        return skill_handlers.delete_skill(request, data)
+
+    router.add_api_operation(
+        "/",
+        ["DELETE"],
+        delete_skill,
+        response={200: SuccessResponse, 404: ErrorResponse},
     )
 
     return router

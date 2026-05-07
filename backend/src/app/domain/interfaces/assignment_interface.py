@@ -8,7 +8,7 @@ class IAssignmentRepository:
     def get_all_assignments(self) -> List[AssignmentOut]:
         pass
 
-    def get_assignment_tasks(self, user_id: UUID) -> List[AssignmentOut]:
+    def get_assignments_by_user(self, user_id: UUID) -> List[AssignmentOut]:
         pass
 
     def create_assignment(self, user_id: UUID, pool_id: int) -> AssignmentOut:

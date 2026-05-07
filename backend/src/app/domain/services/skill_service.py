@@ -10,3 +10,9 @@ class SkillService:
 
     def get_all_skills(self) -> List[SkillSchema]:
         return self._skill_repo.get_all_skills()
+
+    def create_skill(self, skill_data: SkillSchema) -> SkillSchema:
+        return self._skill_repo.create_skill(skill_data)
+
+    def delete_skill(self, skill_data: SkillSchema) -> bool:
+        return self._skill_repo.delete_skill(skill_data)

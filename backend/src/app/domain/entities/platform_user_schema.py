@@ -20,10 +20,6 @@ class UserSchema(Schema):
     profile: Optional[ProfileSchema] = Field(None, alias="user_profile")
 
 
-class UserIn(UserSchema):
-    user_id: uuid.UUID = Field(...)
-
-
 class UserOut(UserSchema):
     user_id: uuid.UUID = Field(...)
     created_at: PastDatetime = Field(...)

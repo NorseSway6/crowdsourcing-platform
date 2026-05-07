@@ -3,8 +3,8 @@ from uuid import UUID
 
 from ninja import NinjaAPI, Router
 
-from app.domain.entities.error_response import ErrorResponse
-from app.domain.entities.platform_user_schema import UserIn, UserOut
+from app.domain.entities.platform_user_schema import UserOut, UserSchema
+from app.domain.entities.response_schema import ErrorResponse, SuccessResponse
 from app.domain.entities.user_profile_schema import ProfileSchema
 from app.presentation.api.handlers import UserHandlers
 
@@ -19,24 +19,24 @@ def get_users_router(user_handlers: UserHandlers):
         response={200: List[UserOut], 404: ErrorResponse},
     )
 
-    def get_user_by_id(request, data: UUID) -> UserOut:
-        return user_handlers.get_user_by_id(request, data)
+    def get_user_by_id(request, id: UUID) -> UserOut:
+        return user_handlers.get_user_by_id(request, id)
 
     router.add_api_operation(
         "/me",
         ["GET"],
         get_user_by_id,
-        response={200: UserOut, 401: ErrorResponse},
+        response={200: UserOut, 404: ErrorResponse},
     )
 
-    def create_user(request, data: UserIn) -> UserOut:
-        return user_handlers.get_or_create_user(request, data)
+    def create_user(request, data: UserSchema) -> UserOut:
+        return user_handlers.create_user(request, data)
 
     router.add_api_operation(
         "/",
         ["POST"],
         create_user,
-        response={201: UserOut},
+        response={201: UserOut, 404: ErrorResponse, 409: ErrorResponse},
     )
 
     def update_user_profile(request, id: UUID, data: ProfileSchema) -> UserOut:
@@ -46,7 +46,17 @@ def get_users_router(user_handlers: UserHandlers):
         "/me/profile",
         ["PATCH"],
         update_user_profile,
-        response={200: UserOut, 404: ErrorResponse},
+        response={200: UserOut, 404: ErrorResponse, 409: ErrorResponse},
+    )
+
+    def delete_user(request, id: UUID) -> bool:
+        return user_handlers.delete_user(request, id)
+
+    router.add_api_operation(
+        "/",
+        ["DELETE"],
+        delete_user,
+        response={200: SuccessResponse, 404: ErrorResponse},
     )
 
     return router

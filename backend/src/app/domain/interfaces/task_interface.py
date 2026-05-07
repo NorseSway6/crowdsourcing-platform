@@ -11,5 +11,5 @@ class ITaskRepository:
     def get_task_by_id(self, task_id: int) -> TaskOut:
         pass
 
-    def create_task(self, pool_id: int, user_id: UUID, task_data: dict) -> TaskOut:
+    def delete_task(self, task_id: int) -> bool:
         pass
