@@ -1,6 +1,6 @@
 import uuid
 from enum import Enum
-from typing import Optional
+from typing import List, Optional
 
 from ninja import Schema
 from pydantic import Field, FutureDatetime, PastDatetime
@@ -13,8 +13,16 @@ class AssignmentStatus(str, Enum):
     REJECTED = "REJECTED"
 
 
+class AssignmentCocoItem(Schema):
+    category_id: int = Field(...)
+    bbox: List[float] = Field(...)
+    segmentation: List[List[float]] = Field(default=[])
+    area: float = Field(...)
+    iscrowd: int = Field(...)
+
+
 class AssignmentSchema(Schema):
-    annotation: dict = Field(default={})
+    annotation: List[AssignmentCocoItem] = Field(...)
 
 
 class AssignmentOut(AssignmentSchema):

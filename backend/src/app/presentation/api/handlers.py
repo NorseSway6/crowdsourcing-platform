@@ -136,7 +136,7 @@ class AssignmentHandlers:
 
     def update_assignment(
         self, request, user_id: UUID, assignment_id: int, annotation_data: AssignmentSchema
-    ) -> AssignmentOut:
+    ) -> List[AssignmentOut]:
         return self._assignment_service.update_assignment(user_id, assignment_id, annotation_data)
 
     def update_assignment_status(self, request, user_id: UUID, assignment_id: int, status: str) -> AssignmentOut:

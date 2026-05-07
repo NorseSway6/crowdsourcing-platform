@@ -45,12 +45,14 @@ class AssignmentRepository(IAssignmentRepository):
 
         return AssignmentOut.from_orm(assignment)
 
-    def update_assignment(self, user_id: UUID, assignment_id: int, annotation_data: AssignmentSchema) -> AssignmentOut:
+    def update_assignment(
+        self, user_id: UUID, assignment_id: int, annotation_data: AssignmentSchema
+    ) -> List[AssignmentOut]:
         assignment = Assignment.objects.filter(assignment_id=assignment_id, user_id=user_id).first()
         if assignment is None:
             raise HttpError(404, "Assignment or user not found")
 
-        assignment.annotation = annotation_data.annotation
+        assignment.annotation = [item.dict() for item in annotation_data.annotation]
         assignment.status = Assignment.Status.PENDING
         assignment.completed_at = timezone.now()
 
