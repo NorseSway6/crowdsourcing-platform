@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "c395db3c397d51bff3f03f96ed262c79d004d2760c6056bd593d18d0413e079c"
+            "sha256": "e63a58b45b50c01fa183c7cf06f3cbe4501a426aea9d1a60af467fe009c8fd35"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -82,6 +82,15 @@
             "index": "pypi",
             "markers": "python_version >= '3.8'",
             "version": "==4.2.30"
+        },
+        "django-cors-headers": {
+            "hashes": [
+                "sha256:15c7f20727f90044dcee2216a9fd7303741a864865f0c3657e28b7056f61b449",
+                "sha256:fe5d7cb59fdc2c8c646ce84b727ac2bca8912a247e6e68e1fb507372178e59e8"
+            ],
+            "index": "pypi",
+            "markers": "python_version >= '3.9'",
+            "version": "==4.9.0"
         },
         "django-environ": {
             "hashes": [
@@ -602,11 +611,11 @@
         },
         "python-discovery": {
             "hashes": [
-                "sha256:876e9c57139eb757cb5878cbdd9ae5379e5d96266c99ef731119e04fffe533bb",
-                "sha256:e1ae95d9af875e78f15e19aed0c6137ab1bb49c200f21f5061786490c9585c7a"
+                "sha256:441d9ced3dfce36e113beb35ca302c71c7ef06f3c0f9c227a0b9bb3bd49b9e9f",
+                "sha256:d098f1e86be5d45fe4d14bf1029294aabbd332f4321179dec85e76cddce834b0"
             ],
             "markers": "python_version >= '3.8'",
-            "version": "==1.2.2"
+            "version": "==1.3.0"
         },
         "pyyaml": {
             "hashes": [
@@ -697,11 +706,11 @@
         },
         "virtualenv": {
             "hashes": [
-                "sha256:4d28ee41f6d9ec8f1f00cd472b9ffbcedda1b3d3b9a575b5c94a2d004fd51bd7",
-                "sha256:733750db978ec95c2d8eb4feadaa57091002bce404cb39ba69899cf7bd28944e"
+                "sha256:c2305bc1fddeec40699b8370d13f8d431b0701f00ce895061ce493aeded4426b",
+                "sha256:d1a71cf58f2f9228fff23a1f6ec15d39785c6b32e03658d104974247145edd35"
             ],
             "markers": "python_version >= '3.8'",
-            "version": "==21.3.0"
+            "version": "==21.3.1"
         }
     }
 }

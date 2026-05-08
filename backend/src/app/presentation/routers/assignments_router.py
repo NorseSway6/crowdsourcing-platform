@@ -37,14 +37,14 @@ def get_assignments_router(assigment_handlers):
         response={201: AssignmentOut, 404: ErrorResponse, 409: ErrorResponse},
     )
 
-    def update_assignment(request, user_id: UUID, assignment_id: int, data: AssignmentSchema) -> List[AssignmentOut]:
+    def update_assignment(request, user_id: UUID, assignment_id: int, data: AssignmentSchema) -> AssignmentOut:
         return assigment_handlers.update_assignment(request, user_id, assignment_id, data)
 
     router.add_api_operation(
         "/{int:assignment_id}",
         ["PATCH"],
         update_assignment,
-        response={200: List[AssignmentOut], 404: ErrorResponse, 409: ErrorResponse},
+        response={200: AssignmentOut, 404: ErrorResponse, 409: ErrorResponse},
     )
 
     def update_assignment_status(request, user_id: UUID, assignment_id: int, status: str) -> AssignmentOut:

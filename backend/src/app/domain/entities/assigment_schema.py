@@ -3,7 +3,7 @@ from enum import Enum
 from typing import List, Optional
 
 from ninja import Schema
-from pydantic import Field, FutureDatetime, PastDatetime
+from pydantic import Field, PastDatetime
 
 
 class AssignmentStatus(str, Enum):
@@ -22,7 +22,7 @@ class AssignmentCocoItem(Schema):
 
 
 class AssignmentSchema(Schema):
-    annotation: List[AssignmentCocoItem] = Field(...)
+    annotation: List[AssignmentCocoItem] = Field(default=[])
 
 
 class AssignmentOut(AssignmentSchema):
