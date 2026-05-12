@@ -14,7 +14,7 @@ def get_skills_router(skill_handlers: SkillHandlers):
         "/",
         ["GET"],
         lambda request: skill_handlers.get_all_skills(request),
-        response={200: List[SkillSchema], 404: ErrorResponse},
+        response={200: List[str], 404: ErrorResponse},
     )
 
     def create_skill(request, data: SkillSchema) -> SkillSchema:

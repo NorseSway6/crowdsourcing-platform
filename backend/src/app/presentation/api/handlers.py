@@ -1,12 +1,12 @@
 from typing import List
 from uuid import UUID
 
-from ninja import Body, Path
+from ninja import Body, Path, UploadedFile
 
 from app.domain.entities.assigment_schema import AssignmentOut, AssignmentSchema
 from app.domain.entities.dataset_schema import DatasetOut, DatasetSchema
 from app.domain.entities.platform_user_schema import UserOut, UserSchema
-from app.domain.entities.pool_schema import PoolOut, PoolSchema
+from app.domain.entities.pool_schema import PoolIn, PoolOut, PoolSchema
 from app.domain.entities.response_schema import SuccessResponse
 from app.domain.entities.skill_schema import SkillSchema
 from app.domain.entities.task_schema import TaskOut, TaskSchema
@@ -23,7 +23,7 @@ class SkillHandlers:
     def __init__(self, skill_service: SkillService):
         self._skill_service = skill_service
 
-    def get_all_skills(self, request) -> List[SkillSchema]:
+    def get_all_skills(self, request) -> List[str]:
         return self._skill_service.get_all_skills()
 
     def create_skill(self, request, skill_data: SkillSchema) -> SkillSchema:
@@ -45,16 +45,12 @@ class PoolHandlers:
     def get_pool_by_id(self, request, pool_id: int) -> PoolOut:
         return self._pool_service.get_pool_by_id(pool_id)
 
-    def create_pool(self, request, pool_data: PoolSchema) -> PoolOut:
+    def create_pool(self, request, pool_data: PoolIn) -> PoolOut:
         pool = self._pool_service.create_pool(pool_data)
         return 201, pool
 
     def update_pool(self, request, pool_id: int, pool_data: PoolSchema) -> PoolOut:
         return self._pool_service.update_pool(pool_id, pool_data)
-
-    def create_task(self, request, pool_id: int, task_data: TaskSchema) -> TaskOut:
-        task = self._pool_service.create_task(pool_id, task_data)
-        return 201, task
 
     def delete_pool(self, request, pool_id: int) -> bool:
         self._pool_service.delete_pool(pool_id)
@@ -103,6 +99,10 @@ class DatasetHandlers:
     def delete_dataset(self, request, dataset_id: int) -> bool:
         self._dataset_service.delete_dataset(dataset_id)
         return 200, SuccessResponse(detail="Dataset delete successfully")
+
+    def upload_images(self, request, dataset_id: int, files: UploadedFile) -> List[TaskOut]:
+        dataset = self._dataset_service.upload_images(dataset_id, files)
+        return 201, dataset
 
 
 class TaskHandlers:

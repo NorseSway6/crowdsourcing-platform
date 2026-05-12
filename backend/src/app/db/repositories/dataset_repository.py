@@ -2,11 +2,15 @@ from multiprocessing import Pool
 from typing import List
 from uuid import UUID
 
+from django.db import transaction
+from ninja import UploadedFile
 from ninja.errors import HttpError
 from psycopg2 import IntegrityError
 
 from app.db.models.dataset import Dataset
+from app.db.models.task import Task
 from app.domain.entities.dataset_schema import DatasetOut, DatasetSchema
+from app.domain.entities.task_schema import TaskOut
 from app.domain.interfaces.datset_interface import IDatasetRepository
 
 
@@ -44,3 +48,24 @@ class DatasetRepository(IDatasetRepository):
         if not deleted:
             raise HttpError(404, "Pool for delete not found")
         return deleted
+
+    def upload_images(self, dataset_id: int, files: List[UploadedFile]) -> List[TaskOut]:
+        tasks_to_create = []
+
+        try:
+            with transaction.atomic():
+                for file in files:
+                    task = Task(dataset_id=dataset_id)
+
+                    try:
+                        task.image.save(file.name, file, save=False)
+                    except Exception:
+                        raise HttpError(409, "Upload failed due to integrity error")
+
+                    tasks_to_create.append(task)
+
+                created_tasks = Task.objects.bulk_create(tasks_to_create)
+        except IntegrityError:
+            raise HttpError(409, "Upload failed due to integrity error")
+
+        return [TaskOut.from_orm(t) for t in created_tasks]

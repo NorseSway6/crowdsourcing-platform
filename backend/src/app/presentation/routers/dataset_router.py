@@ -1,10 +1,11 @@
 from typing import List
 from uuid import UUID
 
-from ninja import NinjaAPI, Router
+from ninja import NinjaAPI, Router, UploadedFile
 
 from app.domain.entities.dataset_schema import DatasetOut, DatasetSchema
 from app.domain.entities.response_schema import ErrorResponse, SuccessResponse
+from app.domain.entities.task_schema import TaskOut
 from app.presentation.api.handlers import DatasetHandlers
 
 
@@ -35,7 +36,17 @@ def get_datasets_router(dataset_handlers: DatasetHandlers):
         "/",
         ["POST"],
         create_dataset,
-        response={201: DatasetOut, 404: ErrorResponse, 409: ErrorResponse},
+        response={201: DatasetOut, 400: ErrorResponse, 409: ErrorResponse},
+    )
+
+    def upload_images(request, dataset_id: int, files: List[UploadedFile]) -> List[TaskOut]:
+        return dataset_handlers.upload_images(request, dataset_id, files)
+
+    router.add_api_operation(
+        "/{int:dataset_id}/upload",
+        ["POST"],
+        upload_images,
+        response={201: List[TaskOut], 400: ErrorResponse, 409: ErrorResponse},
     )
 
     def update_dataset(request, dataset_id: int, data: DatasetSchema) -> DatasetOut:

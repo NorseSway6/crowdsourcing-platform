@@ -1,8 +1,11 @@
 from typing import List
 from uuid import UUID
 
+from ninja import UploadedFile
+
 from app.db.repositories.dataset_repository import DatasetRepository
 from app.domain.entities.dataset_schema import DatasetOut, DatasetSchema
+from app.domain.entities.task_schema import TaskOut
 
 
 class DatasetService:
@@ -23,3 +26,6 @@ class DatasetService:
 
     def delete_dataset(self, dataset_id: int) -> bool:
         return self._dataset_repo.delete_dataset(dataset_id)
+
+    def upload_images(self, dataset_id: int, files: List[UploadedFile]) -> List[TaskOut]:
+        return self._dataset_repo.upload_images(dataset_id, files)

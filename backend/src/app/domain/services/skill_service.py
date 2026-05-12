@@ -8,7 +8,7 @@ class SkillService:
     def __init__(self, skill_repo: ISkillRepository):
         self._skill_repo = skill_repo
 
-    def get_all_skills(self) -> List[SkillSchema]:
+    def get_all_skills(self) -> List[str]:
         return self._skill_repo.get_all_skills()
 
     def create_skill(self, skill_data: SkillSchema) -> SkillSchema:

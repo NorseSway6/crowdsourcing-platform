@@ -32,11 +32,10 @@ class UserRepository(IUserRepository):
                     )
 
                     if profile_data.skills:
-                        skill_names = list({s.name for s in profile_data.skills})
-
+                        skill_names = list(set(profile_data.skills))
                         existing_skills = Skill.objects.filter(name__in=skill_names)
 
-                        if len(existing_skills) != len(skill_names):
+                        if existing_skills.count() != len(skill_names):
                             raise HttpError(404, "Some skills not found")
                         profile_obj.skills.add(*existing_skills)
         except IntegrityError:
@@ -69,10 +68,10 @@ class UserRepository(IUserRepository):
                     profile = UserProfile(user=user)
 
                 if profile_data.skills:
-                    skill_names = list({s.name for s in profile_data.skills})
+                    skill_names = list(set(profile_data.skills))
                     existing_skills = Skill.objects.filter(name__in=skill_names)
 
-                    if len(existing_skills) != len(skill_names):
+                    if existing_skills.count() != len(skill_names):
                         raise HttpError(404, "Some skills not found")
 
                     profile.skills.set(existing_skills)

@@ -14,6 +14,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      minio:
+        condition: service_healthy
 
   postgres:
       container_name: postgres-db
@@ -32,5 +34,37 @@ services:
         timeout: 5s
         retries: 5
 
+  minio:
+    container_name: minio-storage
+    image: minio/minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: ${AWS_ACCESS_KEY_ID}
+      MINIO_ROOT_PASSWORD: ${AWS_SECRET_ACCESS_KEY}
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  minio-init:
+    image: minio/mc
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      until (/usr/bin/mc alias set myminio ${AWS_S3_ENDPOINT_URL} ${AWS_ACCESS_KEY_ID} ${AWS_SECRET_ACCESS_KEY}) do echo 'Waiting for MinIO...' && sleep 1; done;
+      /usr/bin/mc mb myminio/${AWS_STORAGE_BUCKET_NAME};
+      /usr/bin/mc anonymous set public myminio/${AWS_STORAGE_BUCKET_NAME};
+      exit 0;
+      "
+
 volumes:
   postgres_data:
+  minio_data:

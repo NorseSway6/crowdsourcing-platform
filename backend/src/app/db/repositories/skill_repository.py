@@ -9,11 +9,11 @@ from app.domain.interfaces.skill_interface import ISkillRepository
 
 
 class SkillRepository(ISkillRepository):
-    def get_all_skills(self) -> List[SkillSchema]:
+    def get_all_skills(self) -> List[str]:
         skills = Skill.objects.all()
         if not skills:
             raise HttpError(404, "Skill not found")
-        return [SkillSchema.from_orm(s) for s in skills]
+        return [s.name for s in skills]
 
     def set_skills(self, obj: Any, skills_data: dict) -> None:  # убрать
         if not skills_data:

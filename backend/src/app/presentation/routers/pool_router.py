@@ -2,9 +2,8 @@ from typing import List
 
 from ninja import NinjaAPI, Router
 
-from app.domain.entities.pool_schema import PoolOut, PoolSchema
+from app.domain.entities.pool_schema import PoolIn, PoolOut, PoolSchema
 from app.domain.entities.response_schema import ErrorResponse, SuccessResponse
-from app.domain.entities.task_schema import TaskOut, TaskSchema
 from app.presentation.api.handlers import PoolHandlers
 
 
@@ -28,7 +27,7 @@ def get_pools_router(pool_handlers: PoolHandlers):
         response={200: PoolOut, 404: ErrorResponse},
     )
 
-    def create_pool(request, data: PoolSchema) -> PoolOut:
+    def create_pool(request, data: PoolIn) -> PoolOut:
         return pool_handlers.create_pool(request, data)
 
     router.add_api_operation(
@@ -36,16 +35,6 @@ def get_pools_router(pool_handlers: PoolHandlers):
         ["POST"],
         create_pool,
         response={201: PoolOut, 400: ErrorResponse, 409: ErrorResponse},
-    )
-
-    def create_task(request, pool_id: int, data: TaskSchema) -> TaskOut:
-        return pool_handlers.create_task(request, pool_id, data)
-
-    router.add_api_operation(
-        "/{int:pool_id}/tasks/",
-        ["POST"],
-        create_task,
-        response={201: TaskOut, 400: ErrorResponse, 409: ErrorResponse},
     )
 
     def update_pool(request, pool_id: int, data: PoolSchema) -> PoolOut:
