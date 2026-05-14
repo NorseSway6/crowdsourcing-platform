@@ -10,3 +10,5 @@ __pycache__
 src/db.sqlite3
 src/db.sqlite3-journal
 docker-compose.override.yml
+/frontend/logic.md
+node_modules

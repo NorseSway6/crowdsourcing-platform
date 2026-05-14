@@ -1,0 +1,48 @@
+@use '@/styles/variables' as *;
+
+.wrapper {
+	flex: 1;
+	background: $color-content-bg;
+	overflow: hidden;
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.canvasArea {
+	position: relative;
+	width: 680px;
+	height: 480px;
+	background: #d4d0e8;
+	border-radius: 4px;
+}
+
+.mockBbox {
+	position: absolute;
+	border: 2px solid #e53935;
+	background: rgba(229, 57, 53, 0.08);
+	border-radius: 2px;
+}
+
+.bboxLabel {
+	position: absolute;
+	top: -22px;
+	left: 0;
+	color: #fff;
+	font-size: 11px;
+	font-weight: 600;
+	padding: 2px 7px;
+	border-radius: 4px;
+	white-space: nowrap;
+}
+
+.mockPoint {
+	position: absolute;
+	width: 14px;
+	height: 14px;
+	border-radius: 50%;
+	border: 2px solid #fff;
+	transform: translate(-50%, -50%);
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+}

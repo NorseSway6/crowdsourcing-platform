@@ -1,0 +1,43 @@
+@use '@/styles/variables' as *;
+
+.panel {
+	width: $filter-width;
+	flex-shrink: 0;
+	background: $color-card-bg;
+	border-radius: $border-radius-card;
+	padding: 20px 24px;
+	min-height: 100vh;
+}
+
+.section {
+	& + & {
+		margin-top: 40px;
+	}
+}
+
+.sectionTitle {
+	font-size: 20px;
+	font-weight: 500;
+	color: $color-text-primary;
+	margin-bottom: 20px;
+}
+
+.item {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	cursor: pointer;
+
+	&:last-child {
+		margin-bottom: 0;
+	}
+}
+
+.label {
+	flex: 1;
+	color: $color-text-primary;
+}
+
+.count {
+	color: $color-text-muted;
+}
