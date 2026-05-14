@@ -1,0 +1,121 @@
+@use '@/styles/variables' as *;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #f0eff4;
+  overflow: hidden;
+}
+
+.topbar {
+  height: 56px;
+  background: #eee;
+  border-bottom: 1px solid $color-border;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  flex-shrink: 0;
+  z-index: 20;
+  box-shadow: 1px 1px 4px #0000007f;
+}
+
+.topbarLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 140px;
+}
+
+.exitBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  font-size: 14px;
+  color: $color-text-secondary;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 6px 8px;
+  border-radius: 8px;
+  transition: background 0.13s, color 0.13s;
+
+  &:hover {
+    background: $color-sidebar-active-bg;
+    color: $color-sidebar-active-text;
+  }
+}
+
+.topbarCenter {
+  text-align: center;
+  flex: 1;
+}
+
+.timer {
+  font-size: 20px;
+  font-weight: 600;
+  color: $color-text-primary;
+}
+
+.taskName {
+  font-size: 12px;
+  color: $color-text-muted;
+  margin-top: 1px;
+}
+
+
+.body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.loading {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 12px;
+  color: $color-text-muted;
+  font-size: 15px;
+}
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid $color-border;
+  border-top-color: $color-primary;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.done {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 16px;
+
+  h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: $color-text-primary;
+  }
+
+  p {
+    color: $color-text-secondary;
+    font-size: 14px;
+  }
+}
+
+.doneIcon {
+  font-size: 48px;
+}

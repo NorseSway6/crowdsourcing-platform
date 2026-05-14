@@ -1,0 +1,13 @@
+@use '@/styles/variables' as *;
+
+.sidebar {
+	width: 250px;
+	flex-shrink: 0;
+	background: #f5f5f5;
+	border-left: 1px solid $color-border;
+	display: flex;
+	flex-direction: column;
+	padding: 25px 20px;
+  box-shadow: 1px 1px 4px #0000007f;
+	gap: 17px;
+}

@@ -1,0 +1,45 @@
+@use '@/styles/variables' as *;
+
+.card {
+	background: $color-card-bg;
+	border-radius: $border-radius-card;
+	padding: 20px 20px 18px;
+	border: 2px solid transparent;
+	transition:
+		border-color 0.15s,
+		box-shadow 0.15s;
+	cursor: pointer;
+
+	&:hover {
+		box-shadow: 0 4px 16px rgba(123, 111, 160, 0.12);
+	}
+
+	&.selected {
+		border-color: $color-card-selected-border;
+	}
+}
+
+.header {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	margin-bottom: 8px;
+}
+
+.title {
+	font-size: 16px;
+	font-weight: 600;
+	color: $color-text-primary;
+}
+
+.category {
+	font-size: 13px;
+	color: $color-text-muted;
+	white-space: nowrap;
+	margin-left: 12px;
+}
+
+.desc {
+	margin-top: 10px;
+	margin-bottom: 35px;
+}
