@@ -15,6 +15,10 @@ jobs:
       contents: read
       packages: write
 
+    strategy:
+      matrix:
+        app: [backend, frontend]
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -26,14 +30,19 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build Image via Makefile
-        run: make build push
+      - name: Build and Push Image via Makefile
+        run: make build-${{ matrix.app }} push-${{ matrix.app }}
 
   lint:
     name: Lint
     needs: build
     runs-on: ubuntu-latest
     environment: prod
+
+    strategy:
+      matrix:
+        app: [backend, frontend]
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -46,9 +55,10 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Python
+        if: matrix.app == 'backend'
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
       - name: Run Linters via Makefile
-        run: make pull lint
+        run: make pull-${{ matrix.app }} lint-${{ matrix.app }}
