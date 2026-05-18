@@ -10,10 +10,20 @@ class TaskService:
         self._task_repo = task_repo
 
     def get_all_tasks(self) -> List[TaskOut]:
-        return self._task_repo.get_all_tasks()
+        tasks = self._task_repo.get_all_tasks()
+        if not tasks:
+            return None
+        return [TaskOut.from_orm(t) for t in tasks]
 
     def get_task_by_id(self, task_id: int) -> TaskOut:
-        return self._task_repo.get_task_by_id(task_id)
+        task = self._task_repo.get_task_by_id(task_id)
+        if not task:
+            return None
+        return TaskOut.from_orm(task)
 
     def delete_task(self, task_id: int) -> bool:
-        return self._task_repo.delete_task(task_id)
+        deleted = self._task_repo.delete_task(task_id)
+        if not deleted:
+            return None
+
+        return deleted

@@ -34,40 +34,36 @@ def get_api():
         version="1.0.0",
     )
 
-    # Skills build
+    # Build repositories
     skill_repo = SkillRepository()
-    skill_service = SkillService(skill_repo)
-    skill_handlers = SkillHandlers(skill_service)
-    add_skills_router(api, skill_handlers)
-
-    # Users build
     user_repo = UserRepository()
-    user_service = UserService(user_repo, skill_repo)
-    user_handlers = UserHandlers(user_service)
-    add_users_router(api, user_handlers)
-
-    # Pools build
     pool_repo = PoolRepository()
-    pool_service = PoolService(pool_repo, skill_repo)
-    pool_handlers = PoolHandlers(pool_service)
-    add_pools_router(api, pool_handlers)
-
-    # Dataset build
     dataset_repo = DatasetRepository()
-    dataset_service = DatasetService(dataset_repo)
-    dataset_handlers = DatasetHandlers(dataset_service)
-    add_datasets_router(api, dataset_handlers)
-
-    # Tasks build
     task_repo = TaskRepository()
-    task_service = TaskService(task_repo)
-    task_handlers = TaskHandlers(task_service)
-    add_tasks_router(api, task_handlers)
-
-    # Assignment build
     assignment_repo = AssignmentRepository()
-    assignment_service = AssignmentService(assignment_repo)
+
+    # Build services
+    skill_service = SkillService(skill_repo)
+    user_service = UserService(user_repo, skill_repo)
+    pool_service = PoolService(pool_repo, skill_repo)
+    dataset_service = DatasetService(dataset_repo)
+    task_service = TaskService(task_repo)
+    assignment_service = AssignmentService(assignment_repo, task_repo)
+
+    # Build handlers
+    skill_handlers = SkillHandlers(skill_service)
+    user_handlers = UserHandlers(user_service)
+    pool_handlers = PoolHandlers(pool_service)
+    dataset_handlers = DatasetHandlers(dataset_service)
+    task_handlers = TaskHandlers(task_service)
     assignment_handlers = AssignmentHandlers(assignment_service)
+
+    # Endpoints registration
+    add_skills_router(api, skill_handlers)
+    add_users_router(api, user_handlers)
+    add_pools_router(api, pool_handlers)
+    add_datasets_router(api, dataset_handlers)
+    add_tasks_router(api, task_handlers)
     add_assignments_router(api, assignment_handlers)
 
     return api

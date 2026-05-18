@@ -27,8 +27,8 @@ def get_assignments_router(assigment_handlers):
         response={200: List[AssignmentOut], 404: ErrorResponse},
     )
 
-    def create_assignment(request, user_id: UUID, pool_id: int) -> AssignmentOut:
-        return assigment_handlers.create_assignment(request, user_id, pool_id)
+    def create_assignment(request, user_id: UUID) -> AssignmentOut:
+        return assigment_handlers.create_assignment(request, user_id)
 
     router.add_api_operation(
         "/next",

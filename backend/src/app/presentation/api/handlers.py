@@ -130,8 +130,8 @@ class AssignmentHandlers:
     def get_assignments_by_user(self, request, user_id: UUID) -> List[AssignmentOut]:
         return self._assignment_service.get_assignments_by_user(user_id)
 
-    def create_assignment(self, request, user_id: UUID, pool_id: int) -> AssignmentOut:
-        assignment = self._assignment_service.create_assignment(user_id, pool_id)
+    def create_assignment(self, request, user_id: UUID) -> AssignmentOut:
+        assignment = self._assignment_service.create_assignment(user_id)
         return 201, assignment
 
     def update_assignment(
