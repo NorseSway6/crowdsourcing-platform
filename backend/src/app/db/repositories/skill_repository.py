@@ -37,3 +37,6 @@ class SkillRepository(ISkillRepository):
         if not deleted:
             raise HttpError(404, "Skill for delete not found")
         return deleted
+
+    def get_skills_by_names(self, names: List[str]) -> List[Skill]:
+        return list(Skill.objects.filter(name__in=names))

@@ -2,12 +2,15 @@ from ninja import NinjaAPI
 
 from app.db.repositories.assignment_repository import AssignmentRepository
 from app.db.repositories.dataset_repository import DatasetRepository
+from app.db.repositories.pipeline_repository import PipelineRepository
 from app.db.repositories.platform_user_repository import UserRepository
 from app.db.repositories.pool_repository import PoolRepository
 from app.db.repositories.skill_repository import SkillRepository
 from app.db.repositories.task_repository import TaskRepository
 from app.domain.services.assignment_service import AssignmentService
+from app.domain.services.consensus_service import ConsensusService
 from app.domain.services.dataset_service import DatasetService
+from app.domain.services.pipeline_engine import PipelineEngine
 from app.domain.services.platform_user_service import UserService
 from app.domain.services.pool_service import PoolService
 from app.domain.services.skill_service import SkillService
@@ -15,6 +18,7 @@ from app.domain.services.task_service import TaskService
 from app.presentation.api.handlers import (
     AssignmentHandlers,
     DatasetHandlers,
+    PipelineHandlers,
     PoolHandlers,
     SkillHandlers,
     TaskHandlers,
@@ -22,6 +26,7 @@ from app.presentation.api.handlers import (
 )
 from app.presentation.routers.assignments_router import add_assignments_router
 from app.presentation.routers.dataset_router import add_datasets_router
+from app.presentation.routers.pipeline_router import add_pipelines_router
 from app.presentation.routers.platforn_user_router import add_users_router
 from app.presentation.routers.pool_router import add_pools_router
 from app.presentation.routers.skill_router import add_skills_router
@@ -41,14 +46,19 @@ def get_api():
     dataset_repo = DatasetRepository()
     task_repo = TaskRepository()
     assignment_repo = AssignmentRepository()
+    pipeline_repo = PipelineRepository()
 
     # Build services
+    consensus_service = ConsensusService(assignment_repo, pool_repo)
+    pipeline_engine = PipelineEngine(
+        task_repo, assignment_repo, consensus_service, pool_repo, pipeline_repo, skill_repo
+    )
     skill_service = SkillService(skill_repo)
     user_service = UserService(user_repo, skill_repo)
-    pool_service = PoolService(pool_repo, skill_repo)
+    pool_service = PoolService(pool_repo, skill_repo, task_repo)
     dataset_service = DatasetService(dataset_repo)
     task_service = TaskService(task_repo)
-    assignment_service = AssignmentService(assignment_repo, task_repo)
+    assignment_service = AssignmentService(assignment_repo, task_repo, pipeline_engine)
 
     # Build handlers
     skill_handlers = SkillHandlers(skill_service)
@@ -57,6 +67,7 @@ def get_api():
     dataset_handlers = DatasetHandlers(dataset_service)
     task_handlers = TaskHandlers(task_service)
     assignment_handlers = AssignmentHandlers(assignment_service)
+    pipeline_handlers = PipelineHandlers(pipeline_engine)
 
     # Endpoints registration
     add_skills_router(api, skill_handlers)
@@ -65,6 +76,7 @@ def get_api():
     add_datasets_router(api, dataset_handlers)
     add_tasks_router(api, task_handlers)
     add_assignments_router(api, assignment_handlers)
+    add_pipelines_router(api, pipeline_handlers)
 
     return api
 

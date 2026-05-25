@@ -18,6 +18,9 @@ class DatasetService:
     def get_dataset_by_id(self, dataset_id: int) -> DatasetOut:
         return self._dataset_repo.get_dataset_by_id(dataset_id)
 
+    def get_datasets_by_user(self, user_id: UUID) -> List[DatasetOut]:
+        return self._dataset_repo.get_datasets_by_user(user_id)
+
     def create_dataset(self, owner_id: UUID, dataset_data: DatasetSchema) -> DatasetOut:
         return self._dataset_repo.create_dataset(owner_id, dataset_data)
 

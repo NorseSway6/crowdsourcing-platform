@@ -35,7 +35,7 @@ def get_tasks_router(task_handlers: TaskHandlers):
         "/{int:task_id}",
         ["DELETE"],
         delete_task,
-        response={200: SuccessResponse, 404: ErrorResponse},
+        response={200: SuccessResponse, 400: ErrorResponse},
     )
 
     return router

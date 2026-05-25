@@ -27,6 +27,10 @@ class DatasetRepository(IDatasetRepository):
             raise HttpError(404, "Dataset not found")
         return DatasetOut.from_orm(dataset)
 
+    def get_datasets_by_user(self, user_id: UUID) -> List[DatasetOut]:
+        datasets = Dataset.objects.filter(owner_id=user_id)
+        return [DatasetOut.from_orm(d) for d in datasets]
+
     def create_dataset(self, owner_id: UUID, dataset_data: DatasetSchema) -> DatasetOut:
         try:
             dataset = Dataset.objects.create(owner_id=owner_id, name=dataset_data.name, domain=dataset_data.domain)

@@ -29,6 +29,16 @@ def get_datasets_router(dataset_handlers: DatasetHandlers):
         response={200: DatasetOut, 404: ErrorResponse},
     )
 
+    def get_datasets_by_user(request, user_id: UUID) -> List[DatasetOut]:
+        return dataset_handlers.get_datasets_by_user(request, user_id)
+
+    router.add_api_operation(
+        "/my",
+        ["GET"],
+        get_datasets_by_user,
+        response={200: List[DatasetOut], 404: ErrorResponse},
+    )
+
     def create_dataset(request, owner_id: UUID, data: DatasetSchema) -> DatasetOut:
         return dataset_handlers.create_dataset(request, owner_id, data)
 
@@ -36,7 +46,7 @@ def get_datasets_router(dataset_handlers: DatasetHandlers):
         "/",
         ["POST"],
         create_dataset,
-        response={201: DatasetOut, 400: ErrorResponse, 409: ErrorResponse},
+        response={201: DatasetOut, 400: ErrorResponse},
     )
 
     def upload_images(request, dataset_id: int, files: List[UploadedFile]) -> List[TaskOut]:
@@ -46,7 +56,7 @@ def get_datasets_router(dataset_handlers: DatasetHandlers):
         "/{int:dataset_id}/upload",
         ["POST"],
         upload_images,
-        response={201: List[TaskOut], 400: ErrorResponse, 409: ErrorResponse},
+        response={201: List[TaskOut], 400: ErrorResponse},
     )
 
     def update_dataset(request, dataset_id: int, data: DatasetSchema) -> DatasetOut:
@@ -56,7 +66,7 @@ def get_datasets_router(dataset_handlers: DatasetHandlers):
         "/{int:dataset_id}",
         ["PATCH"],
         update_dataset,
-        response={200: DatasetOut, 404: ErrorResponse},
+        response={200: DatasetOut, 400: ErrorResponse},
     )
 
     def delete_dataset(request, dataset_id: int) -> bool:
@@ -66,7 +76,7 @@ def get_datasets_router(dataset_handlers: DatasetHandlers):
         "/{int:dataset_id}",
         ["DELETE"],
         delete_dataset,
-        response={200: SuccessResponse, 404: ErrorResponse},
+        response={200: SuccessResponse, 400: ErrorResponse},
     )
 
     return router

@@ -36,7 +36,7 @@ def get_users_router(user_handlers: UserHandlers):
         "/",
         ["POST"],
         create_user,
-        response={201: UserOut, 404: ErrorResponse, 409: ErrorResponse},
+        response={201: UserOut, 404: ErrorResponse},
     )
 
     def update_user_profile(request, id: UUID, data: ProfileSchema) -> UserOut:
@@ -46,7 +46,7 @@ def get_users_router(user_handlers: UserHandlers):
         "/me/profile",
         ["PATCH"],
         update_user_profile,
-        response={200: UserOut, 404: ErrorResponse, 409: ErrorResponse},
+        response={200: UserOut, 400: ErrorResponse},
     )
 
     def delete_user(request, id: UUID) -> bool:
@@ -56,7 +56,7 @@ def get_users_router(user_handlers: UserHandlers):
         "/",
         ["DELETE"],
         delete_user,
-        response={200: SuccessResponse, 404: ErrorResponse},
+        response={200: SuccessResponse, 400: ErrorResponse},
     )
 
     return router

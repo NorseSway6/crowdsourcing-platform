@@ -8,7 +8,7 @@ from psycopg2 import IntegrityError
 from app.db.models.pool import Pool
 from app.db.models.skill import Skill
 from app.db.models.task import Task
-from app.domain.entities.pool_schema import PoolIn, PoolOut, PoolSchema
+from app.domain.entities.pool_schema import PoolOut, PoolSchema
 from app.domain.interfaces.pool_interface import IPoolRepository
 
 
@@ -23,36 +23,19 @@ class PoolRepository(IPoolRepository):
         pool = Pool.objects.filter(pool_id=pool_id).first()
         if pool is None:
             raise HttpError(404, "Pool not found")
-        return PoolOut.from_orm(pool)
+        return pool
 
-    def create_pool(self, pool_data: PoolIn) -> PoolOut:
-        try:
-            with transaction.atomic():
-                pool = Pool.objects.create(points=pool_data.points, overlap=pool_data.overlap)
+    def get_next_pool_by_order(self, pipeline_id: int, current_order: int):
+        return Pool.objects.filter(pipeline_id=pipeline_id, order=current_order + 1).first()
 
-                if pool_data.skills:
-                    skill_names = list(set(pool_data.skills))
-                    existing_skills = Skill.objects.filter(name__in=skill_names)
-
-                    if existing_skills.count() != len(skill_names):
-                        raise HttpError(404, "Some skills not found")
-
-                    pool.skills.add(*existing_skills)
-
-                tasks_qs = Task.objects.filter(dataset_id=pool_data.dataset_id, pool_id__isnull=True)
-                if not tasks_qs:
-                    HttpError(404, "Tasks not found")
-
-                if pool_data.limit is not None and pool_data.limit > 0:
-                    task_ids = list(tasks_qs.values_list("task_id", flat=True)[: pool_data.limit])
-                    Task.objects.filter(task_id__in=task_ids).update(pool_id=pool.pool_id)
-                else:
-                    tasks_qs.update(pool_id=pool.pool_id)
-
-        except IntegrityError:
-            raise HttpError(409, "Create failed due to integrity error")
-
-        return PoolOut.from_orm(pool)
+    def create_pool(self, pipeline, index, pool_data: PoolSchema) -> Pool:
+        return Pool.objects.create(
+            pipeline=pipeline,
+            order=index,
+            points=pool_data.points,
+            overlap=pool_data.overlap,
+            pool_type=pool_data.pool_type,
+        )
 
     def update_pool(self, pool_id: int, pool_data: PoolSchema) -> PoolOut:
         try:
@@ -79,9 +62,3 @@ class PoolRepository(IPoolRepository):
 
         except IntegrityError:
             raise HttpError(409, "Update failed due to integrity error")
-
-    def delete_pool(self, pool_id: int) -> bool:
-        deleted, _ = Pool.objects.filter(pool_id=pool_id).delete()
-        if not deleted:
-            raise HttpError(404, "Pool for delete not found")
-        return deleted

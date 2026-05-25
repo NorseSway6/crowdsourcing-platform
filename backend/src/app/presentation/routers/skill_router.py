@@ -24,7 +24,7 @@ def get_skills_router(skill_handlers: SkillHandlers):
         "/",
         ["POST"],
         create_skill,
-        response={201: SkillSchema, 404: ErrorResponse, 409: ErrorResponse},
+        response={201: SkillSchema, 400: ErrorResponse},
     )
 
     def delete_skill(request, data: SkillSchema) -> bool:
@@ -34,7 +34,7 @@ def get_skills_router(skill_handlers: SkillHandlers):
         "/",
         ["DELETE"],
         delete_skill,
-        response={200: SuccessResponse, 404: ErrorResponse},
+        response={200: SuccessResponse, 400: ErrorResponse},
     )
 
     return router

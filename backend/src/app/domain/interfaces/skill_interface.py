@@ -1,5 +1,6 @@
 from typing import Any, List
 
+from app.db.models.skill import Skill
 from app.domain.entities.skill_schema import SkillSchema
 
 
@@ -11,4 +12,7 @@ class ISkillRepository:
         pass
 
     def delete_skill(self, skill_data: SkillSchema) -> bool:
+        pass
+
+    def get_skills_by_names(self, names: List[str]) -> List[Skill]:
         pass
