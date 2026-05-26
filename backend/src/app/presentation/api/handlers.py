@@ -4,7 +4,7 @@ from ninja import UploadedFile
 
 from app.domain.entities.assigment_schema import AssignmentOut, AssignmentSchema
 from app.domain.entities.dataset_schema import DatasetOut, DatasetSchema
-from app.domain.entities.pipline_schema import PipelineOut, PipelineSchema
+from app.domain.entities.pipeline_schema import PipelineIn, PipelineOut
 from app.domain.entities.platform_user_schema import UserOut, UserSchema
 from app.domain.entities.pool_schema import PoolOut, PoolSchema
 from app.domain.entities.response_schema import ErrorResponse, SuccessResponse
@@ -77,7 +77,7 @@ class PipelineHandlers:
         return 200, pipelines
 
     def create_pipeline(
-        self, request, owner_id: UUID, pipeline_data: PipelineSchema
+        self, request, owner_id: UUID, pipeline_data: PipelineIn
     ) -> tuple[int, PipelineOut | ErrorResponse]:
         pipeline = self._pipeline_service.create_pools(owner_id, pipeline_data)
         if not pipeline:
@@ -85,7 +85,7 @@ class PipelineHandlers:
         return 201, pipeline
 
     def update_pipeline(
-        self, request, pipeline_id: int, pipeline_data: PipelineSchema
+        self, request, pipeline_id: int, pipeline_data: PipelineIn
     ) -> tuple[int, PipelineOut | ErrorResponse]:
         updated = self._pipeline_service.update_pipeline(pipeline_id, pipeline_data)
         if not updated:

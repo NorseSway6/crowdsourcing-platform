@@ -3,9 +3,7 @@ from uuid import UUID
 from django.db import transaction
 
 from app.db.models.assignments import Assignment
-from app.db.repositories.pipeline_repository import PipelineRepository
-from app.domain.entities.pipline_schema import PipelineOut, PipelineSchema
-from app.domain.entities.pool_schema import PoolOut
+from app.domain.entities.pipeline_schema import PipelineIn, PipelineOut
 from app.domain.interfaces.assignment_interface import IAssignmentRepository
 from app.domain.interfaces.pipeline_interface import IPipelineRepository
 from app.domain.interfaces.pool_interface import IPoolRepository
@@ -31,7 +29,7 @@ class PipelineEngine(IPipelineRepository):
         self._pipeline_repo = pipeline_repo
         self._skill_repo = skill_repo
 
-    def create_pools(self, owner_id: UUID, pipeline_data: PipelineSchema) -> PipelineOut:
+    def create_pools(self, owner_id: UUID, pipeline_data: PipelineIn) -> PipelineOut:
         with transaction.atomic():
             tasks_qs = self._task_repo.get_unassigned_tasks_by_dataset(pipeline_data.dataset_id)
             if not tasks_qs.exists():
@@ -66,7 +64,7 @@ class PipelineEngine(IPipelineRepository):
             return None
         return [PipelineOut.from_orm(p) for p in pipelines]
 
-    def update_pipeline(self, pipeline_id: int, pipeline_data: PipelineSchema) -> PipelineOut:
+    def update_pipeline(self, pipeline_id: int, pipeline_data: PipelineIn) -> PipelineOut:
         updated = self._pipeline_repo.update_pipeline(pipeline_id, pipeline_data)
         if not updated:
             return None

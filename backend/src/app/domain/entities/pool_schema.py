@@ -1,8 +1,8 @@
 from enum import Enum
-from typing import List, Optional
+from typing import Any, List, Optional
 
 from ninja import Schema
-from pydantic import Field, PastDatetime, PositiveInt
+from pydantic import ConfigDict, Field, PastDatetime, PositiveInt, field_validator
 
 
 class PoolType(str, Enum):
@@ -30,6 +30,17 @@ class PoolOut(PoolSchema):
     created_at: PastDatetime = Field(...)
     status: PoolStatus = Field(...)
 
-    @staticmethod
-    def resolve_skills(obj):
-        return [s.name for s in obj.skills.all()]
+    skills: List[Any] = Field(default=[])
+
+    model_config = ConfigDict(from_attributes=True)
+
+    @field_validator("skills", mode="before")
+    @classmethod
+    def transform_skills_to_names(cls, v: Any) -> List[str]:
+        if hasattr(v, "all"):
+            v = v.all()
+
+        if isinstance(v, (list, tuple)) or hasattr(v, "__iter__"):
+            return [skill.name if hasattr(skill, "name") else str(skill) for skill in v]
+
+        return v
