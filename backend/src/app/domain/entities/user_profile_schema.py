@@ -1,7 +1,7 @@
-from typing import List, Optional
+from typing import Any, List, Optional
 
 from ninja import Schema
-from pydantic import Field
+from pydantic import ConfigDict, Field, field_validator
 
 
 class ProfileSchema(Schema):
@@ -10,12 +10,18 @@ class ProfileSchema(Schema):
     middle_name: Optional[str] = Field(None, max_length=30)
     group: Optional[str] = Field(None, max_length=15)
     institution: Optional[str] = Field(None, max_length=100)
-    skills: Optional[List[str]] = Field(default=[])
 
-    @staticmethod
-    def resolve_skills(obj):
-        if isinstance(obj, dict):
-            return obj.get("skills", [])
+    skills: List[Any] = Field(default=[])
 
-        if hasattr(obj, "skills"):
-            return [skill.name for skill in obj.skills.all()]
+    model_config = ConfigDict(from_attributes=True)
+
+    @field_validator("skills", mode="before")
+    @classmethod
+    def transform_skills_to_names(cls, v: Any) -> List[str]:
+        if hasattr(v, "all"):
+            v = v.all()
+
+        if isinstance(v, (list, tuple)) or hasattr(v, "__iter__"):
+            return [skill.name if hasattr(skill, "name") else str(skill) for skill in v]
+
+        return v

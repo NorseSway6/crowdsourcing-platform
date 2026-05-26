@@ -1,21 +1,19 @@
-from typing import List
-from uuid import UUID
-
-from app.domain.entities.pool_schema import PoolIn, PoolOut, PoolSchema
+from app.db.models.pool import Pool
+from app.domain.entities.pool_schema import PoolSchema
 
 
 class IPoolRepository:
-    def get_all_pools(self) -> List[PoolOut]:
+    def get_all_pools(self) -> list[Pool]:
         pass
 
-    def get_pool_by_id(self, pool_id: int) -> PoolOut:
+    def get_pool_by_id(self, pool_id: int) -> Pool:
         pass
 
-    def create_pool(self, pool_data: PoolIn) -> PoolOut:
+    def get_next_pool_by_order(self, pipeline_id: int, current_order: int) -> Pool:
         pass
 
-    def update_pool(self, pool_id: int, pool_data: PoolSchema) -> PoolOut:
+    def create_pool(self, pipeline, index, pool_data: PoolSchema) -> Pool:
         pass
 
-    def delete_pool(self, pool_id: int) -> bool:
+    def update_pool(self, pool: Pool) -> Pool:
         pass

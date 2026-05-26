@@ -4,6 +4,7 @@ from app.presentation.admin.admin_user import AdminUserAdmin
 from app.presentation.admin.assignments import AssignmentAdmin
 from app.presentation.admin.audit_log import AuditLogAdmin
 from app.presentation.admin.dataset import DatasetAdmin
+from app.presentation.admin.pipeline import Pipeline
 from app.presentation.admin.platform_user import PlatformUserAdmin
 from app.presentation.admin.pool import PoolAdmin
 from app.presentation.admin.skill import SkillAdmin

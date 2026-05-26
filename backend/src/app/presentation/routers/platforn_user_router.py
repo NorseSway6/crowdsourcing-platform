@@ -1,4 +1,3 @@
-from typing import List
 from uuid import UUID
 
 from ninja import NinjaAPI, Router
@@ -16,11 +15,11 @@ def get_users_router(user_handlers: UserHandlers):
         "/",
         ["GET"],
         lambda request: user_handlers.get_all_users(request),
-        response={200: List[UserOut], 404: ErrorResponse},
+        response={200: list[UserOut], 404: ErrorResponse},
     )
 
-    def get_user_by_id(request, id: UUID) -> UserOut:
-        return user_handlers.get_user_by_id(request, id)
+    def get_user_by_id(request, user_id: UUID) -> tuple[int, UserOut | ErrorResponse]:
+        return user_handlers.get_user_by_id(request, user_id)
 
     router.add_api_operation(
         "/me",
@@ -29,34 +28,34 @@ def get_users_router(user_handlers: UserHandlers):
         response={200: UserOut, 404: ErrorResponse},
     )
 
-    def create_user(request, data: UserSchema) -> UserOut:
+    def create_user(request, data: UserSchema) -> tuple[int, UserOut | ErrorResponse]:
         return user_handlers.create_user(request, data)
 
     router.add_api_operation(
         "/",
         ["POST"],
         create_user,
-        response={201: UserOut, 404: ErrorResponse, 409: ErrorResponse},
+        response={201: UserOut, 404: ErrorResponse},
     )
 
-    def update_user_profile(request, id: UUID, data: ProfileSchema) -> UserOut:
-        return user_handlers.update_user_profile(request, id, data)
+    def update_user_profile(request, user_id: UUID, data: ProfileSchema) -> tuple[int, UserOut | ErrorResponse]:
+        return user_handlers.update_user_profile(request, user_id, data)
 
     router.add_api_operation(
         "/me/profile",
         ["PATCH"],
         update_user_profile,
-        response={200: UserOut, 404: ErrorResponse, 409: ErrorResponse},
+        response={200: UserOut, 400: ErrorResponse},
     )
 
-    def delete_user(request, id: UUID) -> bool:
-        return user_handlers.delete_user(request, id)
+    def delete_user(request, user_id: UUID) -> tuple[int, SuccessResponse | ErrorResponse]:
+        return user_handlers.delete_user(request, user_id)
 
     router.add_api_operation(
         "/",
         ["DELETE"],
         delete_user,
-        response={200: SuccessResponse, 404: ErrorResponse},
+        response={200: SuccessResponse, 400: ErrorResponse},
     )
 
     return router

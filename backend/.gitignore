@@ -1,0 +1,7 @@
+media/
+local_settings.py
+__pycache__
+*.pyc
+.idea
+src/db.sqlite3
+src/db.sqlite3-journal

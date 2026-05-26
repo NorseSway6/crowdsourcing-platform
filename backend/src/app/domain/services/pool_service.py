@@ -1,26 +1,50 @@
-from typing import List
+from django.db import transaction
 
-from app.domain.entities.pool_schema import PoolIn, PoolOut, PoolSchema
+from app.domain.entities.pool_schema import PoolOut, PoolSchema
 from app.domain.interfaces.pool_interface import IPoolRepository
 from app.domain.interfaces.skill_interface import ISkillRepository
+from app.domain.interfaces.task_interface import ITaskRepository
 
 
 class PoolService:
-    def __init__(self, pool_repo: IPoolRepository, skill_repo: ISkillRepository):
+    def __init__(self, pool_repo: IPoolRepository, skill_repo: ISkillRepository, task_repo: ITaskRepository):
         self._pool_repo = pool_repo
         self._skill_repo = skill_repo
+        self._task_repo = task_repo
 
-    def get_all_pools(self) -> List[PoolOut]:
-        return self._pool_repo.get_all_pools()
+    def get_all_pools(self) -> list[PoolOut]:
+        pools = self._pool_repo.get_all_pools()
+        if not pools:
+            return None
+        return [PoolOut.from_orm(pool) for pool in pools]
 
     def get_pool_by_id(self, pool_id: int) -> PoolOut:
-        return self._pool_repo.get_pool_by_id(pool_id)
-
-    def create_pool(self, pool_data: PoolIn) -> PoolOut:
-        return self._pool_repo.create_pool(pool_data)
+        pool = self._pool_repo.get_pool_by_id(pool_id)
+        if not pool:
+            return None
+        return PoolOut.from_orm(pool)
 
     def update_pool(self, pool_id: int, pool_data: PoolSchema) -> PoolOut:
-        return self._pool_repo.update_pool(pool_id, pool_data)
+        with transaction.atomic():
+            pool = self._pool_repo.get_pool_by_id(pool_id)
+            if not pool:
+                return None
 
-    def delete_pool(self, pool_id: int) -> bool:
-        return self._pool_repo.delete_pool(pool_id)
+            if pool_data.skills:
+                skill_names = list(set(pool_data.skills))
+                existing_skills = self._skill_repo.get_skills_by_names(skill_names)
+
+                if len(existing_skills) != len(skill_names):
+                    return None
+
+                pool.skills.set(existing_skills)
+
+            update_fields = pool_data.dict(exclude={"skills"}, exclude_unset=True)
+            for attr, value in update_fields.items():
+                setattr(pool, attr, value)
+
+            updated = self._pool_repo.update_pool(pool)
+            if not updated:
+                return None
+
+            return PoolOut.from_orm(pool)

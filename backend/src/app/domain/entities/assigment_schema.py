@@ -1,9 +1,9 @@
 import uuid
 from enum import Enum
-from typing import List, Optional
+from typing import List, Literal, Optional, Union
 
 from ninja import Schema
-from pydantic import Field, PastDatetime
+from pydantic import Field, PastDatetime, model_validator
 
 
 class AssignmentStatus(str, Enum):
@@ -15,19 +15,38 @@ class AssignmentStatus(str, Enum):
 
 class AssignmentCocoItem(Schema):
     category_id: int = Field(...)
+    type: str = Field(...)
     bbox: List[float] = Field(...)
     segmentation: List[List[float]] = Field(default=[])
     area: float = Field(...)
     iscrowd: int = Field(...)
 
 
+class CocoAnnotation(Schema):
+    type: Literal["coco"] = "coco"
+    items: List[AssignmentCocoItem] = Field(default=[])
+
+
+class VerificationAnnotation(Schema):
+    type: Literal["verification"] = "verification"
+    is_correct: bool = Field(...)
+
+
+class ClassificationAnnotation(Schema):
+    type: Literal["classification"] = "classification"
+    category_id: int = Field(...)
+
+
 class AssignmentSchema(Schema):
-    annotation: List[AssignmentCocoItem] = Field(default=[])
+    annotation: Optional[Union[CocoAnnotation, VerificationAnnotation, ClassificationAnnotation]] = Field(
+        default=None, discriminator="type"
+    )
 
 
 class AssignmentOut(AssignmentSchema):
     task_id: int = Field(...)
     user_id: uuid.UUID = Field(...)
+    pool_id: int = Field(...)
     assignment_id: int = Field(...)
     started_at: PastDatetime = Field(...)
     status: AssignmentStatus = Field(...)
