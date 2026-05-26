@@ -33,7 +33,6 @@ class PipelineEngine(IPipelineRepository):
 
     def create_pools(self, owner_id: UUID, pipeline_data: PipelineSchema) -> PipelineOut:
         with transaction.atomic():
-            # 1. Ищем свободные задачи в датасете
             tasks_qs = self._task_repo.get_unassigned_tasks_by_dataset(pipeline_data.dataset_id)
             if not tasks_qs.exists():
                 None
@@ -62,16 +61,21 @@ class PipelineEngine(IPipelineRepository):
         return PipelineOut.from_orm(pipeline)
 
     def get_pipelines_by_user(self, owner_id: UUID) -> list[PipelineOut]:
-        return self._pipeline_repo.get_pipelines_by_user(owner_id)
+        pipelines = self._pipeline_repo.get_pipelines_by_user(owner_id)
+        if not pipelines:
+            return None
+        return [PipelineOut.from_orm(p) for p in pipelines]
 
     def update_pipeline(self, pipeline_id: int, pipeline_data: PipelineSchema) -> PipelineOut:
-        updated_pipeline = self._pipeline_repo.update_pipeline(pipeline_id, pipeline_data)
-        if not updated_pipeline:
+        updated = self._pipeline_repo.update_pipeline(pipeline_id, pipeline_data)
+        if not updated:
             return None
-        return PipelineOut.from_orm(updated_pipeline)
+        return PipelineOut.from_orm(updated)
 
     def delete_pipeline(self, pipeline_id: int) -> bool:
         deleted = self._pipeline_repo.delete_pipeline(pipeline_id)
+        if not deleted:
+            return None
         return deleted
 
     def evaluate_stage_completion(self, task_id: int, current_pool_id: int) -> None:

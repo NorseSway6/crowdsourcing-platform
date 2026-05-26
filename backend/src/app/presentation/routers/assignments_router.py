@@ -1,4 +1,3 @@
-from typing import List
 from uuid import UUID
 
 from ninja import NinjaAPI, Router
@@ -10,17 +9,17 @@ from app.domain.entities.response_schema import ErrorResponse
 def get_assignments_router(assigment_handlers):
     router = Router(tags=["assignments"])
 
-    def get_assignments_by_user(request, user_id: UUID) -> List[AssignmentOut]:
+    def get_assignments_by_user(request, user_id: UUID) -> tuple[int, list[AssignmentOut] | ErrorResponse]:
         return assigment_handlers.get_assignments_by_user(request, user_id)
 
     router.add_api_operation(
         "/my",
         ["GET"],
         get_assignments_by_user,
-        response={200: List[AssignmentOut], 404: ErrorResponse},
+        response={200: list[AssignmentOut], 404: ErrorResponse},
     )
 
-    def create_assignment(request, user_id: UUID, pool_id: int) -> AssignmentOut:
+    def create_assignment(request, user_id: UUID, pool_id: int) -> tuple[int, AssignmentOut | ErrorResponse]:
         return assigment_handlers.create_assignment(request, user_id, pool_id)
 
     router.add_api_operation(
@@ -30,7 +29,9 @@ def get_assignments_router(assigment_handlers):
         response={201: AssignmentOut, 400: ErrorResponse},
     )
 
-    def update_assignment(request, user_id: UUID, assignment_id: int, data: AssignmentSchema) -> AssignmentOut:
+    def update_assignment(
+        request, user_id: UUID, assignment_id: int, data: AssignmentSchema
+    ) -> tuple[int, AssignmentOut | ErrorResponse]:
         return assigment_handlers.update_assignment(request, user_id, assignment_id, data)
 
     router.add_api_operation(

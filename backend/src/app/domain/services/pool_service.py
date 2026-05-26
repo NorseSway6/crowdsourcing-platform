@@ -1,5 +1,7 @@
 from typing import List
 
+from django.db import transaction
+
 from app.domain.entities.pool_schema import PoolOut, PoolSchema
 from app.domain.interfaces.pool_interface import IPoolRepository
 from app.domain.interfaces.skill_interface import ISkillRepository
@@ -13,10 +15,38 @@ class PoolService:
         self._task_repo = task_repo
 
     def get_all_pools(self) -> List[PoolOut]:
-        return self._pool_repo.get_all_pools()
+        pools = self._pool_repo.get_all_pools()
+        if not pools:
+            return None
+        return [PoolOut.from_orm(pool) for pool in pools]
 
     def get_pool_by_id(self, pool_id: int) -> PoolOut:
-        return self._pool_repo.get_pool_by_id(pool_id)
+        pool = self._pool_repo.get_pool_by_id(pool_id)
+        if not pool:
+            return None
+        return PoolOut.from_orm(pool)
 
     def update_pool(self, pool_id: int, pool_data: PoolSchema) -> PoolOut:
-        return self._pool_repo.update_pool(pool_id, pool_data)
+        with transaction.atomic():
+            pool = self._pool_repo.get_pool_by_id(pool_id)
+            if not pool:
+                return None
+
+            if pool_data.skills:
+                skill_names = list(set(pool_data.skills))
+                existing_skills = self._skill_repo.get_skills_by_names(skill_names)
+
+                if existing_skills.count() != len(skill_names):
+                    return None
+
+                pool.skills.set(existing_skills)
+
+            for attr, value in pool_data.items():
+                if attr != "skills":
+                    setattr(pool, attr, value)
+
+            updated = self._pool_repo.update_pool(pool)
+            if not updated:
+                return None
+
+            return PoolOut.from_orm(pool)

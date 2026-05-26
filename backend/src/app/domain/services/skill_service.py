@@ -9,10 +9,19 @@ class SkillService:
         self._skill_repo = skill_repo
 
     def get_all_skills(self) -> List[str]:
-        return self._skill_repo.get_all_skills()
+        skills = self._skill_repo.get_all_skills()
+        if not skills:
+            return None
+        return skills
 
     def create_skill(self, skill_data: SkillSchema) -> SkillSchema:
-        return self._skill_repo.create_skill(skill_data)
+        skill = self._skill_repo.create_skill(skill_data)
+        if not skill:
+            return None
+        return SkillSchema.from_orm(skill)
 
     def delete_skill(self, skill_data: SkillSchema) -> bool:
-        return self._skill_repo.delete_skill(skill_data)
+        deleted = self._skill_repo.delete_skill(skill_data)
+        if not deleted:
+            return None
+        return deleted

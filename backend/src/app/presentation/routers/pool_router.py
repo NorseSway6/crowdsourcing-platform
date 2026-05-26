@@ -1,5 +1,3 @@
-from typing import List
-
 from ninja import NinjaAPI, Router
 
 from app.domain.entities.pool_schema import PoolOut, PoolSchema
@@ -14,10 +12,10 @@ def get_pools_router(pool_handlers: PoolHandlers):
         "/",
         ["GET"],
         lambda request: pool_handlers.get_all_pools(request),
-        response={200: List[PoolOut], 404: ErrorResponse},
+        response={200: list[PoolOut], 404: ErrorResponse},
     )
 
-    def get_pool_by_id(request, pool_id: int) -> PoolOut:
+    def get_pool_by_id(request, pool_id: int) -> tuple[int, PoolOut | ErrorResponse]:
         return pool_handlers.get_pool_by_id(request, pool_id)
 
     router.add_api_operation(
@@ -27,7 +25,7 @@ def get_pools_router(pool_handlers: PoolHandlers):
         response={200: PoolOut, 404: ErrorResponse},
     )
 
-    def update_pool(request, pool_id: int, data: PoolSchema) -> PoolOut:
+    def update_pool(request, pool_id: int, data: PoolSchema) -> tuple[int, PoolOut | ErrorResponse]:
         return pool_handlers.update_pool(request, pool_id, data)
 
     router.add_api_operation(

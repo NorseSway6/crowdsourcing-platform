@@ -1,4 +1,3 @@
-from typing import List
 from uuid import UUID
 
 from ninja import NinjaAPI, Router
@@ -16,10 +15,10 @@ def get_users_router(user_handlers: UserHandlers):
         "/",
         ["GET"],
         lambda request: user_handlers.get_all_users(request),
-        response={200: List[UserOut], 404: ErrorResponse},
+        response={200: list[UserOut], 404: ErrorResponse},
     )
 
-    def get_user_by_id(request, id: UUID) -> UserOut:
+    def get_user_by_id(request, id: UUID) -> tuple[int, UserOut | ErrorResponse]:
         return user_handlers.get_user_by_id(request, id)
 
     router.add_api_operation(
@@ -29,7 +28,7 @@ def get_users_router(user_handlers: UserHandlers):
         response={200: UserOut, 404: ErrorResponse},
     )
 
-    def create_user(request, data: UserSchema) -> UserOut:
+    def create_user(request, data: UserSchema) -> tuple[int, UserOut | ErrorResponse]:
         return user_handlers.create_user(request, data)
 
     router.add_api_operation(
@@ -39,7 +38,7 @@ def get_users_router(user_handlers: UserHandlers):
         response={201: UserOut, 404: ErrorResponse},
     )
 
-    def update_user_profile(request, id: UUID, data: ProfileSchema) -> UserOut:
+    def update_user_profile(request, id: UUID, data: ProfileSchema) -> tuple[int, UserOut | ErrorResponse]:
         return user_handlers.update_user_profile(request, id, data)
 
     router.add_api_operation(
@@ -49,7 +48,7 @@ def get_users_router(user_handlers: UserHandlers):
         response={200: UserOut, 400: ErrorResponse},
     )
 
-    def delete_user(request, id: UUID) -> bool:
+    def delete_user(request, id: UUID) -> tuple[int, SuccessResponse | ErrorResponse]:
         return user_handlers.delete_user(request, id)
 
     router.add_api_operation(

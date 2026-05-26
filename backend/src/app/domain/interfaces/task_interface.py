@@ -6,10 +6,10 @@ from app.domain.entities.task_schema import TaskOut
 
 
 class ITaskRepository:
-    def get_all_tasks(self) -> List[TaskOut]:
+    def get_all_tasks(self) -> List[Task]:
         pass
 
-    def get_task_by_id(self, task_id: int) -> TaskOut:
+    def get_task_by_id(self, task_id: int) -> Task:
         pass
 
     def delete_task(self, task_id: int) -> bool:
@@ -21,7 +21,7 @@ class ITaskRepository:
     def link_tasks_to_pool(self, tasks_queryset, pool_id: int, limit: int | None = None) -> None:
         pass
 
-    def get_next_task(self, user_id: UUID) -> Task:
+    def get_next_task(self, user_id: UUID, pool_id) -> Task:
         pass
 
     def _mark_task_completed(self, task_id: int, final_annotation: List) -> None:
