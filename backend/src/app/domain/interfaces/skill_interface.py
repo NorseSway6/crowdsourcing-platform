@@ -1,5 +1,3 @@
-from typing import Any, List
-
 from app.db.models.skill import Skill
 from app.domain.entities.skill_schema import SkillSchema
 

@@ -27,7 +27,7 @@ def get_pipelines_router(pipeline_handlers: PipelineHandlers):
         "/",
         ["POST"],
         create_pipeline,
-        response={201: PipelineOut, 400: ErrorResponse, 409: ErrorResponse},
+        response={201: PipelineOut, 400: ErrorResponse},
     )
 
     def update_pipeline(request, pipeline_id: int, data: PipelineSchema) -> tuple[int, PipelineOut | ErrorResponse]:

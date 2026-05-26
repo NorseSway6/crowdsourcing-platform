@@ -1,4 +1,3 @@
-from typing import List
 from uuid import UUID
 
 from django.db import transaction
@@ -19,7 +18,7 @@ class AssignmentService:
         self._task_repo = task_repo
         self._pipeline_engine = pipeline_engine
 
-    def get_assignments_by_user(self, user_id: UUID) -> List[AssignmentOut]:
+    def get_assignments_by_user(self, user_id: UUID) -> list[AssignmentOut]:
         assignments = self._assignment_repo.get_assignments_by_user(user_id)
         if not assignments:
             return None

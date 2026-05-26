@@ -1,5 +1,5 @@
 from app.db.models.pool import Pool
-from app.domain.entities.pool_schema import PoolOut, PoolSchema
+from app.domain.entities.pool_schema import PoolSchema
 
 
 class IPoolRepository:

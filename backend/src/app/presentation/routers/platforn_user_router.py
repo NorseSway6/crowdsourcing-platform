@@ -18,8 +18,8 @@ def get_users_router(user_handlers: UserHandlers):
         response={200: list[UserOut], 404: ErrorResponse},
     )
 
-    def get_user_by_id(request, id: UUID) -> tuple[int, UserOut | ErrorResponse]:
-        return user_handlers.get_user_by_id(request, id)
+    def get_user_by_id(request, user_id: UUID) -> tuple[int, UserOut | ErrorResponse]:
+        return user_handlers.get_user_by_id(request, user_id)
 
     router.add_api_operation(
         "/me",
@@ -38,8 +38,8 @@ def get_users_router(user_handlers: UserHandlers):
         response={201: UserOut, 404: ErrorResponse},
     )
 
-    def update_user_profile(request, id: UUID, data: ProfileSchema) -> tuple[int, UserOut | ErrorResponse]:
-        return user_handlers.update_user_profile(request, id, data)
+    def update_user_profile(request, user_id: UUID, data: ProfileSchema) -> tuple[int, UserOut | ErrorResponse]:
+        return user_handlers.update_user_profile(request, user_id, data)
 
     router.add_api_operation(
         "/me/profile",
@@ -48,8 +48,8 @@ def get_users_router(user_handlers: UserHandlers):
         response={200: UserOut, 400: ErrorResponse},
     )
 
-    def delete_user(request, id: UUID) -> tuple[int, SuccessResponse | ErrorResponse]:
-        return user_handlers.delete_user(request, id)
+    def delete_user(request, user_id: UUID) -> tuple[int, SuccessResponse | ErrorResponse]:
+        return user_handlers.delete_user(request, user_id)
 
     router.add_api_operation(
         "/",

@@ -58,7 +58,7 @@ class PipelineEngine(IPipelineRepository):
 
             self._task_repo.link_tasks_to_pool(tasks_qs, start_pool.pool_id, pipeline_data.limit)
 
-        return PipelineOut.from_orm(pipeline)
+            return PipelineOut.from_orm(pipeline)
 
     def get_pipelines_by_user(self, owner_id: UUID) -> list[PipelineOut]:
         pipelines = self._pipeline_repo.get_pipelines_by_user(owner_id)
@@ -70,7 +70,9 @@ class PipelineEngine(IPipelineRepository):
         updated = self._pipeline_repo.update_pipeline(pipeline_id, pipeline_data)
         if not updated:
             return None
-        return PipelineOut.from_orm(updated)
+
+        pipeline = self._pipeline_repo.get_pipeline_by_id(pipeline_id)
+        return PipelineOut.from_orm(pipeline)
 
     def delete_pipeline(self, pipeline_id: int) -> bool:
         deleted = self._pipeline_repo.delete_pipeline(pipeline_id)

@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Optional
 
 from ninja import Schema
-from pydantic import EmailStr, Field, PastDatetime
+from pydantic import ConfigDict, EmailStr, Field, PastDatetime
 
 from app.domain.entities.user_profile_schema import ProfileSchema
 
@@ -18,6 +18,8 @@ class UserSchema(Schema):
     email: EmailStr = Field(...)
     role: UserRole = Field(...)
     profile: Optional[ProfileSchema] = Field(None, alias="user_profile")
+
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
 
 class UserOut(UserSchema):

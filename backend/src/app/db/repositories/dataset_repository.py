@@ -24,7 +24,7 @@ class DatasetRepository(IDatasetRepository):
 
         return dataset
 
-    def update_dataset(self, dataset_id: int, dataset_data: DatasetSchema) -> Dataset:
+    def update_dataset(self, dataset_id: int, dataset_data: DatasetSchema) -> bool:
         return Dataset.objects.filter(dataset_id=dataset_id).update(name=dataset_data.name, domain=dataset_data.domain)
 
     def delete_dataset(self, dataset_id: int) -> bool:

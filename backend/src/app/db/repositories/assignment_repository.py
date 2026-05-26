@@ -1,15 +1,13 @@
-from typing import List
 from uuid import UUID
 
 from django.db import IntegrityError
-from django.utils import timezone
 
 from app.db.models.assignments import Assignment
 from app.domain.interfaces.assignment_interface import IAssignmentRepository
 
 
 class AssignmentRepository(IAssignmentRepository):
-    def get_assignments_by_user(self, user_id: UUID) -> List[Assignment]:
+    def get_assignments_by_user(self, user_id: UUID) -> list[Assignment]:
         return list(Assignment.objects.filter(user_id=user_id))
 
     def get_assignment_by_id(self, user_id: UUID, assignment_id: int) -> Assignment:
@@ -34,7 +32,7 @@ class AssignmentRepository(IAssignmentRepository):
     def _get_active_assignment(self, user_id: UUID) -> Assignment:
         return Assignment.objects.filter(user_id=user_id, status=Assignment.Status.IN_PROGRESS).first()
 
-    def _get_completed_annotations(self, task_id: int, pool_id: int) -> List[dict]:
+    def _get_completed_annotations(self, task_id: int, pool_id: int) -> list[dict]:
         return list(
             Assignment.objects.filter(
                 task_id=task_id,
@@ -45,8 +43,8 @@ class AssignmentRepository(IAssignmentRepository):
             .values_list("annotation", flat=True)
         )
 
-    def _get_all_for_task(self, task_id: int, current_pool_id: int) -> List[Assignment]:
+    def _get_all_for_task(self, task_id: int, current_pool_id: int) -> list[Assignment]:
         return Assignment.objects.filter(task_id=task_id, task__pool_id=current_pool_id).all()
 
-    def _bulk_update_assignments(self, assignments: List[Assignment]) -> None:
+    def _bulk_update_assignments(self, assignments: list[Assignment]) -> None:
         Assignment.objects.bulk_update(assignments, ["status"])

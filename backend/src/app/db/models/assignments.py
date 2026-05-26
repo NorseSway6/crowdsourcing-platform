@@ -17,7 +17,7 @@ class Assignment(models.Model):
     user = models.ForeignKey(
         PlatformUser, on_delete=models.CASCADE, related_name="assignment_user", verbose_name="user"
     )
-    annotation = models.JSONField(default=list, verbose_name="annotation")
+    annotation = models.JSONField(default=None, null=True, blank=True, verbose_name="annotation")
     started_at = models.DateTimeField(auto_now_add=True, verbose_name="started_at")
     completed_at = models.DateTimeField(null=True, blank=True, verbose_name="completed_at")
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.IN_PROGRESS, verbose_name="status")

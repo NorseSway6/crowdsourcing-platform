@@ -1,4 +1,3 @@
-from typing import List
 from uuid import UUID
 
 from django.db import transaction
@@ -40,7 +39,7 @@ class UserService:
 
             return UserOut.from_orm(user)
 
-    def get_all_users(self) -> List[UserOut]:
+    def get_all_users(self) -> list[UserOut]:
         users = self._user_repo.get_all_users()
         if not users:
             return None
@@ -73,15 +72,17 @@ class UserService:
                 if len(existing_skills) != len(skill_names):
                     return None
 
-            for attr, value in profile_data.items():
-                if attr != "skills":
-                    setattr(profile, attr, value)
+                profile.skills.set(existing_skills)
+
+            update_fields = profile_data.dict(exclude={"skills"}, exclude_unset=True)
+            for attr, value in update_fields.items():
+                setattr(profile, attr, value)
 
             updated = self._user_repo.update_profile(profile)
             if not updated:
                 return None
 
-            return UserOut.from_orm(updated)
+            return UserOut.from_orm(user)
 
     def delete_user(self, user_id: UUID) -> bool:
         deleted = self._user_repo.delete_user(user_id)

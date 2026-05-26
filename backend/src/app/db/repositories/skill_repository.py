@@ -1,5 +1,3 @@
-from typing import Any
-
 from django.db import IntegrityError
 
 from app.db.models.skill import Skill
@@ -8,7 +6,7 @@ from app.domain.interfaces.skill_interface import ISkillRepository
 
 
 class SkillRepository(ISkillRepository):
-    def get_all_skills(self) -> list[str]:
+    def get_all_skills(self) -> list[Skill]:
         return list(Skill.objects.all())
 
     def create_skill(self, skill_data: SkillSchema) -> Skill:

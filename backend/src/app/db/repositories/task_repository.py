@@ -1,8 +1,6 @@
-from typing import List
 from uuid import UUID
 
 from django.db.models import Count, F, Q
-from django.utils import timezone
 
 from app.db.models.assignments import Assignment
 from app.db.models.pool import Pool
@@ -11,7 +9,7 @@ from app.domain.interfaces.task_interface import ITaskRepository
 
 
 class TaskRepository(ITaskRepository):
-    def get_all_tasks(self) -> List[Task]:
+    def get_all_tasks(self) -> list[Task]:
         tasks = Task.objects.all()
         return tasks
 
@@ -58,7 +56,7 @@ class TaskRepository(ITaskRepository):
 
         return Task.objects.select_for_update(skip_locked=True).filter(pk=candidate_id).first()
 
-    def _mark_task_completed(self, task_id: int, final_annotation: List) -> None:
+    def _mark_task_completed(self, task_id: int, final_annotation: list) -> None:
         Task.objects.filter(task_id=task_id).update(status=Task.Status.COMPLETED, annotation=final_annotation)
 
     def _move_task_to_pool(self, task_id: int, new_pool_id: int, intermediate_data: dict) -> None:

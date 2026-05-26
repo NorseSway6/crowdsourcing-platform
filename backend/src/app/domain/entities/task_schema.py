@@ -18,5 +18,6 @@ class TaskOut(TaskSchema):
     task_id: int = Field(...)
     pool_id: Optional[int] = Field(...)
     image_url: str = Field()
+    annotation: list = Field(...)
     created_at: PastDatetime = Field(...)
     status: TaskStatus = Field(...)

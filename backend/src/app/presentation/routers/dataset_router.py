@@ -11,13 +11,6 @@ from app.presentation.api.handlers import DatasetHandlers
 def get_datasets_router(dataset_handlers: DatasetHandlers):
     router = Router(tags=["datasets"])
 
-    router.add_api_operation(
-        "/",
-        ["GET"],
-        lambda request: dataset_handlers.get_all_datasets(request),
-        response={200: list[DatasetOut], 404: ErrorResponse},
-    )
-
     def get_dataset_by_id(request, dataset_id: int) -> tuple[int, DatasetOut | ErrorResponse]:
         return dataset_handlers.get_dataset_by_id(request, dataset_id)
 

@@ -140,12 +140,6 @@ class DatasetHandlers:
     def __init__(self, dataset_service: DatasetService):
         self._dataset_service = dataset_service
 
-    def get_all_datasets(self, request) -> tuple[int, list[DatasetOut] | ErrorResponse]:
-        datasets = self._dataset_service.get_all_datasets()
-        if not datasets:
-            return 404, ErrorResponse(detail="Datasets not found")
-        return 200, datasets
-
     def get_dataset_by_id(self, request, dataset_id: int) -> tuple[int, DatasetOut | ErrorResponse]:
         dataset = self._dataset_service.get_dataset_by_id(dataset_id)
         if not dataset:

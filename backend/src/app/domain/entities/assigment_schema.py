@@ -3,7 +3,7 @@ from enum import Enum
 from typing import List, Literal, Optional, Union
 
 from ninja import Schema
-from pydantic import Field, PastDatetime, RootModel
+from pydantic import Field, PastDatetime, model_validator
 
 
 class AssignmentStatus(str, Enum):
@@ -46,11 +46,6 @@ class AssignmentOut(AssignmentSchema):
     task_id: int = Field(...)
     user_id: uuid.UUID = Field(...)
     assignment_id: int = Field(...)
-    pool_id: int = Field(...)
     started_at: PastDatetime = Field(...)
     status: AssignmentStatus = Field(...)
     completed_at: Optional[PastDatetime] = Field(...)
-
-    @staticmethod
-    def resolve_pool_id(obj):
-        return obj.task.pool_id

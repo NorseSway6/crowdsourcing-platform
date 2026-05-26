@@ -23,6 +23,9 @@ class PipelineRepository:
     def get_pipelines_by_user(self, owner_id: UUID) -> list[Pipeline]:
         return list(Pipeline.objects.filter(owner_id=owner_id).all())
 
+    def get_pipeline_by_id(self, pipeline_id: int) -> Pipeline:
+        return Pipeline.objects.filter(pipeline_id=pipeline_id).first()
+
     def update_pipeline(self, pipeline_id: int, pipeline_data: PipelineSchema) -> Pipeline:
         updated = Pipeline.objects.filter(pipeline_id=pipeline_id).update(name=pipeline_data.name)
         return updated > 0

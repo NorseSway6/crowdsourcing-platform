@@ -21,7 +21,7 @@ class DatasetService:
         datasets = self._dataset_repo.get_datasets_by_user(user_id)
         if not datasets:
             return None
-        return DatasetOut.from_orm(datasets)
+        return [DatasetOut.from_orm(dataset) for dataset in datasets]
 
     def create_dataset(self, owner_id: UUID, dataset_data: DatasetSchema) -> DatasetOut:
         dataset = self._dataset_repo.create_dataset(owner_id, dataset_data)
@@ -33,7 +33,9 @@ class DatasetService:
         updated = self._dataset_repo.update_dataset(dataset_id, dataset_data)
         if not updated:
             return None
-        return DatasetOut.from_orm(updated)
+
+        dataset = self._dataset_repo.get_dataset_by_id(dataset_id)
+        return DatasetOut.from_orm(dataset)
 
     def delete_dataset(self, dataset_id: int) -> bool:
         deleted = self._dataset_repo.delete_dataset(dataset_id)

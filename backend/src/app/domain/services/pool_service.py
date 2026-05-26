@@ -1,5 +1,3 @@
-from typing import List
-
 from django.db import transaction
 
 from app.domain.entities.pool_schema import PoolOut, PoolSchema
@@ -14,7 +12,7 @@ class PoolService:
         self._skill_repo = skill_repo
         self._task_repo = task_repo
 
-    def get_all_pools(self) -> List[PoolOut]:
+    def get_all_pools(self) -> list[PoolOut]:
         pools = self._pool_repo.get_all_pools()
         if not pools:
             return None
@@ -36,14 +34,14 @@ class PoolService:
                 skill_names = list(set(pool_data.skills))
                 existing_skills = self._skill_repo.get_skills_by_names(skill_names)
 
-                if existing_skills.count() != len(skill_names):
+                if len(existing_skills) != len(skill_names):
                     return None
 
                 pool.skills.set(existing_skills)
 
-            for attr, value in pool_data.items():
-                if attr != "skills":
-                    setattr(pool, attr, value)
+            update_fields = pool_data.dict(exclude={"skills"}, exclude_unset=True)
+            for attr, value in update_fields.items():
+                setattr(pool, attr, value)
 
             updated = self._pool_repo.update_pool(pool)
             if not updated:
