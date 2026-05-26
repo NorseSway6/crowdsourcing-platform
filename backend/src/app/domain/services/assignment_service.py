@@ -34,7 +34,7 @@ class AssignmentService:
             if not task:
                 return None
 
-            assignment = self._assignment_repo.create_assignment(user_id, task.task_id)
+            assignment = self._assignment_repo.create_assignment(user_id, task.task_id, pool_id)
             if not assignment:
                 return None
         return AssignmentOut.from_orm(assignment)

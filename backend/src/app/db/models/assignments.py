@@ -2,6 +2,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from app.db.models.platform_user import PlatformUser
+from app.db.models.pool import Pool
 from app.db.models.task import Task
 
 
@@ -14,6 +15,7 @@ class Assignment(models.Model):
 
     assignment_id = models.BigAutoField(primary_key=True, verbose_name="assignment_id")
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="assignment_task", verbose_name="task")
+    pool = models.ForeignKey(Pool, null=True, blank=True, related_name="assignment_pool", on_delete=models.CASCADE)
     user = models.ForeignKey(
         PlatformUser, on_delete=models.CASCADE, related_name="assignment_user", verbose_name="user"
     )

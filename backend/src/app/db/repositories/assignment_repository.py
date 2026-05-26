@@ -13,9 +13,9 @@ class AssignmentRepository(IAssignmentRepository):
     def get_assignment_by_id(self, user_id: UUID, assignment_id: int) -> Assignment:
         return Assignment.objects.select_related("task").filter(assignment_id=assignment_id, user_id=user_id).first()
 
-    def create_assignment(self, user_id: UUID, task_id: int) -> Assignment:
+    def create_assignment(self, user_id: UUID, task_id: int, pool_id: int) -> Assignment:
         try:
-            assignment = Assignment.objects.create(task_id=task_id, user_id=user_id)
+            assignment = Assignment.objects.create(task_id=task_id, user_id=user_id, pool_id=pool_id)
         except IntegrityError:
             return None
 

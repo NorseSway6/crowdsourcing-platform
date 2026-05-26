@@ -10,7 +10,7 @@ class IAssignmentRepository:
     def get_assignment_by_id(self, user_id: UUID, assignment_id: int) -> Assignment:
         pass
 
-    def create_assignment(self, user_id: UUID, task_id: int) -> Assignment:
+    def create_assignment(self, user_id: UUID, task_id: int, pool_id: int) -> Assignment:
         pass
 
     def update_assignment(self, data: Assignment) -> Assignment:

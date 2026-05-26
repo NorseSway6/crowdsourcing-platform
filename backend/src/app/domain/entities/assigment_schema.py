@@ -15,6 +15,7 @@ class AssignmentStatus(str, Enum):
 
 class AssignmentCocoItem(Schema):
     category_id: int = Field(...)
+    type: str = Field(...)
     bbox: List[float] = Field(...)
     segmentation: List[List[float]] = Field(default=[])
     area: float = Field(...)
@@ -45,6 +46,7 @@ class AssignmentSchema(Schema):
 class AssignmentOut(AssignmentSchema):
     task_id: int = Field(...)
     user_id: uuid.UUID = Field(...)
+    pool_id: int = Field(...)
     assignment_id: int = Field(...)
     started_at: PastDatetime = Field(...)
     status: AssignmentStatus = Field(...)

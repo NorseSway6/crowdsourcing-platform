@@ -1,6 +1,7 @@
 from uuid import UUID
 
-from django.db.models import Count, F, Q
+from django.db.models import Count, F, OuterRef, Q, Subquery
+from django.db.models.functions import Coalesce
 
 from app.db.models.assignments import Assignment
 from app.db.models.pool import Pool
@@ -30,23 +31,33 @@ class TaskRepository(ITaskRepository):
         else:
             tasks_queryset.update(pool_id=pool_id)
 
-    def get_next_task(self, user_id: UUID, pool_id) -> Task:
+    def get_next_task(self, user_id: UUID, pool_id: int) -> Task | None:
+        # 1. Подзапрос: считаем валидные решения ЭТОЙ задачи ТОЛЬКО в ТЕКУЩЕМ пулле
+        valid_assignments_subquery = (
+            Assignment.objects.filter(
+                task_id=OuterRef("pk"),
+                pool_id=pool_id,  # Считаем только решения из нового этапа!
+            )
+            .exclude(status=Assignment.Status.REJECTED)
+            .values("task_id")
+            .annotate(cnt=Count("assignment_id"))
+            .values("cnt")
+        )
+
+        # 2. Основной запрос
         candidate_id = (
             Task.objects.filter(
-                pool__pk=pool_id,
+                pool_id=pool_id,
                 pool__status=Pool.PoolStatus.OPEN,
                 pool__skills__profile_skill__user_id=user_id,
             )
+            # Исключаем юзера, если он делал эту задачу на ЛЮБОМ этапе истории
             .exclude(assignment_task__user_id=user_id)
-            .annotate(
-                valid_assignments_count=Count(
-                    "assignment_task",
-                    filter=~Q(assignment_task__status__in=[Assignment.Status.REJECTED]),
-                )
-            )
-            # .filter(valid_assignments_count__lt=F("pool__overlap"))
-            .order_by("task_id")
-            .distinct()
+            # Подключаем изолированный счетчик решений текущего этапа
+            .annotate(valid_assignments_count=Coalesce(Subquery(valid_assignments_subquery), 0))
+            # Теперь фильтр работает только для текущего пулла!
+            .filter(valid_assignments_count__lt=F("pool__overlap"))
+            .order_by("pk")
             .values_list("pk", flat=True)
             .first()
         )
@@ -54,6 +65,7 @@ class TaskRepository(ITaskRepository):
         if not candidate_id:
             return None
 
+        # 3. Атомарный лок
         return Task.objects.select_for_update(skip_locked=True).filter(pk=candidate_id).first()
 
     def _mark_task_completed(self, task_id: int, final_annotation: list) -> None:
