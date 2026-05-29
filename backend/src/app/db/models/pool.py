@@ -25,6 +25,7 @@ class Pool(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="created_at")
     pool_type = models.CharField(max_length=50, choices=PoolType.choices, default=PoolType.ANNOTATION)
     status = models.CharField(max_length=50, choices=PoolStatus.choices, default=PoolStatus.OPEN)
+    target_institution = models.CharField(max_length=100, blank=True, null=True, verbose_name="target_institution")
 
     @property
     def skill_names(self):

@@ -6,7 +6,7 @@ from app.domain.entities.assigment_schema import AssignmentOut, AssignmentSchema
 from app.domain.entities.dataset_schema import DatasetOut, DatasetSchema
 from app.domain.entities.pipeline_schema import PipelineIn, PipelineOut
 from app.domain.entities.platform_user_schema import UserOut, UserSchema
-from app.domain.entities.pool_schema import PoolOut, PoolSchema
+from app.domain.entities.pool_schema import PoolFilter, PoolOut, PoolSchema
 from app.domain.entities.response_schema import ErrorResponse, SuccessResponse
 from app.domain.entities.skill_schema import SkillSchema
 from app.domain.entities.task_schema import TaskOut
@@ -47,8 +47,8 @@ class PoolHandlers:
     def __init__(self, pool_service: PoolService):
         self._pool_service = pool_service
 
-    def get_all_pools(self, request) -> tuple[int, list[PoolOut] | ErrorResponse]:
-        pools = self._pool_service.get_all_pools()
+    def get_all_pools(self, request, filters: PoolFilter) -> tuple[int, list[PoolOut] | ErrorResponse]:
+        pools = self._pool_service.get_all_pools(filters)
         if not pools:
             return 404, ErrorResponse(detail="Pools not found")
         return 200, pools

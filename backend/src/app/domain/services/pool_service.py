@@ -1,6 +1,6 @@
 from django.db import transaction
 
-from app.domain.entities.pool_schema import PoolOut, PoolSchema
+from app.domain.entities.pool_schema import PoolFilter, PoolOut, PoolSchema
 from app.domain.interfaces.pool_interface import IPoolRepository
 from app.domain.interfaces.skill_interface import ISkillRepository
 from app.domain.interfaces.task_interface import ITaskRepository
@@ -12,8 +12,8 @@ class PoolService:
         self._skill_repo = skill_repo
         self._task_repo = task_repo
 
-    def get_all_pools(self) -> list[PoolOut]:
-        pools = self._pool_repo.get_all_pools()
+    def get_all_pools(self, filters: PoolFilter) -> list[PoolOut]:
+        pools = self._pool_repo.get_all_pools(filters)
         if not pools:
             return None
         return [PoolOut.from_orm(pool) for pool in pools]

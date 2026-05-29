@@ -17,9 +17,7 @@ class UserRole(str, Enum):
 class UserSchema(Schema):
     email: EmailStr = Field(...)
     role: UserRole = Field(...)
-    profile: Optional[ProfileSchema] = Field(None, alias="user_profile")
-
-    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+    user_profile: Optional[ProfileSchema] = Field(None)
 
 
 class UserOut(UserSchema):
