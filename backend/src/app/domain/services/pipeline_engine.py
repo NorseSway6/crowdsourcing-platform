@@ -3,6 +3,7 @@ from uuid import UUID
 from django.db import transaction
 
 from app.db.models.assignments import Assignment
+from app.db.models.pool import Pool
 from app.domain.entities.pipeline_schema import PipelineIn, PipelineOut
 from app.domain.interfaces.assignment_interface import IAssignmentRepository
 from app.domain.interfaces.pipeline_interface import IPipelineRepository
@@ -10,6 +11,7 @@ from app.domain.interfaces.pool_interface import IPoolRepository
 from app.domain.interfaces.skill_interface import ISkillRepository
 from app.domain.interfaces.task_interface import ITaskRepository
 from app.domain.services.consensus_service import ConsensusService
+from app.domain.services.task_service import TaskService
 
 
 class PipelineEngine(IPipelineRepository):
@@ -21,6 +23,7 @@ class PipelineEngine(IPipelineRepository):
         pool_repo: IPoolRepository,
         pipeline_repo: IPipelineRepository,
         skill_repo: ISkillRepository,
+        task_service: TaskService,
     ):
         self._task_repo = task_repo
         self._assignment_repo = assignment_repo
@@ -28,6 +31,7 @@ class PipelineEngine(IPipelineRepository):
         self._pool_repo = pool_repo
         self._pipeline_repo = pipeline_repo
         self._skill_repo = skill_repo
+        self._task_service = task_service
 
     def create_pools(self, owner_id: UUID, pipeline_data: PipelineIn) -> PipelineOut:
         with transaction.atomic():
@@ -80,33 +84,59 @@ class PipelineEngine(IPipelineRepository):
 
     def evaluate_stage_completion(self, task_id: int, current_pool_id: int) -> None:
         consensus_result = self._consensus_service.calculate_pool_consensus(task_id, current_pool_id)
-
         if not consensus_result.is_consensus_reached:
             return
 
-        all_assignments = self._assignment_repo._get_all_for_task(task_id, current_pool_id)
-        for ass in all_assignments:
-            is_good = self._consensus_service._are_annotations_similar(
-                ass.annotation, consensus_result.final_annotation
+        self._consensus_service._resolve_assignments(task_id, current_pool_id, consensus_result)
+
+        current_pool = self._pool_repo.get_pool_by_id(current_pool_id)
+        if not current_pool:
+            return
+
+        if current_pool.pool_type == Pool.PoolType.VERIFICATION and consensus_result.verdict == "REJECTED":
+            self._task_service._move_task_to_annotation_retry(task_id, current_pool_id)
+
+            annotation_pool = self._pool_repo._get_pool_by_type(
+                pipeline_id=current_pool.pipeline_id, pool_type=Pool.PoolType.ANNOTATION
             )
-            ass.status = Assignment.Status.APPROVED if is_good else Assignment.Status.REJECTED
 
-        self._assignment_repo._bulk_update_assignments(all_assignments)
+            if annotation_pool:
+                rejected = self._assignment_repo._reject_all_assignments_for_task(task_id, annotation_pool.pool_id)
+                if not rejected:
+                    return None
+                if annotation_pool and annotation_pool.status == Pool.PoolStatus.COMPLETED:
+                    marked = self._pool_repo._mark_pool_open(annotation_pool.pool_id)
+                    if not marked:
+                        return None
 
-        is_perfect_consensus = getattr(consensus_result, "confidence", 0) >= 0.95
-
-        next_pool_id = self._get_next_pool_in_pipeline(current_pool_id)
-
-        if next_pool_id and not is_perfect_consensus:
-            self._task_repo._move_task_to_pool(
-                task_id=task_id,
-                new_pool_id=next_pool_id,
-                intermediate_data=consensus_result.final_annotation,
-            )
+            return
         else:
-            self._task_repo._mark_task_completed(task_id, consensus_result.final_annotation)
+            next_pool_id = self._get_next_pool_in_pipeline(current_pool_id)
+            if not next_pool_id:
+                marked = self._task_repo._mark_task_completed(task_id, consensus_result.final_annotation)
+                if not marked:
+                    return None
+            else:
+                if current_pool.pool_type == Pool.PoolType.VERIFICATION:
+                    marked = self._task_repo._mark_task_completed(task_id, consensus_result.final_annotation)
+                    if not marked:
+                        return None
+                else:
+                    moved = self._task_service._move_task_to_pool(
+                        task_id=task_id,
+                        new_pool_id=next_pool_id,
+                        intermediate_data=consensus_result.final_annotation,
+                    )
+                    if not moved:
+                        return None
 
-    def _get_next_pool_in_pipeline(self, current_pool_id: int) -> int | None:
+        has_active_tasks = self._task_repo._has_active_tasks_in_pool(current_pool_id)
+        if not has_active_tasks:
+            marked = self._pool_repo._mark_pool_completed(current_pool_id)
+            if not marked:
+                return None
+
+    def _get_next_pool_in_pipeline(self, current_pool_id: int) -> int:
         current_pool = self._pool_repo.get_pool_by_id(current_pool_id)
         if not current_pool:
             return None

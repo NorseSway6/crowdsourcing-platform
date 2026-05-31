@@ -46,5 +46,10 @@ class AssignmentRepository(IAssignmentRepository):
     def _get_all_for_task(self, task_id: int, current_pool_id: int) -> list[Assignment]:
         return Assignment.objects.filter(task_id=task_id, task__pool_id=current_pool_id).all()
 
-    def _bulk_update_assignments(self, assignments: list[Assignment]) -> None:
-        Assignment.objects.bulk_update(assignments, ["status"])
+    def _bulk_update_assignments(self, assignments: list[Assignment]) -> bool:
+        updated = Assignment.objects.bulk_update(assignments, ["status"])
+        return updated > 0
+
+    def _reject_all_assignments_for_task(self, task_id: int, pool_id: int) -> bool:
+        updated = Assignment.objects.filter(task_id=task_id, pool_id=pool_id).update(status=Assignment.Status.REJECTED)
+        return updated > 0

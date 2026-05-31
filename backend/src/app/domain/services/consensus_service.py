@@ -2,16 +2,19 @@ import json
 from collections import Counter
 from typing import Union
 
+from app.db.models.assignments import Assignment
 from app.db.models.pool import Pool
 from app.domain.entities.consensus_schema import ConsensusSchema
 from app.domain.interfaces.assignment_interface import IAssignmentRepository
 from app.domain.interfaces.pool_interface import IPoolRepository
+from app.domain.interfaces.task_interface import ITaskRepository
 
 
 class ConsensusService:
-    def __init__(self, assignment_repo: IAssignmentRepository, pool_repo: IPoolRepository):
+    def __init__(self, assignment_repo: IAssignmentRepository, pool_repo: IPoolRepository, task_repo: ITaskRepository):
         self._assignment_repo = assignment_repo
         self._pool_repo = pool_repo
+        self._task_repo = task_repo
 
     def calculate_pool_consensus(self, task_id: int, current_pool_id: int) -> ConsensusSchema:
         annotations = self._assignment_repo._get_completed_annotations(task_id, current_pool_id)
@@ -24,10 +27,43 @@ class ConsensusService:
         if pool.pool_type == Pool.PoolType.ANNOTATION:
             return self._majority_voiting(annotations, total_votes)
 
-        elif pool.pool_type in [Pool.PoolType.VERIFICATION, Pool.PoolType.CLASSIFICATION]:
-            return self._calculate_validation_consensus(annotations, total_votes)
+        elif pool.pool_type == Pool.PoolType.VERIFICATION:
+            task = self._task_repo.get_task_by_id(task_id)
+            target_annotation = task.annotation if hasattr(task, "annotation") else task.data.get("target_bbox")
+            return self._calculate_verification_consensus(annotations, total_votes, target_annotation)
+
+        elif pool.pool_type == Pool.PoolType.CLASSIFICATION:
+            return self._calculate_classification_consensus(annotations, total_votes)
 
         return ConsensusSchema(is_consensus_reached=False)
+
+    def _resolve_assignments(self, task_id: int, current_pool_id: int, consensus_result: ConsensusSchema) -> None:
+        all_assignments = self._assignment_repo._get_all_for_task(task_id, current_pool_id)
+        pool = self._pool_repo.get_pool_by_id(current_pool_id)
+
+        assignments_to_update = []
+
+        for assignment in all_assignments:
+            is_good_work = False
+
+            if pool.pool_type == Pool.PoolType.ANNOTATION:
+                is_good_work = self._are_annotations_similar(assignment.annotation, consensus_result.final_annotation)
+
+            elif pool.pool_type == Pool.PoolType.VERIFICATION:
+                is_positive_vote = False
+                if isinstance(assignment.annotation, dict):
+                    is_positive_vote = assignment.annotation.get("is_correct") is True
+
+                is_consensus_approved = consensus_result.verdict == "APPROVED"
+
+                is_good_work = is_consensus_approved == is_positive_vote
+
+            assignment.status = Assignment.Status.APPROVED if is_good_work else Assignment.Status.REJECTED
+            assignments_to_update.append(assignment)
+
+        updated = self._assignment_repo._bulk_update_assignments(assignments_to_update)
+        if not updated:
+            return None
 
     # ===== Consensus for aanotations =====
     def _majority_voiting(self, annotations: list, total_votes: int) -> ConsensusSchema:
@@ -45,6 +81,8 @@ class ConsensusService:
 
             if confidence > 0.5:
                 return ConsensusSchema(is_consensus_reached=True, final_annotation=target_ann)
+
+        return ConsensusSchema(is_consensus_reached=False)
 
     def _calculate_iou(self, bbox1: list, bbox2: list) -> float:
         if not bbox1 or not bbox2 or len(bbox1) != 4 or len(bbox2) != 4:
@@ -95,13 +133,25 @@ class ConsensusService:
 
         return True
 
-    # ===== Consensus for validation =====
-    def _calculate_validation_consensus(self, annotations: list, total_votes: int) -> ConsensusSchema:
-        serialized = [json.dumps(ann, sort_keys=True) for ann in annotations]
-        votes_counter = Counter(serialized)
-        most_common_serialized, max_votes = votes_counter.most_common(1)[0]
+    # ===== Consensus for verification =====
+    def _calculate_verification_consensus(
+        self, annotation: list, total_votes: int, target_annotation: list
+    ) -> ConsensusSchema:
+        if not annotation:
+            return ConsensusSchema(is_consensus_reached=False)
 
-        confidence = max_votes / total_votes
-        if confidence > 0.5:
-            return ConsensusSchema(is_consensus_reached=True, final_annotation=json.loads(most_common_serialized))
+        positive_votes = 0
+        for ann in annotation:
+            vote = ann.get("vote") if isinstance(ann, dict) else ann
+            if vote in [True, "true", "approved", "yes"]:
+                positive_votes += 1
+
+        approval_confidence = positive_votes / total_votes
+        rejection_confidence = (total_votes - positive_votes) / total_votes
+
+        if approval_confidence >= 0.8:
+            return ConsensusSchema(is_consensus_reached=True, verdict="APPROVED", final_annotation=target_annotation)
+        elif rejection_confidence >= 0.8:
+            return ConsensusSchema(is_consensus_reached=True, verdict="REJECTED", final_annotation=target_annotation)
+
         return ConsensusSchema(is_consensus_reached=False)

@@ -1,13 +1,15 @@
 from typing import List
-from uuid import UUID
 
-from app.domain.entities.task_schema import TaskOut, TaskSchema
+from app.db.models.pool import Pool
+from app.domain.entities.task_schema import TaskOut
+from app.domain.interfaces.pool_interface import IPoolRepository
 from app.domain.interfaces.task_interface import ITaskRepository
 
 
 class TaskService:
-    def __init__(self, task_repo: ITaskRepository):
+    def __init__(self, task_repo: ITaskRepository, pool_repo: IPoolRepository):
         self._task_repo = task_repo
+        self._pool_repo = pool_repo
 
     def get_all_tasks(self) -> List[TaskOut]:
         tasks = self._task_repo.get_all_tasks()
@@ -27,3 +29,27 @@ class TaskService:
             return None
 
         return deleted
+
+    def _move_task_to_annotation_retry(self, task_id: int, current_pool_id: int) -> bool:
+        current_pool = self._pool_repo.get_pool_by_id(current_pool_id)
+        if not current_pool:
+            return None
+
+        annotation_pool = self._pool_repo._get_pool_by_type(
+            pipeline_id=current_pool.pipeline_id, pool_type=Pool.PoolType.ANNOTATION
+        )
+        if not annotation_pool:
+            return None
+
+        moved = self._task_repo._move_task_to_pool(
+            task_id=task_id, new_pool_id=annotation_pool.pool_id, intermediate_data={}
+        )
+        if not moved:
+            return None
+
+        if annotation_pool.status == Pool.PoolStatus.COMPLETED:
+            marked = self._pool_repo._mark_pool_open(annotation_pool.pool_id)
+            if not marked:
+                return None
+
+        return marked

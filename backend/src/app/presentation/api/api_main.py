@@ -49,15 +49,15 @@ def get_api():
     pipeline_repo = PipelineRepository()
 
     # Build services
-    consensus_service = ConsensusService(assignment_repo, pool_repo)
+    consensus_service = ConsensusService(assignment_repo, pool_repo, task_repo)
+    task_service = TaskService(task_repo, pool_repo)
     pipeline_engine = PipelineEngine(
-        task_repo, assignment_repo, consensus_service, pool_repo, pipeline_repo, skill_repo
+        task_repo, assignment_repo, consensus_service, pool_repo, pipeline_repo, skill_repo, task_service
     )
     skill_service = SkillService(skill_repo)
     user_service = UserService(user_repo, skill_repo)
     pool_service = PoolService(pool_repo, skill_repo, task_repo)
     dataset_service = DatasetService(dataset_repo)
-    task_service = TaskService(task_repo)
     assignment_service = AssignmentService(assignment_repo, task_repo, pipeline_engine)
 
     # Build handlers

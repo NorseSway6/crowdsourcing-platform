@@ -22,8 +22,11 @@ class ITaskRepository:
     def get_next_task(self, user_id: UUID, pool_id) -> Task:
         pass
 
-    def _mark_task_completed(self, task_id: int, final_annotation: list) -> None:
+    def _mark_task_completed(self, task_id: int, final_annotation: list) -> bool:
         pass
 
-    def _move_task_to_pool(self, task_id: int, new_pool_id: int, intermediate_data: dict) -> None:
+    def _move_task_to_pool(self, task_id: int, new_pool_id: int, intermediate_data: dict) -> bool:
+        pass
+
+    def _has_active_tasks_in_pool(self, pool_id: int) -> bool:
         pass
