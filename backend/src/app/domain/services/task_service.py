@@ -47,9 +47,18 @@ class TaskService:
         if not moved:
             return None
 
+        marked = None
         if annotation_pool.status == Pool.PoolStatus.COMPLETED:
             marked = self._pool_repo._mark_pool_open(annotation_pool.pool_id)
             if not marked:
                 return None
 
         return marked
+
+    def link_tasks_to_pool(self, tasks: List[TaskOut], pool_id: int, limit: int) -> bool:
+        if limit is None or limit <= 0:
+            task_ids = [t.task_id for t in tasks]
+        else:
+            task_ids = [t.task_id for t in tasks][:limit]
+
+        return self._task_repo.link_tasks_to_pool(task_ids, pool_id)

@@ -1,9 +1,10 @@
 from django.db import transaction
 
-from app.domain.entities.pool_schema import PoolFilter, PoolOut, PoolSchema
+from app.domain.entities.pool_schema import PoolFilter, PoolOut, PoolSchema, PoolType
 from app.domain.interfaces.pool_interface import IPoolRepository
 from app.domain.interfaces.skill_interface import ISkillRepository
 from app.domain.interfaces.task_interface import ITaskRepository
+from config import settings
 
 
 class PoolService:
@@ -48,3 +49,47 @@ class PoolService:
                 return None
 
             return PoolOut.from_orm(pool)
+
+    def create_pool(self, pipeline, index, pool_data: PoolSchema) -> PoolOut:
+        if pool_data.pool_type == PoolType.ANNOTATION:
+            overlap = settings.OVERLAP_ANNOTATION
+        elif pool_data.pool_type == PoolType.VERIFICATION:
+            overlap = settings.OVERLAP_VERIFICATION
+
+        with transaction.atomic():
+            pool = self._pool_repo.create_pool(pipeline, index, pool_data, overlap)
+            if not pool:
+                return None
+
+            if pool_data.skills:
+                skill_names = list(set(pool_data.skills))
+                existing_skills = self._skill_repo.get_skills_by_names(skill_names)
+
+                if len(existing_skills) != len(skill_names):
+                    return None
+
+                pool.skills.add(*existing_skills)
+
+            return PoolOut.from_orm(pool)
+
+    def try_complete_pool(self, pool_id: int) -> None:
+        has_active_tasks = self._task_repo._has_active_tasks_in_pool(pool_id)
+        if has_active_tasks:
+            return
+
+        marked = self._pool_repo._mark_pool_completed(pool_id)
+        if not marked:
+            return
+
+    def _get_next_pool_in_pipeline(self, current_pool_id: int) -> int:
+        current_pool = self._pool_repo.get_pool_by_id(current_pool_id)
+        if not current_pool:
+            return None
+
+        next_pool = self._pool_repo.get_next_pool_by_order(
+            pipeline_id=current_pool.pipeline_id, current_order=current_pool.order
+        )
+        if not next_pool:
+            return None
+
+        return next_pool.pool_id

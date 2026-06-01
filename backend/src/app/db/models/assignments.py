@@ -12,6 +12,7 @@ class Assignment(models.Model):
         PENDING = "PENDING", _("Pending")
         APPROVED = "APPROVED", _("Approved")
         REJECTED = "REJECTED", _("Rejected")
+        ARCHIVED = "ARCHIVED", _("Archived")
 
     assignment_id = models.BigAutoField(primary_key=True, verbose_name="assignment_id")
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="assignment_task", verbose_name="task")

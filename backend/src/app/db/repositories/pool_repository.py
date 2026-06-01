@@ -31,13 +31,13 @@ class PoolRepository(IPoolRepository):
     def get_next_pool_by_order(self, pipeline_id: int, current_order: int) -> Pool:
         return Pool.objects.filter(pipeline_id=pipeline_id, order=current_order + 1).first()
 
-    def create_pool(self, pipeline, index, pool_data: PoolSchema) -> Pool:
+    def create_pool(self, pipeline, index, pool_data: PoolSchema, overlap: int) -> Pool:
         try:
             pool = Pool.objects.create(
                 pipeline=pipeline,
                 order=index,
                 points=pool_data.points,
-                overlap=pool_data.overlap,
+                overlap=overlap,
                 pool_type=pool_data.pool_type,
                 target_institution=pool_data.target_institution,
                 tasks_limit=pool_data.tasks_limit,
@@ -63,5 +63,5 @@ class PoolRepository(IPoolRepository):
         updated = Pool.objects.filter(pool_id=pool_id).update(status=Pool.PoolStatus.OPEN)
         return updated > 0
 
-    def _get_pool_by_type(self, pipeline_id: int, pool_type: str) -> Pool | None:
+    def _get_pool_by_type(self, pipeline_id: int, pool_type: str) -> Pool:
         return Pool.objects.filter(pipeline_id=pipeline_id, pool_type=pool_type).first()

@@ -19,8 +19,8 @@ class UserService:
             if not user:
                 return None
 
-            if user_data.profile:
-                profile_data = user_data.profile
+            if user_data.user_profile:
+                profile_data = user_data.user_profile
 
                 profile = self._user_repo.create_profile(user, profile_data)
                 if not profile:

@@ -32,15 +32,8 @@ class VerificationAnnotation(Schema):
     is_correct: bool = Field(...)
 
 
-class ClassificationAnnotation(Schema):
-    type: Literal["classification"] = "classification"
-    category_id: int = Field(...)
-
-
 class AssignmentSchema(Schema):
-    annotation: Optional[Union[CocoAnnotation, VerificationAnnotation, ClassificationAnnotation]] = Field(
-        default=None, discriminator="type"
-    )
+    annotation: Optional[Union[CocoAnnotation, VerificationAnnotation]] = Field(default=None, discriminator="type")
 
 
 class AssignmentOut(AssignmentSchema):

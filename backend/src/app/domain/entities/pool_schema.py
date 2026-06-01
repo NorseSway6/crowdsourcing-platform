@@ -19,13 +19,13 @@ class PoolStatus(str, Enum):
 class PoolSchema(Schema):
     points: int = Field(...)
     skills: Optional[List[str]] = Field(default=[])
-    overlap: PositiveInt = Field(...)
     pool_type: PoolType = Field(...)
     target_institution: Optional[str] = Field(None)
     tasks_limit: int = Field(...)
 
 
 class PoolOut(PoolSchema):
+    overlap: PositiveInt = Field(...)
     pool_id: int = Field(...)
     pipeline_id: int = Field(...)
     order: int = Field(...)

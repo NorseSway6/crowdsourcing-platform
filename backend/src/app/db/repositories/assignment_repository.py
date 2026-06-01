@@ -36,20 +36,30 @@ class AssignmentRepository(IAssignmentRepository):
         return list(
             Assignment.objects.filter(
                 task_id=task_id,
-                task__pool_id=pool_id,
+                pool_id=pool_id,
                 status__in=[Assignment.Status.PENDING, Assignment.Status.APPROVED],
             )
             .exclude(annotation__isnull=True)
             .values_list("annotation", flat=True)
         )
 
-    def _get_all_for_task(self, task_id: int, current_pool_id: int) -> list[Assignment]:
-        return Assignment.objects.filter(task_id=task_id, task__pool_id=current_pool_id).all()
+    def get_ready_to_resolve_assignments(self, task_id: int, current_pool_id: int) -> list[Assignment]:
+        return Assignment.objects.filter(
+            task_id=task_id, pool_id=current_pool_id, status=Assignment.Status.PENDING
+        ).all()
 
     def _bulk_update_assignments(self, assignments: list[Assignment]) -> bool:
         updated = Assignment.objects.bulk_update(assignments, ["status"])
         return updated > 0
 
-    def _reject_all_assignments_for_task(self, task_id: int, pool_id: int) -> bool:
+    def _reject_assignment_for_task(self, task_id: int, pool_id: int) -> bool:
         updated = Assignment.objects.filter(task_id=task_id, pool_id=pool_id).update(status=Assignment.Status.REJECTED)
+        return updated > 0
+
+    def _approve_assignment_for_task(self, task_id: int, pool_id: int) -> bool:
+        updated = Assignment.objects.filter(task_id=task_id, pool_id=pool_id).update(status=Assignment.Status.APPROVED)
+        return updated > 0
+
+    def archive_assignments_for_task(self, task_id: int, pool_id: int) -> bool:
+        updated = Assignment.objects.filter(task_id=task_id, pool_id=pool_id).update(status=Assignment.Status.ARCHIVED)
         return updated > 0

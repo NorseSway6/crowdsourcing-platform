@@ -1,7 +1,5 @@
-from typing import Any
 from uuid import UUID
 
-from django.db import transaction
 from django.db.models import Count, F, OuterRef, Q, Subquery
 from django.db.models.functions import Coalesce
 
@@ -23,15 +21,12 @@ class TaskRepository(ITaskRepository):
         deleted, _ = Task.objects.filter(task_id=task_id).delete()
         return deleted
 
-    def get_unassigned_tasks_by_dataset(self, dataset_id: int) -> any:
-        return Task.objects.filter(dataset_id=dataset_id, pool_id__isnull=True)
+    def get_unassigned_tasks_by_dataset(self, dataset_id: int) -> list[Task]:
+        return Task.objects.filter(dataset_id=dataset_id, pool_id__isnull=True).all()
 
-    def link_tasks_to_pool(self, tasks_queryset, pool_id: int, limit: int | None = None) -> None:
-        if limit is not None and limit > 0:
-            task_ids = list(tasks_queryset.values_list("task_id", flat=True)[:limit])
-            Task.objects.filter(task_id__in=task_ids).update(pool_id=pool_id)
-        else:
-            tasks_queryset.update(pool_id=pool_id)
+    def link_tasks_to_pool(self, tasks_ids: list[int], pool_id: int) -> bool:
+        updated = Task.objects.filter(task_id__in=tasks_ids).update(pool_id=pool_id)
+        return updated > 0
 
     def get_next_task(self, user_id: UUID, pool_id: int) -> Task | None:
         valid_assignments_subquery = (
@@ -39,7 +34,7 @@ class TaskRepository(ITaskRepository):
                 task_id=OuterRef("pk"),
                 pool_id=pool_id,
             )
-            .exclude(status=Assignment.Status.REJECTED)
+            .exclude(status__in=[Assignment.Status.REJECTED, Assignment.Status.ARCHIVED])
             .values("task_id")
             .annotate(cnt=Count("assignment_id"))
             .values("cnt")
@@ -49,8 +44,8 @@ class TaskRepository(ITaskRepository):
             Task.objects.filter(
                 pool_id=pool_id,
                 pool__status=Pool.PoolStatus.OPEN,
-                pool__skills__profile_skill__user_id=user_id,
             )
+            .filter(Q(pool__skills__isnull=True) | Q(pool__skills__profile_skill__user_id=user_id))
             .exclude(assignment_task__user_id=user_id)
             .annotate(valid_assignments_count=Coalesce(Subquery(valid_assignments_subquery), 0))
             .filter(valid_assignments_count__lt=F("pool__overlap"))
@@ -63,8 +58,12 @@ class TaskRepository(ITaskRepository):
 
         return Task.objects.select_for_update(skip_locked=True).filter(pk=candidate_id).first()
 
-    def _mark_task_completed(self, task_id: int, final_annotation: list) -> bool:
-        updated = Task.objects.filter(task_id=task_id).update(status=Task.Status.COMPLETED, annotation=final_annotation)
+    def _mark_task_completed(
+        self,
+        task_id: int,
+        pool_id: int,
+    ) -> bool:
+        updated = Task.objects.filter(task_id=task_id, pool_id=pool_id).update(status=Task.Status.COMPLETED)
         return updated > 0
 
     def _move_task_to_pool(self, task_id: int, new_pool_id: int, intermediate_data: dict) -> bool:

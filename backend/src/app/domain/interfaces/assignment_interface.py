@@ -28,5 +28,5 @@ class IAssignmentRepository:
     def _bulk_update_assignments(self, assignments: list[Assignment]) -> bool:
         pass
 
-    def _reject_all_assignments_for_task(self, task_id: int, pool_id: int) -> bool:
+    def _reject_assignment_for_task(self, task_id: int, pool_id: int) -> bool:
         pass
