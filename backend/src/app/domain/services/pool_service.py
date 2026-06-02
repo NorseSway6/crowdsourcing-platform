@@ -1,5 +1,6 @@
 from django.db import transaction
 
+from app.db.models.pool import Pool
 from app.domain.entities.pool_schema import PoolFilter, PoolOut, PoolSchema, PoolType
 from app.domain.interfaces.pool_interface import IPoolRepository
 from app.domain.interfaces.skill_interface import ISkillRepository
@@ -72,14 +73,16 @@ class PoolService:
 
             return PoolOut.from_orm(pool)
 
-    def try_complete_pool(self, pool_id: int) -> None:
-        has_active_tasks = self._task_repo._has_active_tasks_in_pool(pool_id)
-        if has_active_tasks:
-            return
+    def try_complete_pool(self, pool: Pool) -> bool:
+        unfinished_tasks_count = self._task_repo.count_unfinished_tasks(pool.pool_id)
 
-        marked = self._pool_repo._mark_pool_completed(pool_id)
-        if not marked:
-            return
+        if unfinished_tasks_count == 0:
+            marked = self._pool_repo._mark_pool_completed(pool.pool_id)
+            if not marked:
+                return None
+            return True
+
+        return False
 
     def _get_next_pool_in_pipeline(self, current_pool_id: int) -> int:
         current_pool = self._pool_repo.get_pool_by_id(current_pool_id)

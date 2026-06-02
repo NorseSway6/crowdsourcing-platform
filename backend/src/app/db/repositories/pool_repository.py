@@ -59,9 +59,5 @@ class PoolRepository(IPoolRepository):
         updated = Pool.objects.filter(pool_id=pool_id).update(status=Pool.PoolStatus.COMPLETED)
         return updated > 0
 
-    def _mark_pool_open(self, pool_id: int) -> bool:
-        updated = Pool.objects.filter(pool_id=pool_id).update(status=Pool.PoolStatus.OPEN)
-        return updated > 0
-
     def _get_pool_by_type(self, pipeline_id: int, pool_type: str) -> Pool:
         return Pool.objects.filter(pipeline_id=pipeline_id, pool_type=pool_type).first()

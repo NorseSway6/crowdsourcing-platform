@@ -214,6 +214,14 @@ class AssignmentHandlers:
             return 404, ErrorResponse(detail="Assignments not found")
         return 200, assignments
 
+    def get_completed_assignments_by_user(
+        self, request, user_id: UUID
+    ) -> tuple[int, list[AssignmentOut] | ErrorResponse]:
+        assignments = self._assignment_service.get_completed_assignments_by_user(user_id)
+        if not assignments:
+            return 404, ErrorResponse(detail="Assignments not found")
+        return 200, assignments
+
     def create_assignment(self, request, user_id: UUID, pool_id: int) -> tuple[int, AssignmentOut | ErrorResponse]:
         assignment = self._assignment_service.create_assignment(user_id, pool_id)
         if not assignment:

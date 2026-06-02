@@ -1,3 +1,4 @@
+import datetime
 from uuid import UUID
 
 from django.db import IntegrityError
@@ -13,9 +14,11 @@ class AssignmentRepository(IAssignmentRepository):
     def get_assignment_by_id(self, user_id: UUID, assignment_id: int) -> Assignment:
         return Assignment.objects.select_related("task").filter(assignment_id=assignment_id, user_id=user_id).first()
 
-    def create_assignment(self, user_id: UUID, task_id: int, pool_id: int) -> Assignment:
+    def create_assignment(self, user_id: UUID, task_id: int, pool_id: int, expires_at: datetime) -> Assignment:
         try:
-            assignment = Assignment.objects.create(task_id=task_id, user_id=user_id, pool_id=pool_id)
+            assignment = Assignment.objects.create(
+                task_id=task_id, user_id=user_id, pool_id=pool_id, expires_at=expires_at
+            )
         except IntegrityError:
             return None
 
@@ -52,6 +55,7 @@ class AssignmentRepository(IAssignmentRepository):
         updated = Assignment.objects.bulk_update(assignments, ["status"])
         return updated > 0
 
+    # Объединить?
     def _reject_assignment_for_task(self, task_id: int, pool_id: int) -> bool:
         updated = Assignment.objects.filter(task_id=task_id, pool_id=pool_id).update(status=Assignment.Status.REJECTED)
         return updated > 0
@@ -62,4 +66,10 @@ class AssignmentRepository(IAssignmentRepository):
 
     def archive_assignments_for_task(self, task_id: int, pool_id: int) -> bool:
         updated = Assignment.objects.filter(task_id=task_id, pool_id=pool_id).update(status=Assignment.Status.ARCHIVED)
+        return updated > 0
+
+    # -
+
+    def reject_expired_assignment(self, assignment_id: int) -> bool:
+        updated = Assignment.objects.filter(assignment_id=assignment_id).update(status=Assignment.Status.REJECTED)
         return updated > 0

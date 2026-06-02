@@ -58,7 +58,7 @@ def get_api():
     pipeline_engine = PipelineEngine(
         task_repo, assignment_repo, consensus_service, pool_repo, pipeline_repo, skill_repo, task_service, pool_service
     )
-    assignment_service = AssignmentService(assignment_repo, task_repo, pipeline_engine)
+    assignment_service = AssignmentService(assignment_repo, task_repo, pipeline_engine, pool_repo)
 
     # Build handlers
     skill_handlers = SkillHandlers(skill_service)

@@ -27,6 +27,7 @@ class Pool(models.Model):
     status = models.CharField(max_length=50, choices=PoolStatus.choices, default=PoolStatus.OPEN)
     target_institution = models.CharField(max_length=100, blank=True, null=True, verbose_name="target_institution")
     tasks_limit = models.IntegerField(default=10, verbose_name="tasks_limit")
+    time_limit = models.IntegerField(default=600, verbose_name="time_limit")
 
     @property
     def skill_names(self):

@@ -22,6 +22,7 @@ class PoolSchema(Schema):
     pool_type: PoolType = Field(...)
     target_institution: Optional[str] = Field(None)
     tasks_limit: int = Field(...)
+    time_limit: int = Field(...)
 
 
 class PoolOut(PoolSchema):

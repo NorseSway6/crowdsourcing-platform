@@ -3,7 +3,7 @@ from enum import Enum
 from typing import List, Literal, Optional, Union
 
 from ninja import Schema
-from pydantic import Field, PastDatetime, model_validator
+from pydantic import Field, FutureDatetime, PastDatetime
 
 
 class AssignmentStatus(str, Enum):
@@ -44,3 +44,4 @@ class AssignmentOut(AssignmentSchema):
     started_at: PastDatetime = Field(...)
     status: AssignmentStatus = Field(...)
     completed_at: Optional[PastDatetime] = Field(...)
+    expires_at: Optional[FutureDatetime] = Field(...)

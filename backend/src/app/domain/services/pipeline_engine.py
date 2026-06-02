@@ -90,7 +90,9 @@ class PipelineEngine(IPipelineRepository):
             assignments = self._consensus_service._resolve_assignments(task_id, current_pool_id, consensus_result)
             if not assignments:
                 return
-            self._assignment_repo._bulk_update_assignments(assignments)
+            updated = self._assignment_repo._bulk_update_assignments(assignments)
+            if not updated:
+                return
 
             current_pool = self._pool_repo.get_pool_by_id(current_pool_id)
             if not current_pool:
@@ -105,6 +107,8 @@ class PipelineEngine(IPipelineRepository):
                 if not annotation_pool:
                     return
                 self._resolve_verification(task_id, current_pool_id, annotation_pool, consensus_result)
+
+                self._pool_service.try_complete_pool(annotation_pool)
 
     def _resolve_annotation(self, task_id: int, current_pool_id: int, consensus_result: ConsensusSchema) -> None:
         next_pool_id = self._pool_service._get_next_pool_in_pipeline(current_pool_id)
@@ -134,8 +138,6 @@ class PipelineEngine(IPipelineRepository):
                 marked = self._task_repo._mark_task_completed(task_id, current_pool_id)
                 if not marked:
                     return
-                self._pool_service.try_complete_pool(current_pool_id)
-                self._pool_service.try_complete_pool(annotation_pool.pool_id)
                 return
 
             moved = self._task_repo._move_task_to_pool(
@@ -147,21 +149,15 @@ class PipelineEngine(IPipelineRepository):
                 return
 
         elif consensus_result.verdict == "REJECTED":
-            self._task_service._move_task_to_annotation_retry(task_id, current_pool_id)
+            moved = self._task_service._move_task_to_annotation_retry(task_id, current_pool_id)
+            if not moved:
+                return
 
             rejected = self._assignment_repo._reject_assignment_for_task(task_id, annotation_pool.pool_id)
             if not rejected:
                 return
 
-            if annotation_pool and annotation_pool.status == Pool.PoolStatus.COMPLETED:
-                marked1 = self._pool_repo._mark_pool_open(annotation_pool.pool_id)
-                if not marked1:
-                    return
-                marked2 = self._pool_repo._mark_pool_open(current_pool_id)
-                if not marked2:
-                    return
-
-            archided = self._assignment_repo.archive_assignments_for_task(task_id, current_pool_id)
-            if not archided:
+            archived = self._assignment_repo.archive_assignments_for_task(task_id, current_pool_id)
+            if not archived:
                 return
             return

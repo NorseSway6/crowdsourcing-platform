@@ -74,5 +74,9 @@ class TaskRepository(ITaskRepository):
         )
         return updated > 0
 
-    def _has_active_tasks_in_pool(self, pool_id: int) -> bool:
-        return Task.objects.filter(pool_id=pool_id).exclude(status=Task.Status.COMPLETED).exists()
+    def count_unfinished_tasks(self, pool_id: int) -> int:
+        return (
+            Task.objects.filter(pool_id=pool_id)
+            .exclude(assignment_task__pool_id=pool_id, assignment_task__status=Assignment.Status.APPROVED)
+            .count()
+        )

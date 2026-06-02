@@ -24,6 +24,7 @@ class Assignment(models.Model):
     started_at = models.DateTimeField(auto_now_add=True, verbose_name="started_at")
     completed_at = models.DateTimeField(null=True, blank=True, verbose_name="completed_at")
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.IN_PROGRESS, verbose_name="status")
+    expires_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.assignment_id}"

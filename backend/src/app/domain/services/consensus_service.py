@@ -1,13 +1,10 @@
-import json
-from collections import Counter
-from typing import Union
-
 from app.db.models.assignments import Assignment
 from app.db.models.pool import Pool
 from app.domain.entities.consensus_schema import ConsensusSchema
 from app.domain.interfaces.assignment_interface import IAssignmentRepository
 from app.domain.interfaces.pool_interface import IPoolRepository
 from app.domain.interfaces.task_interface import ITaskRepository
+from config import settings
 
 
 class ConsensusService:
@@ -69,9 +66,9 @@ class ConsensusService:
         approval_confidence = positive_votes / total_votes
         rejection_confidence = (total_votes - positive_votes) / total_votes
 
-        if approval_confidence >= 0.8:
+        if approval_confidence >= settings.VALIDATION_THRESHOLD:
             return ConsensusSchema(is_consensus_reached=True, verdict="APPROVED", final_annotation=target_annotation)
-        elif rejection_confidence >= 0.8:
+        elif rejection_confidence >= settings.VALIDATION_THRESHOLD:
             return ConsensusSchema(is_consensus_reached=True, verdict="REJECTED", final_annotation=target_annotation)
 
         return ConsensusSchema(is_consensus_reached=False)
