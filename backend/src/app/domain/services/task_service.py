@@ -1,5 +1,6 @@
 from typing import List
 
+import app.domain.exceptions as exc
 from app.db.models.pool import Pool
 from app.domain.entities.task_schema import TaskOut
 from app.domain.interfaces.pool_interface import IPoolRepository
@@ -33,29 +34,29 @@ class TaskService:
     def _move_task_to_annotation_retry(self, task_id: int, current_pool_id: int) -> bool:
         current_pool = self._pool_repo.get_pool_by_id(current_pool_id)
         if not current_pool:
-            return None
+            raise exc.PoolNotFoundError()
 
         annotation_pool = self._pool_repo._get_pool_by_type(
             pipeline_id=current_pool.pipeline_id, pool_type=Pool.PoolType.ANNOTATION
         )
         if not annotation_pool:
-            return None
+            raise exc.PoolNotFoundError()
 
         moved = self._task_repo._move_task_to_pool(
             task_id=task_id, new_pool_id=annotation_pool.pool_id, intermediate_data={}
         )
         if not moved:
-            return None
+            raise exc.TaskMoveError()
 
         marked = None
         if annotation_pool.status == Pool.PoolStatus.COMPLETED:
             marked = self._pool_repo._mark_pool_open(annotation_pool.pool_id)
             if not marked:
-                return None
+                raise exc.PoolMarkingError()
 
         return marked
 
-    def link_tasks_to_pool(self, tasks: List[TaskOut], pool_id: int, limit: int) -> bool:
+    def _link_tasks_to_pool(self, tasks: List[TaskOut], pool_id: int, limit: int) -> bool:
         if limit is None or limit <= 0:
             task_ids = [t.task_id for t in tasks]
         else:

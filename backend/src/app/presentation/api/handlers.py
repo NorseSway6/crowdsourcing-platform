@@ -1,3 +1,4 @@
+from http import HTTPStatus
 from uuid import UUID
 
 from ninja import UploadedFile
@@ -28,19 +29,19 @@ class SkillHandlers:
         skills = self._skill_service.get_all_skills()
         if not skills:
             return 404, ErrorResponse(detail="Skills not found")
-        return 200, skills
+        return HTTPStatus.OK, skills
 
     def create_skill(self, request, skill_data: SkillSchema) -> tuple[int, SkillSchema | ErrorResponse]:
         skill = self._skill_service.create_skill(skill_data)
         if not skill:
             return 400, ErrorResponse(detail="Skills not found")
-        return 201, skill
+        return HTTPStatus.CREATED, skill
 
     def delete_skill(self, request, skill_data: SkillSchema) -> tuple[int, SuccessResponse | ErrorResponse]:
         deleted = self._skill_service.delete_skill(skill_data)
         if not deleted:
             return 400, ErrorResponse(detail="Skill delete error")
-        return 200, SuccessResponse(detail="Skill delete successfully")
+        return HTTPStatus.OK, SuccessResponse(detail="Skill delete successfully")
 
 
 class PoolHandlers:
@@ -51,19 +52,19 @@ class PoolHandlers:
         pools = self._pool_service.get_all_pools(filters)
         if not pools:
             return 404, ErrorResponse(detail="Pools not found")
-        return 200, pools
+        return HTTPStatus.OK, pools
 
     def get_pool_by_id(self, request, pool_id: int) -> tuple[int, PoolOut | ErrorResponse]:
         pool = self._pool_service.get_pool_by_id(pool_id)
         if not pool:
             return 404, ErrorResponse(detail="Pools not found")
-        return 200, pool
+        return HTTPStatus.OK, pool
 
     def update_pool(self, request, pool_id: int, pool_data: PoolSchema) -> tuple[int, PoolOut | ErrorResponse]:
         updated = self._pool_service.update_pool(pool_id, pool_data)
         if not updated:
             return 400, ErrorResponse(detail="Pool update error")
-        return 200, updated
+        return HTTPStatus.OK, updated
 
 
 class PipelineHandlers:
@@ -74,15 +75,13 @@ class PipelineHandlers:
         pipelines = self._pipeline_service.get_pipelines_by_user(owner_id)
         if not pipelines:
             return 404, ErrorResponse(detail="Pipelines not found")
-        return 200, pipelines
+        return HTTPStatus.OK, pipelines
 
     def create_pipeline(
         self, request, owner_id: UUID, pipeline_data: PipelineIn
     ) -> tuple[int, PipelineOut | ErrorResponse]:
         pipeline = self._pipeline_service.create_pools(owner_id, pipeline_data)
-        if not pipeline:
-            return 400, ErrorResponse(detail="Pipeline create error")
-        return 201, pipeline
+        return HTTPStatus.OK, pipeline
 
     def update_pipeline(
         self, request, pipeline_id: int, pipeline_data: PipelineIn
@@ -90,13 +89,13 @@ class PipelineHandlers:
         updated = self._pipeline_service.update_pipeline(pipeline_id, pipeline_data)
         if not updated:
             return 400, ErrorResponse(detail="Pipeline update error")
-        return 200, updated
+        return HTTPStatus.OK, updated
 
     def delete_pipeline(self, request, pipeline_id: int) -> tuple[int, SuccessResponse | ErrorResponse]:
         deleted = self._pipeline_service.delete_pipeline(pipeline_id)
         if not deleted:
             return 400, ErrorResponse(detail="Pipeline delete error")
-        return 200, SuccessResponse(detail="Pipeline delete successfully")
+        return HTTPStatus.OK, SuccessResponse(detail="Pipeline delete successfully")
 
 
 class UserHandlers:
@@ -107,19 +106,19 @@ class UserHandlers:
         user = self._user_service.create_user(user_data)
         if not user:
             return 400, ErrorResponse(detail="User create error")
-        return 201, user
+        return HTTPStatus.CREATED, user
 
     def get_all_users(self, request) -> tuple[int, list[UserOut] | ErrorResponse]:
         users = self._user_service.get_all_users()
         if not users:
             return 404, ErrorResponse(detail="Users not found")
-        return 200, users
+        return HTTPStatus.OK, users
 
     def get_user_by_id(self, request, user_id: UUID) -> tuple[int, UserOut | ErrorResponse]:
         user = self._user_service.get_user_by_id(user_id)
         if not user:
             return 404, ErrorResponse(detail="User not found")
-        return 200, user
+        return HTTPStatus.OK, user
 
     def update_user_profile(
         self, request, user_id: UUID, profile_data: ProfileSchema
@@ -127,13 +126,13 @@ class UserHandlers:
         user = self._user_service.update_user_profile(user_id, profile_data)
         if not user:
             return 400, ErrorResponse(detail="User not found")
-        return 200, user
+        return HTTPStatus.OK, user
 
     def delete_user(self, request, user_id: UUID) -> tuple[int, SuccessResponse | ErrorResponse]:
         deleted = self._user_service.delete_user(user_id)
         if not deleted:
             return 400, ErrorResponse(detail="User delete error")
-        return 200, SuccessResponse(detail="User delete successfully")
+        return HTTPStatus.OK, SuccessResponse(detail="User delete successfully")
 
 
 class DatasetHandlers:
@@ -144,13 +143,13 @@ class DatasetHandlers:
         dataset = self._dataset_service.get_dataset_by_id(dataset_id)
         if not dataset:
             return 404, ErrorResponse(detail="Dataset not found")
-        return 200, dataset
+        return HTTPStatus.OK, dataset
 
     def get_datasets_by_user(self, request, user_id: UUID) -> tuple[int, list[DatasetOut] | ErrorResponse]:
         datasets = self._dataset_service.get_datasets_by_user(user_id)
         if not datasets:
             return 404, ErrorResponse(detail="Datasets not found")
-        return 200, datasets
+        return HTTPStatus.OK, datasets
 
     def create_dataset(
         self, request, owner_id: UUID, dataset_data: DatasetSchema
@@ -158,7 +157,7 @@ class DatasetHandlers:
         dataset = self._dataset_service.create_dataset(owner_id, dataset_data)
         if not dataset:
             return 400, ErrorResponse(detail="Dataset create error")
-        return 201, dataset
+        return HTTPStatus.CREATED, dataset
 
     def update_dataset(
         self, request, dataset_id: int, dataset_data: DatasetSchema
@@ -166,19 +165,19 @@ class DatasetHandlers:
         updated = self._dataset_service.update_dataset(dataset_id, dataset_data)
         if not updated:
             return 400, ErrorResponse(detail="Dataset update error")
-        return 200, updated
+        return HTTPStatus.OK, updated
 
     def delete_dataset(self, request, dataset_id: int) -> tuple[int, SuccessResponse | ErrorResponse]:
         deleted = self._dataset_service.delete_dataset(dataset_id)
         if not deleted:
             return 400, ErrorResponse(detail="Dataset delete error")
-        return 200, SuccessResponse(detail="Dataset delete successfully")
+        return HTTPStatus.OK, SuccessResponse(detail="Dataset delete successfully")
 
     def upload_images(self, request, dataset_id: int, files: UploadedFile) -> tuple[int, list[TaskOut] | ErrorResponse]:
         dataset = self._dataset_service.upload_images(dataset_id, files)
         if not dataset:
             return 400, ErrorResponse(detail="Image upload error")
-        return 201, dataset
+        return HTTPStatus.CREATED, dataset
 
 
 class TaskHandlers:
@@ -189,19 +188,19 @@ class TaskHandlers:
         tasks = self._task_service.get_all_tasks()
         if not tasks:
             return 404, ErrorResponse(detail="Tasks not found")
-        return 200, tasks
+        return HTTPStatus.OK, tasks
 
     def get_task_by_id(self, request, task_id: int) -> tuple[int, TaskOut | ErrorResponse]:
         task = self._task_service.get_task_by_id(task_id)
         if not task:
             return 404, ErrorResponse(detail="Task not found")
-        return 200, task
+        return HTTPStatus.OK, task
 
     def delete_task(self, request, task_id: int) -> tuple[int, SuccessResponse | ErrorResponse]:
         deleted = self._task_service.delete_task(task_id)
         if not deleted:
             return 400, ErrorResponse(detail="Task delete error")
-        return 200, SuccessResponse(detail="Task delete successfully")
+        return HTTPStatus.OK, SuccessResponse(detail="Task delete successfully")
 
 
 class AssignmentHandlers:
@@ -212,7 +211,7 @@ class AssignmentHandlers:
         assignments = self._assignment_service.get_assignments_by_user(user_id)
         if not assignments:
             return 404, ErrorResponse(detail="Assignments not found")
-        return 200, assignments
+        return HTTPStatus.OK, assignments
 
     def get_completed_assignments_by_user(
         self, request, user_id: UUID
@@ -220,18 +219,14 @@ class AssignmentHandlers:
         assignments = self._assignment_service.get_completed_assignments_by_user(user_id)
         if not assignments:
             return 404, ErrorResponse(detail="Assignments not found")
-        return 200, assignments
+        return HTTPStatus.OK, assignments
 
     def create_assignment(self, request, user_id: UUID, pool_id: int) -> tuple[int, AssignmentOut | ErrorResponse]:
         assignment = self._assignment_service.create_assignment(user_id, pool_id)
-        if not assignment:
-            return 400, ErrorResponse(detail="Assignment create error")
-        return 201, assignment
+        return HTTPStatus.CREATED, assignment
 
     def update_assignment(
         self, request, user_id: UUID, assignment_id: int, annotation_data: AssignmentSchema
     ) -> tuple[int, AssignmentOut | ErrorResponse]:
         updated = self._assignment_service.update_assignment(user_id, assignment_id, annotation_data)
-        if not updated:
-            return 400, ErrorResponse(detail="Assignment update error")
-        return 200, updated
+        return HTTPStatus.OK, updated

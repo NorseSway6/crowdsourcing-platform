@@ -36,7 +36,7 @@ def get_assignments_router(assigment_handlers):
         "/next",
         ["POST"],
         create_assignment,
-        response={201: AssignmentOut, 400: ErrorResponse},
+        response={201: AssignmentOut, 400: ErrorResponse, 404: ErrorResponse},
     )
 
     def update_assignment(
@@ -48,7 +48,7 @@ def get_assignments_router(assigment_handlers):
         "/{int:assignment_id}",
         ["PATCH"],
         update_assignment,
-        response={200: AssignmentOut, 400: ErrorResponse},
+        response={200: AssignmentOut, 400: ErrorResponse, 404: ErrorResponse},
     )
 
     return router

@@ -7,6 +7,7 @@ from app.db.repositories.platform_user_repository import UserRepository
 from app.db.repositories.pool_repository import PoolRepository
 from app.db.repositories.skill_repository import SkillRepository
 from app.db.repositories.task_repository import TaskRepository
+from app.domain.exceptions import DomainException
 from app.domain.services.assignment_service import AssignmentService
 from app.domain.services.consensus_service import ConsensusService
 from app.domain.services.dataset_service import DatasetService
@@ -82,3 +83,10 @@ def get_api():
 
 
 ninja_api = get_api()
+
+
+@ninja_api.exception_handler(DomainException)
+def domain_exception_handler(request, exc: DomainException):
+    return ninja_api.create_response(
+        request, {"detail": exc.message, "error_code": exc.error_code}, status=exc.status_code
+    )

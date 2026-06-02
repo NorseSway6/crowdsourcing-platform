@@ -2,6 +2,7 @@ from uuid import UUID
 
 from django.db import transaction
 
+import app.domain.exceptions as exc
 from app.db.models.pool import Pool
 from app.domain.entities.consensus_schema import ConsensusSchema
 from app.domain.entities.pipeline_schema import PipelineIn, PipelineOut
@@ -40,24 +41,24 @@ class PipelineEngine(IPipelineRepository):
         with transaction.atomic():
             tasks = self._task_repo.get_unassigned_tasks_by_dataset(pipeline_data.dataset_id)
             if not tasks:
-                return None
+                raise exc.EmptyDatasetError()
 
             pipeline = self._pipeline_repo.create_pipeline(owner_id, pipeline_data)
             if not pipeline:
-                return None
+                raise exc.PipelineCreationFailedError()
 
             start_pool = None
             for index, step_data in enumerate(pipeline_data.pools, start=1):
                 pool = self._pool_service.create_pool(pipeline, index, step_data)
                 if not pool:
-                    return None
+                    raise exc.PoolCreationFailedError(index)
 
                 if index == 1:
                     start_pool = pool
 
-            linked = self._task_service.link_tasks_to_pool(tasks, start_pool.pool_id, pipeline_data.limit)
+            linked = self._task_service._link_tasks_to_pool(tasks, start_pool.pool_id, pipeline_data.limit)
             if not linked:
-                return None
+                raise exc.TaskLinkingFailedError()
 
             return PipelineOut.from_orm(pipeline)
 
@@ -81,7 +82,7 @@ class PipelineEngine(IPipelineRepository):
             return None
         return deleted
 
-    def evaluate_stage_completion(self, task_id: int, current_pool_id: int) -> None:
+    def _evaluate_stage_completion(self, task_id: int, current_pool_id: int) -> None:
         consensus_result = self._consensus_service.calculate_pool_consensus(task_id, current_pool_id)
         if not consensus_result.is_consensus_reached:
             return
@@ -89,14 +90,14 @@ class PipelineEngine(IPipelineRepository):
         with transaction.atomic():
             assignments = self._consensus_service._resolve_assignments(task_id, current_pool_id, consensus_result)
             if not assignments:
-                return
+                raise exc.ConsensusCalculationError()
             updated = self._assignment_repo._bulk_update_assignments(assignments)
             if not updated:
-                return
+                raise exc.AssignmentOperationError()
 
             current_pool = self._pool_repo.get_pool_by_id(current_pool_id)
             if not current_pool:
-                return
+                raise exc.PoolNotFoundError()
 
             if current_pool.pool_type == Pool.PoolType.ANNOTATION:
                 self._resolve_annotation(task_id, current_pool_id, consensus_result)
@@ -105,17 +106,19 @@ class PipelineEngine(IPipelineRepository):
                     pipeline_id=current_pool.pipeline_id, pool_type=Pool.PoolType.ANNOTATION
                 )
                 if not annotation_pool:
-                    return
+                    raise exc.PoolNotFoundError()
                 self._resolve_verification(task_id, current_pool_id, annotation_pool, consensus_result)
 
-                self._pool_service.try_complete_pool(annotation_pool)
+                trying = self._pool_service.try_complete_pool(annotation_pool)
+                if not trying:
+                    raise exc.PoolCompletionError()
 
     def _resolve_annotation(self, task_id: int, current_pool_id: int, consensus_result: ConsensusSchema) -> None:
         next_pool_id = self._pool_service._get_next_pool_in_pipeline(current_pool_id)
         if not next_pool_id:
             marked = self._task_repo._mark_task_completed(task_id, current_pool_id)
             if not marked:
-                return
+                raise exc.TaskCompletionError()
             return
 
         moved = self._task_repo._move_task_to_pool(
@@ -124,7 +127,7 @@ class PipelineEngine(IPipelineRepository):
             intermediate_data=consensus_result.final_annotation,
         )
         if not moved:
-            return
+            raise exc.TaskMoveError()
 
     def _resolve_verification(
         self, task_id: int, current_pool_id: int, annotation_pool: Pool, consensus_result: ConsensusSchema
@@ -132,12 +135,13 @@ class PipelineEngine(IPipelineRepository):
         if consensus_result.verdict == "APPROVED":
             approved = self._assignment_repo._approve_assignment_for_task(task_id, annotation_pool.pool_id)
             if not approved:
-                return
+                raise exc.AssignmentOperationError()
+
             next_pool_id = self._pool_service._get_next_pool_in_pipeline(current_pool_id)
             if not next_pool_id:
                 marked = self._task_repo._mark_task_completed(task_id, current_pool_id)
                 if not marked:
-                    return
+                    raise exc.TaskCompletionError()
                 return
 
             moved = self._task_repo._move_task_to_pool(
@@ -146,18 +150,16 @@ class PipelineEngine(IPipelineRepository):
                 intermediate_data=consensus_result.final_annotation,
             )
             if not moved:
-                return
+                raise exc.TaskMoveError()
 
         elif consensus_result.verdict == "REJECTED":
             moved = self._task_service._move_task_to_annotation_retry(task_id, current_pool_id)
-            if not moved:
-                return
 
             rejected = self._assignment_repo._reject_assignment_for_task(task_id, annotation_pool.pool_id)
             if not rejected:
-                return
+                raise exc.AssignmentOperationError()
 
             archived = self._assignment_repo.archive_assignments_for_task(task_id, current_pool_id)
             if not archived:
-                return
+                raise exc.AssignmentOperationError()
             return
