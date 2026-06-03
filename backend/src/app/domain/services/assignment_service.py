@@ -29,13 +29,13 @@ class AssignmentService:
     def get_assignments_by_user(self, user_id: UUID) -> list[AssignmentOut]:
         assignments = self._assignment_repo.get_assignments_by_user(user_id)
         if not assignments:
-            return None
+            raise exc.AssignmentNotFoundError()
         return [AssignmentOut.from_orm(a) for a in assignments]
 
-    def get_completed_assignments_by_user(self, request, user_id: UUID) -> list[AssignmentOut]:
+    def get_completed_assignments_by_user(self, user_id: UUID) -> list[AssignmentOut]:
         assignments = self._assignment_repo.get_completed_assignments_by_user(user_id)
         if not assignments:
-            return None
+            raise exc.AssignmentNotFoundError()
         return [AssignmentOut.from_orm(a) for a in assignments]
 
     def create_assignment(self, user_id: UUID, pool_id: int) -> AssignmentOut:

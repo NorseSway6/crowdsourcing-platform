@@ -12,10 +12,41 @@ class DomainException(Exception):
         super().__init__(self.message)
 
 
+# ===== Dataset exeptions =====
 class EmptyDatasetError(DomainException):
     message = "Unassigned tasks not found for the specified dataset"
     error_code = "empty_dataset"
     status_code = HTTPStatus.NOT_FOUND
+
+
+class DatasetNotFoundError(DomainException):
+    message = "Dataset not found"
+    error_code = "dataset_not_found"
+    status_code = HTTPStatus.NOT_FOUND
+
+
+class DatasetCreationFailedError(DomainException):
+    message = "Failed to create dataset"
+    error_code = "dataset_creation_failed"
+    status_code = HTTPStatus.BAD_REQUEST
+
+
+class DatasetUpdatingError(DomainException):
+    message = "Failed to update dataset"
+    error_code = "dataset_updating_failed"
+    status_code = HTTPStatus.BAD_REQUEST
+
+
+class DatasetDeletionError(DomainException):
+    message = "Dataset deletion error"
+    error_code = "dataset_deletion_error"
+    status_code = HTTPStatus.BAD_REQUEST
+
+
+class UploadImageError(DomainException):
+    message = "Upload image error"
+    error_code = "image_upload_error"
+    status_code = HTTPStatus.BAD_REQUEST
 
 
 # ===== Pool exeptions =====
@@ -45,10 +76,34 @@ class PoolMarkingError(DomainException):
     status_code = HTTPStatus.BAD_REQUEST
 
 
+class PoolUpdatingError(DomainException):
+    message = "Failed to update pool"
+    error_code = "pool_updating_failed"
+    status_code = HTTPStatus.BAD_REQUEST
+
+
 # ===== Pipeline exeptions =====
 class PipelineCreationFailedError(DomainException):
     message = "Failed to create pipeline configuration"
     error_code = "pipeline_creation_failed"
+    status_code = HTTPStatus.BAD_REQUEST
+
+
+class PipelineNotFoundError(DomainException):
+    message = "Pipeline not found"
+    error_code = "pipeline_not_found"
+    status_code = HTTPStatus.NOT_FOUND
+
+
+class PipelineUpdatingError(DomainException):
+    message = "Failed to update pipeline"
+    error_code = "pipeline_updating_failed"
+    status_code = HTTPStatus.BAD_REQUEST
+
+
+class PipelineDeletionError(DomainException):
+    message = "Pipeline deletion error"
+    error_code = "pipeline_deletion_error"
     status_code = HTTPStatus.BAD_REQUEST
 
 
@@ -83,6 +138,12 @@ class TaskNotFoundError(DomainException):
     status_code = HTTPStatus.NOT_FOUND
 
 
+class TaskDeletionError(DomainException):
+    message = "Task deletion error"
+    error_code = "task_deletion_error"
+    status_code = HTTPStatus.BAD_REQUEST
+
+
 # ===== Assignment exeptions =====
 class AssignmentOperationError(DomainException):
     message = "Failed to perform operation on assignment"
@@ -105,6 +166,56 @@ class AssignmentCreationError(DomainException):
 class AssignmentUpdatingError(DomainException):
     message = "Failed to update assignment"
     error_code = "assignment_updating_failed"
+    status_code = HTTPStatus.BAD_REQUEST
+
+
+# ===== Skill exeptions =====
+class SkillNotFoundError(DomainException):
+    message = "Skill not found"
+    error_code = "skill_not_found"
+    status_code = HTTPStatus.NOT_FOUND
+
+
+class SkillCreationError(DomainException):
+    message = "Failed to create skill"
+    error_code = "skill_creation_failed"
+    status_code = HTTPStatus.BAD_REQUEST
+
+
+class SkillDeletionError(DomainException):
+    message = "Skill deletion error"
+    error_code = "skill_deletion_error"
+    status_code = HTTPStatus.BAD_REQUEST
+
+
+# ===== User exeptions =====
+class UserCreationFailedError(DomainException):
+    message = "Failed to create user"
+    error_code = "user_creation_failed"
+    status_code = HTTPStatus.BAD_REQUEST
+
+
+class ProfileCreationFailedError(DomainException):
+    message = "Profile to create user"
+    error_code = "profile_creation_failed"
+    status_code = HTTPStatus.BAD_REQUEST
+
+
+class UserNotFoundError(DomainException):
+    message = "User not found"
+    error_code = "user_not_found"
+    status_code = HTTPStatus.NOT_FOUND
+
+
+class ProifleUpdatingError(DomainException):
+    message = "Profile to update assignment"
+    error_code = "profile_updating_failed"
+    status_code = HTTPStatus.BAD_REQUEST
+
+
+class UserDeletionError(DomainException):
+    message = "User deletion error"
+    error_code = "user_deletion_error"
     status_code = HTTPStatus.BAD_REQUEST
 
 

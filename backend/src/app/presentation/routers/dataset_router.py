@@ -51,6 +51,16 @@ def get_datasets_router(dataset_handlers: DatasetHandlers):
         response={201: list[TaskOut], 400: ErrorResponse},
     )
 
+    def export_dataset(request, dataset_id: int, format_type: str) -> tuple[int, SuccessResponse | ErrorResponse]:
+        return dataset_handlers.export_dataset(request, dataset_id, format_type)
+
+    router.add_api_operation(
+        "/{int:dataset_id}/export",
+        ["GET"],
+        export_dataset,
+        response={200: None, 400: ErrorResponse},
+    )
+
     def update_dataset(request, dataset_id: int, data: DatasetSchema) -> tuple[int, DatasetOut | ErrorResponse]:
         return dataset_handlers.update_dataset(request, dataset_id, data)
 

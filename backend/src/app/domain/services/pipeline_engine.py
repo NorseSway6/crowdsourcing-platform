@@ -50,8 +50,6 @@ class PipelineEngine(IPipelineRepository):
             start_pool = None
             for index, step_data in enumerate(pipeline_data.pools, start=1):
                 pool = self._pool_service.create_pool(pipeline, index, step_data)
-                if not pool:
-                    raise exc.PoolCreationFailedError(index)
 
                 if index == 1:
                     start_pool = pool
@@ -65,13 +63,13 @@ class PipelineEngine(IPipelineRepository):
     def get_pipelines_by_user(self, owner_id: UUID) -> list[PipelineOut]:
         pipelines = self._pipeline_repo.get_pipelines_by_user(owner_id)
         if not pipelines:
-            return None
+            raise exc.PipelineNotFoundError()
         return [PipelineOut.from_orm(p) for p in pipelines]
 
     def update_pipeline(self, pipeline_id: int, pipeline_data: PipelineIn) -> PipelineOut:
         updated = self._pipeline_repo.update_pipeline(pipeline_id, pipeline_data)
         if not updated:
-            return None
+            raise exc.PipelineUpdatingError()
 
         pipeline = self._pipeline_repo.get_pipeline_by_id(pipeline_id)
         return PipelineOut.from_orm(pipeline)
@@ -79,7 +77,7 @@ class PipelineEngine(IPipelineRepository):
     def delete_pipeline(self, pipeline_id: int) -> bool:
         deleted = self._pipeline_repo.delete_pipeline(pipeline_id)
         if not deleted:
-            return None
+            raise exc.PipelineDeletionError()
         return deleted
 
     def _evaluate_stage_completion(self, task_id: int, current_pool_id: int) -> None:

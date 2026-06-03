@@ -11,6 +11,7 @@ from app.domain.exceptions import DomainException
 from app.domain.services.assignment_service import AssignmentService
 from app.domain.services.consensus_service import ConsensusService
 from app.domain.services.dataset_service import DatasetService
+from app.domain.services.export_service import ExportService
 from app.domain.services.pipeline_engine import PipelineEngine
 from app.domain.services.platform_user_service import UserService
 from app.domain.services.pool_service import PoolService
@@ -60,12 +61,13 @@ def get_api():
         task_repo, assignment_repo, consensus_service, pool_repo, pipeline_repo, skill_repo, task_service, pool_service
     )
     assignment_service = AssignmentService(assignment_repo, task_repo, pipeline_engine, pool_repo)
+    export_service = ExportService(task_repo)
 
     # Build handlers
     skill_handlers = SkillHandlers(skill_service)
     user_handlers = UserHandlers(user_service)
     pool_handlers = PoolHandlers(pool_service)
-    dataset_handlers = DatasetHandlers(dataset_service)
+    dataset_handlers = DatasetHandlers(dataset_service, export_service)
     task_handlers = TaskHandlers(task_service)
     assignment_handlers = AssignmentHandlers(assignment_service)
     pipeline_handlers = PipelineHandlers(pipeline_engine)

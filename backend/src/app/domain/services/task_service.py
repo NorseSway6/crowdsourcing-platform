@@ -15,20 +15,19 @@ class TaskService:
     def get_all_tasks(self) -> List[TaskOut]:
         tasks = self._task_repo.get_all_tasks()
         if not tasks:
-            return None
+            raise exc.TaskNotFoundError()
         return [TaskOut.from_orm(t) for t in tasks]
 
     def get_task_by_id(self, task_id: int) -> TaskOut:
         task = self._task_repo.get_task_by_id(task_id)
         if not task:
-            return None
+            raise exc.TaskNotFoundError()
         return TaskOut.from_orm(task)
 
     def delete_task(self, task_id: int) -> bool:
         deleted = self._task_repo.delete_task(task_id)
         if not deleted:
-            return None
-
+            raise exc.TaskDeletionError()
         return deleted
 
     def _move_task_to_annotation_retry(self, task_id: int, current_pool_id: int) -> bool:

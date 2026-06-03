@@ -28,6 +28,8 @@ class Task(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="created_at")
     annotation = models.JSONField(default=list, null=True, blank=True, verbose_name="annotation")
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.AVAILABLE, verbose_name="status")
+    width = models.IntegerField(default=1920, verbose_name="width")
+    height = models.IntegerField(default=1080, verbose_name="height")
 
     @property
     def image_url(self) -> str:

@@ -37,7 +37,7 @@ def get_pools_router(pool_handlers: PoolHandlers):
         "/{int:pool_id}",
         ["PATCH"],
         update_pool,
-        response={200: PoolOut, 400: ErrorResponse},
+        response={200: PoolOut, 400: ErrorResponse, 404: ErrorResponse},
     )
 
     return router

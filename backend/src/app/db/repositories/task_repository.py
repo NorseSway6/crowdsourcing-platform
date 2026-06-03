@@ -80,3 +80,10 @@ class TaskRepository(ITaskRepository):
             .exclude(assignment_task__pool_id=pool_id, assignment_task__status=Assignment.Status.APPROVED)
             .count()
         )
+
+    def get_completed_tasks_annotations(self, dataset_id: int) -> list[dict[str, any]]:
+        return list(
+            Task.objects.filter(dataset_id=dataset_id, status=Task.Status.COMPLETED).values(
+                "task_id", "image", "annotation", "width", "height"
+            )
+        )
