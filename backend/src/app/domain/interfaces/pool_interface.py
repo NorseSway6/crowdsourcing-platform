@@ -17,3 +17,12 @@ class IPoolRepository:
 
     def update_pool(self, pool: Pool) -> Pool:
         pass
+
+    def _mark_pool_completed(self, pool_id: int) -> bool:
+        pass
+
+    def _mark_pool_open(self, pool_id: int) -> bool:
+        pass
+
+    def _get_pool_by_type(self, pipeline_id: int, pool_type: str) -> Pool | None:
+        pass

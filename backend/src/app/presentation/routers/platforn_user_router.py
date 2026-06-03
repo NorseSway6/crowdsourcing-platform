@@ -35,7 +35,7 @@ def get_users_router(user_handlers: UserHandlers):
         "/",
         ["POST"],
         create_user,
-        response={201: UserOut, 404: ErrorResponse},
+        response={201: UserOut, 400: ErrorResponse, 404: ErrorResponse},
     )
 
     def update_user_profile(request, user_id: UUID, data: ProfileSchema) -> tuple[int, UserOut | ErrorResponse]:
@@ -45,7 +45,7 @@ def get_users_router(user_handlers: UserHandlers):
         "/me/profile",
         ["PATCH"],
         update_user_profile,
-        response={200: UserOut, 400: ErrorResponse},
+        response={200: UserOut, 400: ErrorResponse, 404: ErrorResponse},
     )
 
     def delete_user(request, user_id: UUID) -> tuple[int, SuccessResponse | ErrorResponse]:

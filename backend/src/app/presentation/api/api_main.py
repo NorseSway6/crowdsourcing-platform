@@ -7,9 +7,11 @@ from app.db.repositories.platform_user_repository import UserRepository
 from app.db.repositories.pool_repository import PoolRepository
 from app.db.repositories.skill_repository import SkillRepository
 from app.db.repositories.task_repository import TaskRepository
+from app.domain.exceptions import DomainException
 from app.domain.services.assignment_service import AssignmentService
 from app.domain.services.consensus_service import ConsensusService
 from app.domain.services.dataset_service import DatasetService
+from app.domain.services.export_service import ExportService
 from app.domain.services.pipeline_engine import PipelineEngine
 from app.domain.services.platform_user_service import UserService
 from app.domain.services.pool_service import PoolService
@@ -49,22 +51,23 @@ def get_api():
     pipeline_repo = PipelineRepository()
 
     # Build services
-    consensus_service = ConsensusService(assignment_repo, pool_repo)
-    pipeline_engine = PipelineEngine(
-        task_repo, assignment_repo, consensus_service, pool_repo, pipeline_repo, skill_repo
-    )
+    consensus_service = ConsensusService(assignment_repo, pool_repo, task_repo)
+    task_service = TaskService(task_repo, pool_repo)
     skill_service = SkillService(skill_repo)
     user_service = UserService(user_repo, skill_repo)
     pool_service = PoolService(pool_repo, skill_repo, task_repo)
     dataset_service = DatasetService(dataset_repo)
-    task_service = TaskService(task_repo)
-    assignment_service = AssignmentService(assignment_repo, task_repo, pipeline_engine)
+    pipeline_engine = PipelineEngine(
+        task_repo, assignment_repo, consensus_service, pool_repo, pipeline_repo, skill_repo, task_service, pool_service
+    )
+    assignment_service = AssignmentService(assignment_repo, task_repo, pipeline_engine, pool_repo)
+    export_service = ExportService(task_repo)
 
     # Build handlers
     skill_handlers = SkillHandlers(skill_service)
     user_handlers = UserHandlers(user_service)
     pool_handlers = PoolHandlers(pool_service)
-    dataset_handlers = DatasetHandlers(dataset_service)
+    dataset_handlers = DatasetHandlers(dataset_service, export_service)
     task_handlers = TaskHandlers(task_service)
     assignment_handlers = AssignmentHandlers(assignment_service)
     pipeline_handlers = PipelineHandlers(pipeline_engine)
@@ -82,3 +85,10 @@ def get_api():
 
 
 ninja_api = get_api()
+
+
+@ninja_api.exception_handler(DomainException)
+def domain_exception_handler(request, exc: DomainException):
+    return ninja_api.create_response(
+        request, {"detail": exc.message, "error_code": exc.error_code}, status=exc.status_code
+    )

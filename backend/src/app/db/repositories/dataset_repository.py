@@ -2,6 +2,7 @@ from uuid import UUID
 
 from django.db import IntegrityError, transaction
 from ninja import UploadedFile
+from PIL import Image
 
 from app.db.models.dataset import Dataset
 from app.db.models.task import Task
@@ -14,7 +15,7 @@ class DatasetRepository(IDatasetRepository):
         return Dataset.objects.filter(dataset_id=dataset_id).first()
 
     def get_datasets_by_user(self, user_id: UUID) -> list[DatasetOut]:
-        return Dataset.objects.filter(owner_id=user_id)
+        return list(Dataset.objects.filter(owner_id=user_id))
 
     def create_dataset(self, owner_id: UUID, dataset_data: DatasetSchema) -> Dataset:
         try:
@@ -37,7 +38,12 @@ class DatasetRepository(IDatasetRepository):
         try:
             with transaction.atomic():
                 for file in files:
-                    task = Task(dataset_id=dataset_id)
+                    file.seek(0)
+                    with Image.open(file) as img:
+                        width, height = img.size
+                    file.seek(0)
+
+                    task = Task(dataset_id=dataset_id, width=width, height=height)
 
                     try:
                         task.image.save(file.name, file, save=False)

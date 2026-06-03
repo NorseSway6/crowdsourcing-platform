@@ -19,6 +19,16 @@ def get_assignments_router(assigment_handlers):
         response={200: list[AssignmentOut], 404: ErrorResponse},
     )
 
+    def get_completed_assignments_by_user(request, user_id: UUID) -> tuple[int, list[AssignmentOut] | ErrorResponse]:
+        return assigment_handlers.get_completed_assignments_by_user(request, user_id)
+
+    router.add_api_operation(
+        "/my/completed",
+        ["GET"],
+        get_completed_assignments_by_user,
+        response={200: list[AssignmentOut], 404: ErrorResponse},
+    )
+
     def create_assignment(request, user_id: UUID, pool_id: int) -> tuple[int, AssignmentOut | ErrorResponse]:
         return assigment_handlers.create_assignment(request, user_id, pool_id)
 
@@ -26,7 +36,7 @@ def get_assignments_router(assigment_handlers):
         "/next",
         ["POST"],
         create_assignment,
-        response={201: AssignmentOut, 400: ErrorResponse},
+        response={201: AssignmentOut, 400: ErrorResponse, 404: ErrorResponse},
     )
 
     def update_assignment(
@@ -38,7 +48,7 @@ def get_assignments_router(assigment_handlers):
         "/{int:assignment_id}",
         ["PATCH"],
         update_assignment,
-        response={200: AssignmentOut, 400: ErrorResponse},
+        response={200: AssignmentOut, 400: ErrorResponse, 404: ErrorResponse},
     )
 
     return router

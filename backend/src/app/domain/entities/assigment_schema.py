@@ -3,7 +3,7 @@ from enum import Enum
 from typing import List, Literal, Optional, Union
 
 from ninja import Schema
-from pydantic import Field, PastDatetime, model_validator
+from pydantic import Field, FutureDatetime, PastDatetime
 
 
 class AssignmentStatus(str, Enum):
@@ -32,15 +32,8 @@ class VerificationAnnotation(Schema):
     is_correct: bool = Field(...)
 
 
-class ClassificationAnnotation(Schema):
-    type: Literal["classification"] = "classification"
-    category_id: int = Field(...)
-
-
 class AssignmentSchema(Schema):
-    annotation: Optional[Union[CocoAnnotation, VerificationAnnotation, ClassificationAnnotation]] = Field(
-        default=None, discriminator="type"
-    )
+    annotation: Optional[Union[CocoAnnotation, VerificationAnnotation]] = Field(default=None, discriminator="type")
 
 
 class AssignmentOut(AssignmentSchema):
@@ -51,3 +44,4 @@ class AssignmentOut(AssignmentSchema):
     started_at: PastDatetime = Field(...)
     status: AssignmentStatus = Field(...)
     completed_at: Optional[PastDatetime] = Field(...)
+    expires_at: Optional[FutureDatetime] = Field(...)

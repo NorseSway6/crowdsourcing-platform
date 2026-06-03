@@ -151,3 +151,8 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_USER_MODEL = "app.AdminUser"
 DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+
+# Platform settings
+OVERLAP_ANNOTATION = 1
+OVERLAP_VERIFICATION = 2
+VALIDATION_THRESHOLD = 0.8

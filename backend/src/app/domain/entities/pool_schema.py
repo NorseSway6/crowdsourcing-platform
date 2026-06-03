@@ -19,20 +19,22 @@ class PoolStatus(str, Enum):
 class PoolSchema(Schema):
     points: int = Field(...)
     skills: Optional[List[str]] = Field(default=[])
-    overlap: PositiveInt = Field(...)
     pool_type: PoolType = Field(...)
+    target_institution: Optional[str] = Field(None)
+    tasks_limit: int = Field(...)
+    time_limit: int = Field(...)
 
 
 class PoolOut(PoolSchema):
+    overlap: PositiveInt = Field(...)
     pool_id: int = Field(...)
     pipeline_id: int = Field(...)
     order: int = Field(...)
     created_at: PastDatetime = Field(...)
     status: PoolStatus = Field(...)
-
     skills: List[Any] = Field(default=[])
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
     @field_validator("skills", mode="before")
     @classmethod
@@ -44,3 +46,10 @@ class PoolOut(PoolSchema):
             return [skill.name if hasattr(skill, "name") else str(skill) for skill in v]
 
         return v
+
+
+class PoolFilter(Schema):
+    skills: Optional[List[str]] = Field(None)
+    min_points: Optional[int] = Field(None)
+    max_points: Optional[int] = Field(None)
+    institution: Optional[str] = Field(None)

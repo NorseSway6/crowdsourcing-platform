@@ -2,6 +2,7 @@ from uuid import UUID
 
 from django.db import transaction
 
+import app.domain.exceptions as exc
 from app.domain.entities.platform_user_schema import UserOut, UserSchema
 from app.domain.entities.user_profile_schema import ProfileSchema
 from app.domain.interfaces.platform_user_interface import IUserRepository
@@ -17,23 +18,23 @@ class UserService:
         with transaction.atomic():
             user = self._user_repo.create_user(user_data)
             if not user:
-                return None
+                raise exc.UserCreationFailedError()
 
-            if user_data.profile:
-                profile_data = user_data.profile
+            if user_data.user_profile:
+                profile_data = user_data.user_profile
 
                 profile = self._user_repo.create_profile(user, profile_data)
                 if not profile:
-                    return None
+                    raise exc.ProfileCreationFailedError()
 
                 if profile_data.skills:
                     skill_names = list(set(profile_data.skills))
                     existing_skills = self._skill_repo.get_skills_by_names(skill_names)
                     if not existing_skills:
-                        return None
+                        raise exc.SkillNotFoundError()
 
                     if len(existing_skills) != len(skill_names):
-                        return None
+                        raise exc.SkillNotFoundError()
 
                     profile.skills.add(*existing_skills)
 
@@ -42,35 +43,35 @@ class UserService:
     def get_all_users(self) -> list[UserOut]:
         users = self._user_repo.get_all_users()
         if not users:
-            return None
+            raise exc.UserNotFoundError()
         return [UserOut.from_orm(u) for u in users]
 
     def get_user_by_id(self, user_id: UUID) -> UserOut:
         user = self._user_repo.get_user_by_id(user_id)
         if not user:
-            return None
+            raise exc.UserNotFoundError()
         return UserOut.from_orm(user)
 
     def update_user_profile(self, user_id: UUID, profile_data: ProfileSchema) -> UserOut:
         with transaction.atomic():
             user = self._user_repo.get_user_profile(user_id)
             if not user:
-                return None
+                raise exc.UserNotFoundError()
 
             profile = getattr(user, "user_profile", None)
             if not profile:
                 profile = self._user_repo.create_new_profile(user)
                 if not profile:
-                    return None
+                    raise exc.ProfileCreationFailedError()
 
             if profile_data.skills:
                 skill_names = list(set(profile_data.skills))
                 existing_skills = self._skill_repo.get_skills_by_names(skill_names)
                 if not existing_skills:
-                    return None
+                    raise exc.SkillNotFoundError()
 
                 if len(existing_skills) != len(skill_names):
-                    return None
+                    raise exc.SkillNotFoundError()
 
                 profile.skills.set(existing_skills)
 
@@ -80,12 +81,12 @@ class UserService:
 
             updated = self._user_repo.update_profile(profile)
             if not updated:
-                return None
+                raise exc.ProifleUpdatingError()
 
             return UserOut.from_orm(user)
 
     def delete_user(self, user_id: UUID) -> bool:
         deleted = self._user_repo.delete_user(user_id)
         if not deleted:
-            return None
+            raise exc.UserDeletionError()
         return deleted

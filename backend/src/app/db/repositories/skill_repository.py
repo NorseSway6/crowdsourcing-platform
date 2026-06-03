@@ -11,7 +11,7 @@ class SkillRepository(ISkillRepository):
 
     def create_skill(self, skill_data: SkillSchema) -> Skill:
         try:
-            skill = Skill.objects.create(name=skill_data.name)
+            skill, _ = Skill.objects.get_or_create(name=skill_data.name)
         except IntegrityError:
             return None
 
