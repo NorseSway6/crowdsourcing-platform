@@ -4,15 +4,15 @@ from django.db import IntegrityError
 
 from app.db.models.platform_user import PlatformUser
 from app.db.models.user_profile import UserProfile
-from app.domain.entities.platform_user_schema import UserSchema
+from app.domain.entities.platform_user_schema import RegisterSchema
 from app.domain.entities.user_profile_schema import ProfileSchema
 from app.domain.interfaces.platform_user_interface import IUserRepository
 
 
 class UserRepository(IUserRepository):
-    def create_user(self, user_data: UserSchema) -> PlatformUser:
+    def create_user(self, user_data: RegisterSchema) -> PlatformUser:
         try:
-            user = PlatformUser.objects.create(email=user_data.email, role=user_data.role)
+            user = PlatformUser.objects.create(email=user_data.email, password=user_data.password, role=user_data.role)
         except IntegrityError:
             return None
 
@@ -45,6 +45,9 @@ class UserRepository(IUserRepository):
     def get_user_profile(self, user_id: UUID) -> UserProfile:
         return PlatformUser.objects.select_related("user_profile").filter(user_id=user_id).first()
 
+    def get_user_by_email(self, email: str) -> PlatformUser:
+        return PlatformUser.objects.filter(email=email).first()
+
     def update_profile(self, profile: UserProfile) -> UserProfile:
         try:
             profile.save()
@@ -56,3 +59,6 @@ class UserRepository(IUserRepository):
     def delete_user(self, user_id: UUID) -> bool:
         deleted, _ = PlatformUser.objects.filter(user_id=user_id).delete()
         return deleted > 0
+
+    def is_unique_email(self, email: str) -> bool:
+        return not PlatformUser.objects.filter(email__iexact=email).exists()
