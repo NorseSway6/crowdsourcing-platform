@@ -4,7 +4,7 @@ from ninja.security import HttpBearer
 
 from app.db.models.issued_token import IssuedToken
 from app.db.models.platform_user import PlatformUser
-from app.domain.auth_roles import IsCustomer, IsStudent
+from app.domain.auth_roles import IsAdmin, IsCustomer, IsStudent
 
 
 class JWTAuth(HttpBearer):
@@ -48,4 +48,4 @@ class JWTAuth(HttpBearer):
 
 student_auth = JWTAuth(permissions=[IsStudent()])
 customer_auth = JWTAuth(permissions=[IsCustomer()])
-base_jwt_auth = JWTAuth()
+admin_auth = JWTAuth(permissions=[IsAdmin()])

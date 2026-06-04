@@ -231,3 +231,21 @@ class AuthAccessError(DomainException):
     message = "Failed access for current role"
     error_code = "access_failed"
     status_code = HTTPStatus.FORBIDDEN
+
+
+class AuthLoginError(DomainException):
+    message = "Wrong password or email"
+    error_code = "failed_login"
+    status_code = HTTPStatus.BAD_REQUEST
+
+
+class AuthCreateError(DomainException):
+    message = "Create token error"
+    error_code = "failed_create_roken"
+    status_code = HTTPStatus.BAD_REQUEST
+
+
+class AuthRevokeError(DomainException):
+    message = "Revoke token error"
+    error_code = "failed_revoke_token"
+    status_code = HTTPStatus.BAD_REQUEST

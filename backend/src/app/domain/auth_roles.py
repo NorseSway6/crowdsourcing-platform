@@ -14,6 +14,7 @@ class IsCustomer:
             raise exc.AuthAccessError()
 
 
-class AllowAll:
+class IsAdmin:
     def check(self, request, user) -> None:
-        pass
+        if user.role != PlatformUser.Role.ADMIN:
+            raise exc.AuthAccessError()

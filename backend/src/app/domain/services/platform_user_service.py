@@ -3,7 +3,7 @@ from uuid import UUID
 from django.db import transaction
 
 import app.domain.exceptions as exc
-from app.domain.entities.platform_user_schema import UserOut, UserSchema
+from app.domain.entities.platform_user_schema import RegisterSchema, UserOut
 from app.domain.entities.user_profile_schema import ProfileSchema
 from app.domain.interfaces.platform_user_interface import IUserRepository
 from app.domain.interfaces.skill_interface import ISkillRepository
@@ -14,7 +14,11 @@ class UserService:
         self._user_repo = user_repo
         self._skill_repo = skill_repo
 
-    def create_user(self, user_data: UserSchema) -> UserOut:
+    def create_user(self, user_data: RegisterSchema) -> UserOut:
+        is_unique_email = self._user_repo.is_unique_email(user_data.email)
+        if not is_unique_email:
+            return None
+
         with transaction.atomic():
             user = self._user_repo.create_user(user_data)
             if not user:

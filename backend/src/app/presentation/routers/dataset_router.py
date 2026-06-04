@@ -5,6 +5,7 @@ from ninja import NinjaAPI, Router, UploadedFile
 from app.domain.entities.dataset_schema import DatasetOut, DatasetSchema
 from app.domain.entities.response_schema import ErrorResponse, SuccessResponse
 from app.domain.entities.task_schema import TaskOut
+from app.presentation.api.auth import admin_auth, customer_auth
 from app.presentation.api.handlers import DatasetHandlers
 
 
@@ -19,26 +20,31 @@ def get_datasets_router(dataset_handlers: DatasetHandlers):
         ["GET"],
         get_dataset_by_id,
         response={200: DatasetOut, 404: ErrorResponse},
+        auth=[customer_auth, admin_auth],
     )
 
-    def get_datasets_by_user(request, user_id: UUID) -> tuple[int, list[DatasetOut] | ErrorResponse]:
-        return dataset_handlers.get_datasets_by_user(request, user_id)
+    def get_datasets_by_user(request) -> tuple[int, list[DatasetOut] | ErrorResponse]:
+        user = request.auth
+        return dataset_handlers.get_datasets_by_user(request, user.user_id)
 
     router.add_api_operation(
         "/my",
         ["GET"],
         get_datasets_by_user,
         response={200: list[DatasetOut], 404: ErrorResponse},
+        auth=[customer_auth, admin_auth],
     )
 
-    def create_dataset(request, owner_id: UUID, data: DatasetSchema) -> tuple[int, DatasetOut | ErrorResponse]:
-        return dataset_handlers.create_dataset(request, owner_id, data)
+    def create_dataset(request, data: DatasetSchema) -> tuple[int, DatasetOut | ErrorResponse]:
+        user = request.auth
+        return dataset_handlers.create_dataset(request, user.user_id, data)
 
     router.add_api_operation(
         "/",
         ["POST"],
         create_dataset,
         response={201: DatasetOut, 400: ErrorResponse},
+        auth=[customer_auth, admin_auth],
     )
 
     def upload_images(request, dataset_id: int, files: list[UploadedFile]) -> tuple[int, list[TaskOut] | ErrorResponse]:
@@ -49,6 +55,7 @@ def get_datasets_router(dataset_handlers: DatasetHandlers):
         ["POST"],
         upload_images,
         response={201: list[TaskOut], 400: ErrorResponse},
+        auth=[customer_auth, admin_auth],
     )
 
     def export_dataset(request, dataset_id: int, format_type: str) -> tuple[int, SuccessResponse | ErrorResponse]:
@@ -59,6 +66,7 @@ def get_datasets_router(dataset_handlers: DatasetHandlers):
         ["GET"],
         export_dataset,
         response={200: None, 400: ErrorResponse},
+        auth=[customer_auth, admin_auth],
     )
 
     def update_dataset(request, dataset_id: int, data: DatasetSchema) -> tuple[int, DatasetOut | ErrorResponse]:
@@ -69,6 +77,7 @@ def get_datasets_router(dataset_handlers: DatasetHandlers):
         ["PATCH"],
         update_dataset,
         response={200: DatasetOut, 400: ErrorResponse},
+        auth=[customer_auth, admin_auth],
     )
 
     def delete_dataset(request, dataset_id: int) -> tuple[int, SuccessResponse | ErrorResponse]:
@@ -79,6 +88,7 @@ def get_datasets_router(dataset_handlers: DatasetHandlers):
         ["DELETE"],
         delete_dataset,
         response={200: SuccessResponse, 400: ErrorResponse},
+        auth=[customer_auth, admin_auth],
     )
 
     return router

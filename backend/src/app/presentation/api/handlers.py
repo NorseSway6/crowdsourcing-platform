@@ -8,7 +8,7 @@ from app.domain.entities.assigment_schema import AssignmentOut, AssignmentSchema
 from app.domain.entities.auth_schema import LogIn, RefreshTokenIn, TokenOut
 from app.domain.entities.dataset_schema import DatasetOut, DatasetSchema
 from app.domain.entities.pipeline_schema import PipelineIn, PipelineOut
-from app.domain.entities.platform_user_schema import UserOut, UserSchema
+from app.domain.entities.platform_user_schema import RegisterOut, RegisterSchema, UserOut, UserSchema
 from app.domain.entities.pool_schema import PoolFilter, PoolOut, PoolSchema
 from app.domain.entities.response_schema import ErrorResponse, SuccessResponse
 from app.domain.entities.skill_schema import SkillSchema
@@ -200,18 +200,16 @@ class AuthHandlers:
 
     def create_tokens(self, request, data: LogIn) -> tuple[int, TokenOut | ErrorResponse]:
         token = self._auth_service.create_tokens(data)
-        if not token:
-            return 400, ErrorResponse(message="Login error")
         return HTTPStatus.OK, token
 
     def update_revoked_status(self, request, data: RefreshTokenIn) -> tuple[int, bool | ErrorResponse]:
-        token = self._auth_service.update_revoked_status(data)
-        if not token:
-            return 400, ErrorResponse(message="Logout error")
-        return HTTPStatus.OK, SuccessResponse(message="Logout successfully")
+        self._auth_service.update_revoked_status(data)
+        return HTTPStatus.OK, SuccessResponse(detail="Logout successfully")
 
     def update_token(self, request, data: RefreshTokenIn) -> tuple[int, TokenOut | ErrorResponse]:
         token = self._auth_service.update_token(data)
-        if not token:
-            return 400, ErrorResponse(message="Update token error")
         return HTTPStatus.OK, token
+
+    def register_user(self, request, data: RegisterSchema) -> tuple[int, RegisterOut | ErrorResponse]:
+        user = self._auth_service.register_user(data)
+        return HTTPStatus.CREATED, user

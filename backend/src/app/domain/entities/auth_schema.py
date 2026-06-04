@@ -3,6 +3,7 @@ from ninja import Schema
 
 class LogIn(Schema):
     email: str
+    password: str
 
 
 class RefreshTokenIn(Schema):
