@@ -45,6 +45,9 @@ class UserRepository(IUserRepository):
     def get_user_profile(self, user_id: UUID) -> UserProfile:
         return PlatformUser.objects.select_related("user_profile").filter(user_id=user_id).first()
 
+    def get_user_by_email(self, email: str) -> PlatformUser:
+        return PlatformUser.objects.filter(email=email).first()
+
     def update_profile(self, profile: UserProfile) -> UserProfile:
         try:
             profile.save()

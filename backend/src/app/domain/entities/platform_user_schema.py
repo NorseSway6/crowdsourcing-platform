@@ -3,15 +3,14 @@ from enum import Enum
 from typing import Optional
 
 from ninja import Schema
-from pydantic import ConfigDict, EmailStr, Field, PastDatetime
+from pydantic import EmailStr, Field, PastDatetime
 
 from app.domain.entities.user_profile_schema import ProfileSchema
 
 
 class UserRole(str, Enum):
     STUDENT = "STUDENT"
-    ADMIN = "ADMIN"
-    VALIDATOR = "VALIDATOR"
+    CUSTOMER = "CUSTOMER"
 
 
 class UserSchema(Schema):

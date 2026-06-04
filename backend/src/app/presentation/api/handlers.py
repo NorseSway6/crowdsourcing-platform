@@ -5,6 +5,7 @@ from django.http import HttpResponse
 from ninja import UploadedFile
 
 from app.domain.entities.assigment_schema import AssignmentOut, AssignmentSchema
+from app.domain.entities.auth_schema import LogIn, RefreshTokenIn, TokenOut
 from app.domain.entities.dataset_schema import DatasetOut, DatasetSchema
 from app.domain.entities.pipeline_schema import PipelineIn, PipelineOut
 from app.domain.entities.platform_user_schema import UserOut, UserSchema
@@ -14,6 +15,7 @@ from app.domain.entities.skill_schema import SkillSchema
 from app.domain.entities.task_schema import TaskOut
 from app.domain.entities.user_profile_schema import ProfileSchema
 from app.domain.services.assignment_service import AssignmentService
+from app.domain.services.auth_service import AuthService
 from app.domain.services.dataset_service import DatasetService
 from app.domain.services.export_service import ExportService
 from app.domain.services.pipeline_engine import PipelineEngine
@@ -190,3 +192,26 @@ class AssignmentHandlers:
     ) -> tuple[int, AssignmentOut | ErrorResponse]:
         updated = self._assignment_service.update_assignment(user_id, assignment_id, annotation_data)
         return HTTPStatus.OK, updated
+
+
+class AuthHandlers:
+    def __init__(self, auth_service: AuthService):
+        self._auth_service = auth_service
+
+    def create_tokens(self, request, data: LogIn) -> tuple[int, TokenOut | ErrorResponse]:
+        token = self._auth_service.create_tokens(data)
+        if not token:
+            return 400, ErrorResponse(message="Login error")
+        return HTTPStatus.OK, token
+
+    def update_revoked_status(self, request, data: RefreshTokenIn) -> tuple[int, bool | ErrorResponse]:
+        token = self._auth_service.update_revoked_status(data)
+        if not token:
+            return 400, ErrorResponse(message="Logout error")
+        return HTTPStatus.OK, SuccessResponse(message="Logout successfully")
+
+    def update_token(self, request, data: RefreshTokenIn) -> tuple[int, TokenOut | ErrorResponse]:
+        token = self._auth_service.update_token(data)
+        if not token:
+            return 400, ErrorResponse(message="Update token error")
+        return HTTPStatus.OK, token

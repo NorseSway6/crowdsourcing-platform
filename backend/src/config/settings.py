@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+import datetime
 import os
 from pathlib import Path
 
@@ -26,6 +27,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY")
+JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+
+JWT_ACCESS_TOKEN_LIFETIME = datetime.timedelta(minutes=15)
+JWT_REFRESH_TOKEN_LIFETIME = datetime.timedelta(days=7)
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG")

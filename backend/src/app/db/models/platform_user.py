@@ -7,8 +7,7 @@ from django.utils.translation import gettext_lazy as _
 class PlatformUser(models.Model):
     class Role(models.TextChoices):
         STUDENT = "STUDENT", _("Student")
-        ADMIN = "ADMIN", _("Admin")
-        VALIDATOR = "VALIDATOR", _("Validator")
+        CUSTOMER = "CUSTOMER", _("Customer")
 
     user_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(unique=True, verbose_name="email")

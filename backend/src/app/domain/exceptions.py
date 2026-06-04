@@ -224,3 +224,10 @@ class ConsensusResolutionError(DomainException):
     message = "Failed to resolve consensus for task"
     error_code = "consensus_resolution_failed"
     status_code = HTTPStatus.BAD_REQUEST
+
+
+# ===== Auth exeptions =====
+class AuthAccessError(DomainException):
+    message = "Failed access for current role"
+    error_code = "access_failed"
+    status_code = HTTPStatus.FORBIDDEN
