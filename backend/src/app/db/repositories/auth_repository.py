@@ -22,7 +22,7 @@ class AuthRepository(IAuthRepository):
         return IssuedToken.objects.filter(jti=jti, revoked=False).first()
 
     def revoke_all_user_tokens(self, user_id: int, device_id: str) -> bool:
-        revoked = IssuedToken.objects.filter(user__telegram_id=user_id, device_id=device_id, revoked=False).update(
+        revoked = IssuedToken.objects.filter(user__user_id=user_id, device_id=device_id, revoked=False).update(
             revoked=True
         )
         return revoked > 0

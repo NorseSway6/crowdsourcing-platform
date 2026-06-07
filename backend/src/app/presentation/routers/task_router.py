@@ -1,22 +1,26 @@
 from ninja import NinjaAPI, Router
 
+from app.domain.auth_roles import AuthRole, has_roles
 from app.domain.entities.response_schema import ErrorResponse, SuccessResponse
 from app.domain.entities.task_schema import TaskOut
-from app.presentation.api.auth import admin_auth, customer_auth
 from app.presentation.api.handlers import TaskHandlers
 
 
 def get_tasks_router(task_handlers: TaskHandlers):
     router = Router(tags=["tasks"])
 
+    @has_roles(AuthRole.ADMIN, AuthRole.CUSTOMER)
+    def get_all_task(request):
+        return task_handlers.get_all_tasks(request)
+
     router.add_api_operation(
         "/",
         ["GET"],
-        lambda request: task_handlers.get_all_tasks(request),
+        get_all_task,
         response={200: list[TaskOut], 404: ErrorResponse},
-        auth=[customer_auth, admin_auth],
     )
 
+    @has_roles(AuthRole.ADMIN, AuthRole.CUSTOMER)
     def get_task_by_id(request, task_id: int) -> tuple[int, TaskOut | ErrorResponse]:
         return task_handlers.get_task_by_id(request, task_id)
 
@@ -25,9 +29,9 @@ def get_tasks_router(task_handlers: TaskHandlers):
         ["GET"],
         get_task_by_id,
         response={200: TaskOut, 404: ErrorResponse},
-        auth=[customer_auth, admin_auth],
     )
 
+    @has_roles(AuthRole.ADMIN, AuthRole.CUSTOMER)
     def delete_task(request, task_id: int) -> tuple[int, SuccessResponse | ErrorResponse]:
         return task_handlers.delete_task(request, task_id)
 
@@ -36,7 +40,6 @@ def get_tasks_router(task_handlers: TaskHandlers):
         ["DELETE"],
         delete_task,
         response={200: SuccessResponse, 400: ErrorResponse},
-        auth=[customer_auth, admin_auth],
     )
 
     return router

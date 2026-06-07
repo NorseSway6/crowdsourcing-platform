@@ -245,12 +245,6 @@ class ConsensusResolutionError(DomainException):
 
 
 # ===== Auth exeptions =====
-class AuthAccessError(DomainException):
-    message = "Failed access for current role"
-    error_code = "access_failed"
-    status_code = HTTPStatus.FORBIDDEN
-
-
 class AuthLoginError(DomainException):
     message = "Wrong password or email"
     error_code = "failed_login"

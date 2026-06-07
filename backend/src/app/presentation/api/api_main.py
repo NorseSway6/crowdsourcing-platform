@@ -41,10 +41,7 @@ from app.presentation.routers.task_router import add_tasks_router
 
 
 def get_api():
-    api = NinjaAPI(
-        title="Crowdsourcing Platform API",
-        version="1.0.0",
-    )
+    api = NinjaAPI(title="Crowdsourcing Platform API", version="1.0.0", auth=JWTAuth())
 
     # Build repositories
     skill_repo = SkillRepository()

@@ -1,20 +1,34 @@
-import app.domain.exceptions as exc
+from enum import Enum
+from functools import wraps
+from http import HTTPStatus
+
+from ninja.errors import HttpError
+
 from app.db.models.platform_user import PlatformUser
 
 
-class IsStudent:
-    def check(self, request, user) -> None:
-        if user.role != PlatformUser.Role.STUDENT:
-            raise exc.AuthAccessError()
+class AuthRole(Enum):
+    ADMIN = PlatformUser.Role.ADMIN
+    CUSTOMER = PlatformUser.Role.CUSTOMER
+    STUDENT = PlatformUser.Role.STUDENT
 
 
-class IsCustomer:
-    def check(self, request, user) -> None:
-        if user.role != PlatformUser.Role.CUSTOMER:
-            raise exc.AuthAccessError()
+def has_roles(*roles: PlatformUser.Role):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(request, *args, **kwargs):
+            user = getattr(request, "auth", None)
 
+            allowed_role_values = [role.value for role in roles]
 
-class IsAdmin:
-    def check(self, request, user) -> None:
-        if user.role != PlatformUser.Role.ADMIN:
-            raise exc.AuthAccessError()
+            if not user:
+                raise HttpError(HTTPStatus.UNAUTHORIZED, "Unauthorized: Authentication required.")
+
+            if user.role not in allowed_role_values:
+                raise HttpError(HTTPStatus.FORBIDDEN, "Failed access for current role")
+
+            return func(request, *args, **kwargs)
+
+        return wrapper
+
+    return decorator

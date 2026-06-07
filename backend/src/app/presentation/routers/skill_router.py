@@ -1,22 +1,26 @@
 from ninja import NinjaAPI, Router
 
+from app.domain.auth_roles import AuthRole, has_roles
 from app.domain.entities.response_schema import ErrorResponse, SuccessResponse
 from app.domain.entities.skill_schema import SkillSchema
-from app.presentation.api.auth import admin_auth, customer_auth, student_auth
 from app.presentation.api.handlers import SkillHandlers
 
 
 def get_skills_router(skill_handlers: SkillHandlers):
     router = Router(tags=["skills"])
 
+    @has_roles(AuthRole.ADMIN, AuthRole.CUSTOMER, AuthRole.STUDENT)
+    def get_all_skills(request):
+        return skill_handlers.get_all_skills(request)
+
     router.add_api_operation(
         "/",
         ["GET"],
-        lambda request: skill_handlers.get_all_skills(request),
+        get_all_skills,
         response={200: list[str], 404: ErrorResponse},
-        auth=[student_auth, customer_auth, admin_auth],
     )
 
+    @has_roles(AuthRole.ADMIN)
     def create_skill(request, data: SkillSchema) -> tuple[int, SkillSchema | ErrorResponse]:
         return skill_handlers.create_skill(request, data)
 
@@ -25,9 +29,9 @@ def get_skills_router(skill_handlers: SkillHandlers):
         ["POST"],
         create_skill,
         response={201: SkillSchema, 400: ErrorResponse},
-        auth=[admin_auth],
     )
 
+    @has_roles(AuthRole.ADMIN)
     def delete_skill(request, data: SkillSchema) -> tuple[int, SuccessResponse | ErrorResponse]:
         return skill_handlers.delete_skill(request, data)
 
@@ -36,7 +40,6 @@ def get_skills_router(skill_handlers: SkillHandlers):
         ["DELETE"],
         delete_skill,
         response={200: SuccessResponse, 400: ErrorResponse},
-        auth=[admin_auth],
     )
 
     return router
