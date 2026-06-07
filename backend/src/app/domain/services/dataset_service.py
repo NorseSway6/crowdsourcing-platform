@@ -1,10 +1,11 @@
 from uuid import UUID
 
+from django.db import transaction
 from ninja import UploadedFile
 
 import app.domain.exceptions as exc
 from app.db.repositories.dataset_repository import DatasetRepository
-from app.domain.entities.dataset_schema import DatasetOut, DatasetSchema
+from app.domain.entities.dataset_schema import CategoryOut, CategorySchema, DatasetOut, DatasetSchema
 from app.domain.entities.task_schema import TaskOut
 
 
@@ -25,10 +26,23 @@ class DatasetService:
         return [DatasetOut.from_orm(dataset) for dataset in datasets]
 
     def create_dataset(self, owner_id: UUID, dataset_data: DatasetSchema) -> DatasetOut:
-        dataset = self._dataset_repo.create_dataset(owner_id, dataset_data)
-        if not dataset:
-            raise exc.DatasetCreationFailedError()
-        return DatasetOut.from_orm(dataset)
+        with transaction.atomic():
+            dataset = self._dataset_repo.create_dataset(owner_id, dataset_data)
+            if not dataset:
+                raise exc.DatasetCreationFailedError()
+
+            categories = dataset_data.categories
+            if not categories:
+                raise exc.CategoriesNotFoundError()
+
+            category_names = list(set(dataset_data.categories))
+            existing_categories = self._dataset_repo.get_categories_by_names(category_names)
+            if not existing_categories or len(existing_categories) != len(category_names):
+                raise exc.CategoriesNotFoundError()
+
+            dataset.categories.add(*existing_categories)
+
+            return DatasetOut.from_orm(dataset)
 
     def update_dataset(self, dataset_id: int, dataset_data: DatasetSchema) -> DatasetOut:
         updated = self._dataset_repo.update_dataset(dataset_id, dataset_data)
@@ -49,3 +63,21 @@ class DatasetService:
         if not images:
             raise exc.UploadImageError()
         return [TaskOut.from_orm(image) for image in images]
+
+    def get_all_categories(self) -> list[CategoryOut]:
+        categories = self._dataset_repo.get_all_categories()
+        if not categories:
+            raise exc.CategoriesNotFoundError()
+        return [CategoryOut.from_orm(c) for c in categories]
+
+    def create_category(self, category_data: CategorySchema) -> CategoryOut:
+        category = self._dataset_repo.create_category(category_data)
+        if not category:
+            raise exc.CreateCategoryError()
+        return CategoryOut.from_orm(category)
+
+    def delete_category(self, category_data: CategorySchema) -> bool:
+        deleted = self._dataset_repo.delete_category(category_data)
+        if not deleted:
+            raise exc.DeleteCategorysError()
+        return deleted

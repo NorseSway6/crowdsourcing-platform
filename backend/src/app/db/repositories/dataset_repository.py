@@ -4,9 +4,9 @@ from django.db import IntegrityError, transaction
 from ninja import UploadedFile
 from PIL import Image
 
-from app.db.models.dataset import Dataset
+from app.db.models.dataset import Dataset, DatasetCategory
 from app.db.models.task import Task
-from app.domain.entities.dataset_schema import DatasetOut, DatasetSchema
+from app.domain.entities.dataset_schema import CategorySchema, DatasetOut, DatasetSchema
 from app.domain.interfaces.datset_interface import IDatasetRepository
 
 
@@ -24,6 +24,12 @@ class DatasetRepository(IDatasetRepository):
             return None
 
         return dataset
+
+    def get_categories_by_names(self, categories: list[str]) -> list[DatasetCategory]:
+        return list(DatasetCategory.objects.filter(name__in=categories))
+
+    def get_categories_by_dataset(self, dataset_id: int) -> list[DatasetCategory]:
+        return list(DatasetCategory.objects.filter(dataset_category__dataset_id=dataset_id))
 
     def update_dataset(self, dataset_id: int, dataset_data: DatasetSchema) -> bool:
         return Dataset.objects.filter(dataset_id=dataset_id).update(name=dataset_data.name, domain=dataset_data.domain)
@@ -57,3 +63,18 @@ class DatasetRepository(IDatasetRepository):
             return None
 
         return list(created_tasks)
+
+    def get_all_categories(self) -> list[DatasetCategory]:
+        return list(DatasetCategory.objects.all())
+
+    def create_category(self, category_data: CategorySchema) -> DatasetCategory:
+        try:
+            category, _ = DatasetCategory.objects.get_or_create(name=category_data.name)
+        except IntegrityError:
+            return None
+
+        return category
+
+    def delete_category(self, category_data: CategorySchema) -> bool:
+        deleted, _ = DatasetCategory.objects.filter(name=category_data.name).delete()
+        return deleted > 0

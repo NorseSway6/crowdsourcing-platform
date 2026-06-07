@@ -2,7 +2,7 @@ from uuid import UUID
 
 from ninja import NinjaAPI, Router, UploadedFile
 
-from app.domain.entities.dataset_schema import DatasetOut, DatasetSchema
+from app.domain.entities.dataset_schema import CategoryOut, CategorySchema, DatasetOut, DatasetSchema
 from app.domain.entities.response_schema import ErrorResponse, SuccessResponse
 from app.domain.entities.task_schema import TaskOut
 from app.presentation.api.auth import admin_auth, customer_auth
@@ -87,6 +87,36 @@ def get_datasets_router(dataset_handlers: DatasetHandlers):
         "/{int:dataset_id}",
         ["DELETE"],
         delete_dataset,
+        response={200: SuccessResponse, 400: ErrorResponse},
+        auth=[customer_auth, admin_auth],
+    )
+
+    router.add_api_operation(
+        "/categories",
+        ["GET"],
+        lambda request: dataset_handlers.get_all_categories(request),
+        response={200: list[CategoryOut], 404: ErrorResponse},
+        auth=[customer_auth, admin_auth],
+    )
+
+    def create_category(request, data: CategorySchema) -> CategoryOut:
+        return dataset_handlers.create_category(request, data)
+
+    router.add_api_operation(
+        "/categories",
+        ["POST"],
+        create_category,
+        response={201: CategoryOut, 400: ErrorResponse},
+        auth=[customer_auth, admin_auth],
+    )
+
+    def delete_category(request, data: CategorySchema) -> CategoryOut:
+        return dataset_handlers.delete_category(request, data)
+
+    router.add_api_operation(
+        "/categories",
+        ["DELETE"],
+        delete_category,
         response={200: SuccessResponse, 400: ErrorResponse},
         auth=[customer_auth, admin_auth],
     )

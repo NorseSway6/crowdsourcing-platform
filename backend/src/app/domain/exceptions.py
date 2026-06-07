@@ -49,6 +49,24 @@ class UploadImageError(DomainException):
     status_code = HTTPStatus.BAD_REQUEST
 
 
+class CategoriesNotFoundError(DomainException):
+    message = "Categories not found"
+    error_code = "categories_not_found"
+    status_code = HTTPStatus.NOT_FOUND
+
+
+class CreateCategoryError(DomainException):
+    message = "Create categories error"
+    error_code = "categories_create_error"
+    status_code = HTTPStatus.BAD_REQUEST
+
+
+class DeleteCategorysError(DomainException):
+    message = "Delete categories error"
+    error_code = "categories_delete_error"
+    status_code = HTTPStatus.BAD_REQUEST
+
+
 # ===== Pool exeptions =====
 class PoolCompletionError(DomainException):
     message = "Failed to mark pool as completed"

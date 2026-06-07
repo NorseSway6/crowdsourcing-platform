@@ -67,7 +67,7 @@ def get_api():
         task_repo, assignment_repo, consensus_service, pool_repo, pipeline_repo, skill_repo, task_service, pool_service
     )
     assignment_service = AssignmentService(assignment_repo, task_repo, pipeline_engine, pool_repo)
-    export_service = ExportService(task_repo)
+    export_service = ExportService(task_repo, dataset_repo)
     auth_service = AuthService(auth_repo, user_repo, user_service)
 
     # Build handlers

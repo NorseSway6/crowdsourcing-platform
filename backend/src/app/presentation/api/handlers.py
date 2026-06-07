@@ -6,7 +6,7 @@ from ninja import UploadedFile
 
 from app.domain.entities.assigment_schema import AssignmentOut, AssignmentSchema
 from app.domain.entities.auth_schema import LogIn, RefreshTokenIn, TokenOut
-from app.domain.entities.dataset_schema import DatasetOut, DatasetSchema
+from app.domain.entities.dataset_schema import CategoryOut, CategorySchema, DatasetOut, DatasetSchema
 from app.domain.entities.pipeline_schema import PipelineIn, PipelineOut
 from app.domain.entities.platform_user_schema import RegisterOut, RegisterSchema, UserOut, UserSchema
 from app.domain.entities.pool_schema import PoolFilter, PoolOut, PoolSchema
@@ -150,6 +150,18 @@ class DatasetHandlers:
         response = HttpResponse(file_bytes, content_type="application/json")
         response["Content-Disposition"] = "attachment;" + f' filename="dataset_{dataset_id}.json"'
         return response
+
+    def get_all_categories(self, request) -> tuple[int, list[str] | ErrorResponse]:
+        categories = self._dataset_service.get_all_categories()
+        return HTTPStatus.OK, categories
+
+    def create_category(self, request, category_data: CategorySchema) -> tuple[int, CategoryOut | ErrorResponse]:
+        category = self._dataset_service.create_category(category_data)
+        return HTTPStatus.CREATED, category
+
+    def delete_category(self, request, category_data: CategorySchema) -> tuple[int, SuccessResponse | ErrorResponse]:
+        self._dataset_service.delete_category(category_data)
+        return HTTPStatus.OK, SuccessResponse(detail="Category delete successfully")
 
 
 class TaskHandlers:

@@ -25,7 +25,7 @@ def get_skills_router(skill_handlers: SkillHandlers):
         ["POST"],
         create_skill,
         response={201: SkillSchema, 400: ErrorResponse},
-        auth=[customer_auth, admin_auth],
+        auth=[admin_auth],
     )
 
     def delete_skill(request, data: SkillSchema) -> tuple[int, SuccessResponse | ErrorResponse]:
@@ -36,7 +36,7 @@ def get_skills_router(skill_handlers: SkillHandlers):
         ["DELETE"],
         delete_skill,
         response={200: SuccessResponse, 400: ErrorResponse},
-        auth=[customer_auth, admin_auth],
+        auth=[admin_auth],
     )
 
     return router
