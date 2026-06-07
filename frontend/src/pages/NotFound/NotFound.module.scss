@@ -1,0 +1,40 @@
+@use '@/styles/variables' as *;
+
+.page {
+	height: 100vh;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 12px;
+	background: $color-bg;
+}
+
+.code {
+	font-size: 80px;
+	font-weight: 700;
+	color: $color-primary;
+	line-height: 1;
+}
+
+.text {
+	font-size: 18px;
+	color: $color-text-secondary;
+}
+
+.btn {
+	margin-top: 8px;
+	padding: 10px 24px;
+	background: $color-primary;
+	color: #fff;
+	border: none;
+	border-radius: $border-radius-btn;
+	font-size: 14px;
+	font-weight: 600;
+	font-family: inherit;
+	cursor: pointer;
+
+	&:hover {
+		opacity: 0.9;
+	}
+}

@@ -1,5 +1,3 @@
-import type { CocoItem } from '@/utils/coco'
-
 import { apiClient } from './client'
 
 export type AssignmentStatus =
@@ -12,41 +10,36 @@ export interface AssignmentOut {
 	assignment_id: number
 	task_id: number
 	user_id: string
-	annotation: Record<string, unknown>
+	pool_id: number
+	annotation: Record<string, unknown> | null
 	status: AssignmentStatus
 	started_at: string
 	completed_at: string | null
+	expires_at: string | null
 }
 
 export interface CocoAnnotation {
-	images: Array<{ id: number; file_name: string }>
-	annotations: Array<
-		| {
-				id: number
-				image_id: number
-				category_id: number
-				bbox: [number, number, number, number]
-				type: 'bbox'
-		  }
-		| {
-				id: number
-				image_id: number
-				category_id: number
-				segmentation: number[][]
-				type: 'polygon'
-		  }
-		| {
-				id: number
-				image_id: number
-				category_id: number
-				point: [number, number]
-				type: 'point'
-		  }
-	>
-	categories: Array<{ id: number; name: string }>
+	type: 'coco'
+	items: Array<{
+		category_id: number
+		bbox: [number, number, number, number]
+		area: number
+		iscrowd: 0 | 1
+		segmentation: number[][]
+	}>
 }
 
+export interface VerificationAnnotation {
+	type: 'verification'
+	is_correct: boolean
+}
+
+export type Annotation = CocoAnnotation | VerificationAnnotation
+
 export const assignmentsApi = {
+	getAll: () =>
+		apiClient.get<AssignmentOut[]>('/assignments/').then(r => r.data),
+
 	getNext: (userId: string, poolId: number) =>
 		apiClient
 			.post<AssignmentOut>('/assignments/next', null, {
@@ -54,7 +47,7 @@ export const assignmentsApi = {
 			})
 			.then(r => r.data),
 
-	submit: (assignmentId: number, userId: string, annotation: CocoItem[]) =>
+	submit: (assignmentId: number, userId: string, annotation: Annotation) =>
 		apiClient
 			.patch<AssignmentOut>(
 				`/assignments/${assignmentId}`,
@@ -63,19 +56,15 @@ export const assignmentsApi = {
 			)
 			.then(r => r.data),
 
-	updateStatus: (
-		assignmentId: number,
-		userId: string,
-		status: AssignmentStatus
-	) =>
-		apiClient
-			.patch<AssignmentOut>(`/assignments/${assignmentId}/status`, null, {
-				params: { user_id: userId, status }
-			})
-			.then(r => r.data),
-
 	getMyAssignments: (userId: string) =>
 		apiClient
 			.get<AssignmentOut[]>('/assignments/my', { params: { user_id: userId } })
+			.then(r => r.data),
+
+	getMyCompleted: (userId: string) =>
+		apiClient
+			.get<
+				AssignmentOut[]
+			>('/assignments/my/completed', { params: { user_id: userId } })
 			.then(r => r.data)
 }
