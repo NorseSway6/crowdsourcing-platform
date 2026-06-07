@@ -57,13 +57,19 @@ export const TaskCard = ({
 			)}
 
 			{variant === 'pending' && (
-				<Button variant='pending' full>
-					На автоматической валидации
+				<Button
+					variant='pending'
+					full
+				>
+					Ожидает проверки
 				</Button>
 			)}
 
 			{variant === 'approved' && (
-				<Button variant='success' full>
+				<Button
+					variant='success'
+					full
+				>
 					Проверено
 				</Button>
 			)}

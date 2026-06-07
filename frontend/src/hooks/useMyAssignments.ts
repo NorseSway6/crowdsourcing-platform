@@ -1,7 +1,5 @@
 import { useEffect, useState } from 'react'
 
-import { TEMP_USER_ID } from '@/config/temp'
-
 import type { AssignmentStatus } from '@/api/assignments'
 import { apiClient } from '@/api/client'
 
@@ -29,12 +27,16 @@ export const useMyAssignments = (
 		const load = async () => {
 			setLoading(true)
 			setError(null)
-			try {
-				const me = await apiClient
-					.get<UserMe>('/users/me', { params: { user_id: TEMP_USER_ID } })
-					.then(r => r.data)
 
+			try {
+				// TODO: переделать на auth
+				const TEMP_USER_ID = '5ca80a4b-31f5-42f8-8579-cb4b5cbc74a2'
+				
+				const me = await apiClient
+					.get<UserMe>('/users/me', { params: { id: TEMP_USER_ID } })
+					.then(r => r.data)
 				const all = await assignmentService.getMyWithTasks(me.user_id)
+
 				const filtered = filterStatus
 					? all.filter(a => a.assignment.status === filterStatus)
 					: all
@@ -46,6 +48,7 @@ export const useMyAssignments = (
 				setLoading(false)
 			}
 		}
+
 		load()
 	}, [filterStatus])
 

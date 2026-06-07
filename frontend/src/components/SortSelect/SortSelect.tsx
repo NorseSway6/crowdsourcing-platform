@@ -14,6 +14,6 @@ export const SortSelect = ({ value, onChange }: Props) => (
 			{ value: 'newest', label: 'Сначала новые' },
 			{ value: 'oldest', label: 'Сначала старые' }
 		]}
-		onChange={onChange}
+		onChange={v => onChange(v as SortOption)}
 	/>
 )

@@ -1,4 +1,5 @@
-import type { CocoAnnotation } from '@/api/assignments'
+import type { CocoItem } from '@/utils/coco'
+
 import type { AssignmentOut } from '@/api/assignments'
 import { assignmentsApi } from '@/api/assignments'
 import type { TaskOut } from '@/api/tasks'
@@ -22,7 +23,7 @@ export const assignmentService = {
 	submit: async (
 		assignmentId: number,
 		userId: string,
-		annotation: CocoAnnotation
+		annotation: CocoItem[]
 	): Promise<AssignmentOut> => {
 		return assignmentsApi.submit(assignmentId, userId, annotation)
 	},
