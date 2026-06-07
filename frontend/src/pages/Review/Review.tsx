@@ -26,12 +26,12 @@ export const ReviewPage = () => {
 	return (
 		<div className={styles.page}>
 			<h1 className={styles.pageTitle}>На проверке</h1>
+			<p className={styles.pageSubtitle}>
+				Задания проверяются автоматически системой валидации
+			</p>
 
 			<div className={styles.toolbar}>
-				<SortSelect
-					value={sort}
-					onChange={setSort}
-				/>
+				<SortSelect value={sort} onChange={setSort} />
 			</div>
 
 			<div className={styles.body}>

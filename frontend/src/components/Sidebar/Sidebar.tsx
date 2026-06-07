@@ -1,14 +1,25 @@
 import { NavLink } from 'react-router-dom'
 
-import { bottomItems, navigationItems } from './Sidebar.data'
+import type { SidebarItem } from './Sidebar.data'
+import {
+	bottomItems as defaultBottom,
+	navigationItems as defaultNav
+} from './Sidebar.data'
 import styles from './Sidebar.module.scss'
 
-export const Sidebar = () => (
+interface Props {
+	navItems?: SidebarItem[]
+	bottomItems?: SidebarItem[]
+}
+
+export const Sidebar = ({
+	navItems = defaultNav,
+	bottomItems = defaultBottom
+}: Props) => (
 	<aside className={styles.sidebar}>
 		<nav className={styles.nav}>
-			{navigationItems.map(item => {
+			{navItems.map(item => {
 				const Icon = item.icon
-
 				return (
 					<NavLink
 						key={item.path}
@@ -23,17 +34,11 @@ export const Sidebar = () => (
 				)
 			})}
 		</nav>
-
 		<div className={styles.bottom}>
 			{bottomItems.map(item => {
 				const Icon = item.icon
-
 				return (
-					<a
-						key={item.label}
-						href='#'
-						className={styles.navItem}
-					>
+					<a key={item.label} href='#' className={styles.navItem}>
 						<Icon size={20} />
 						<span>{item.label}</span>
 					</a>
