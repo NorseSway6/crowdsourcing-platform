@@ -74,7 +74,7 @@ class PipelineHandlers:
         self, request, owner_id: UUID, pipeline_data: PipelineIn
     ) -> tuple[int, PipelineOut | ErrorResponse]:
         pipeline = self._pipeline_service.create_pools(owner_id, pipeline_data)
-        return HTTPStatus.OK, pipeline
+        return HTTPStatus.CREATED, pipeline
 
     def update_pipeline(
         self, request, pipeline_id: int, pipeline_data: PipelineIn

@@ -181,6 +181,12 @@ class AssignmentOperationError(DomainException):
     status_code = HTTPStatus.BAD_REQUEST
 
 
+class AssignmentTimeError(DomainException):
+    message = "Expired time limit"
+    error_code = "assignment_time_failed"
+    status_code = HTTPStatus.BAD_REQUEST
+
+
 class AssignmentNotFoundError(DomainException):
     message = "Assignment not found"
     error_code = "assignment_not_found"

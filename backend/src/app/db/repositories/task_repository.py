@@ -48,7 +48,7 @@ class TaskRepository(ITaskRepository):
             .values("cnt")
         )
 
-        candidate_id = (
+        candidate_id = list(
             Task.objects.filter(
                 pool_id=pool_id,
                 pool__status=Pool.PoolStatus.OPEN,
@@ -58,13 +58,12 @@ class TaskRepository(ITaskRepository):
             .annotate(valid_assignments_count=Coalesce(Subquery(valid_assignments_subquery), 0))
             .filter(valid_assignments_count__lt=F("pool__overlap"))
             .order_by("pk")
-            .values_list("pk", flat=True)
-            .first()
+            .values_list("pk", flat=True)[:20]
         )
         if not candidate_id:
             return None
 
-        return Task.objects.select_for_update(skip_locked=True).filter(pk=candidate_id).first()
+        return Task.objects.select_for_update(skip_locked=True).filter(pk__in=candidate_id).first()
 
     def _mark_task_completed(
         self,
