@@ -28,7 +28,7 @@ class TaskRepository(ITaskRepository):
         updated = Task.objects.filter(task_id__in=tasks_ids).update(pool_id=pool_id)
         return updated > 0
 
-    def get_next_task(self, user_id: UUID, pool_id: int) -> Task | None:
+    def get_next_task(self, user_id: UUID, pool_id: int) -> Task:
         valid_assignments_subquery = (
             Assignment.objects.filter(
                 task_id=OuterRef("pk"),

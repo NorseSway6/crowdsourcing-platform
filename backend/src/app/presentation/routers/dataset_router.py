@@ -2,6 +2,7 @@ from ninja import NinjaAPI, Router, UploadedFile
 
 from app.domain.auth_roles import AuthRole, has_roles
 from app.domain.entities.dataset_schema import CategoryOut, CategorySchema, DatasetOut, DatasetSchema
+from app.domain.entities.export_schema import ExportStatusOut
 from app.domain.entities.response_schema import ErrorResponse, SuccessResponse
 from app.domain.entities.task_schema import TaskOut
 from app.presentation.api.handlers import DatasetHandlers
@@ -57,14 +58,25 @@ def get_datasets_router(dataset_handlers: DatasetHandlers):
     )
 
     @has_roles(AuthRole.ADMIN, AuthRole.CUSTOMER)
-    def export_dataset(request, dataset_id: int, format_type: str) -> tuple[int, SuccessResponse | ErrorResponse]:
+    def export_dataset(request, dataset_id: int, format_type: str) -> tuple[int, ExportStatusOut | ErrorResponse]:
         return dataset_handlers.export_dataset(request, dataset_id, format_type)
 
     router.add_api_operation(
         "/{int:dataset_id}/export",
         ["GET"],
         export_dataset,
-        response={200: None, 400: ErrorResponse},
+        response={202: ExportStatusOut, 400: ErrorResponse, 409: ErrorResponse},
+    )
+
+    @has_roles(AuthRole.ADMIN, AuthRole.CUSTOMER)
+    def get_export_status(request, job_id) -> tuple[int, ExportStatusOut | ErrorResponse]:
+        return dataset_handlers.get_export_status(request, job_id)
+
+    router.add_api_operation(
+        "/export/status/{str:job_id}",
+        ["GET"],
+        get_export_status,
+        response={200: ExportStatusOut, 400: ErrorResponse},
     )
 
     @has_roles(AuthRole.ADMIN, AuthRole.CUSTOMER)

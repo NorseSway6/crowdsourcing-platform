@@ -54,7 +54,12 @@ class COCOExporter:
             file_name = task.image_path.split("/")[-1]
 
             coco_data["images"].append(
-                {"id": task.task_id, "file_name": file_name, "width": task.width, "height": task.height}
+                {
+                    "id": task.task_id,
+                    "file_name": file_name,
+                    "width": task.width,
+                    "height": task.height,
+                }
             )
 
             for shape in task.shapes:

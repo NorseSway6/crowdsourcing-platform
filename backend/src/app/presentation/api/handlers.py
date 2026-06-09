@@ -1,12 +1,14 @@
 from http import HTTPStatus
 from uuid import UUID
 
-from django.http import HttpResponse
+from celery.result import AsyncResult
+from django_redis import get_redis_connection
 from ninja import UploadedFile
 
 from app.domain.entities.assigment_schema import AssignmentOut, AssignmentSchema
 from app.domain.entities.auth_schema import LogIn, RefreshTokenIn, TokenOut
 from app.domain.entities.dataset_schema import CategoryOut, CategorySchema, DatasetOut, DatasetSchema
+from app.domain.entities.export_schema import ExportStatusOut
 from app.domain.entities.pipeline_schema import PipelineIn, PipelineOut
 from app.domain.entities.platform_user_schema import RegisterOut, RegisterSchema, UserOut, UserSchema
 from app.domain.entities.pool_schema import PoolFilter, PoolOut, PoolSchema
@@ -16,6 +18,7 @@ from app.domain.entities.task_schema import TaskOut
 from app.domain.entities.user_profile_schema import ProfileSchema
 from app.domain.services.assignment_service import AssignmentService
 from app.domain.services.auth_service import AuthService
+from app.domain.services.celery_tasks import run_dataset_export_task
 from app.domain.services.dataset_service import DatasetService
 from app.domain.services.export_service import ExportService
 from app.domain.services.pipeline_engine import PipelineEngine
@@ -145,11 +148,39 @@ class DatasetHandlers:
         return HTTPStatus.CREATED, dataset
 
     def export_dataset(self, request, dataset_id: int, format_type: str) -> tuple[int, SuccessResponse | ErrorResponse]:
-        file_bytes = self._export_service.execute(dataset_id, format_type)
+        redis_client = get_redis_connection("default")
+        lock_key = f"export_lock:dataset:{dataset_id}"  # noqa: E231
 
-        response = HttpResponse(file_bytes, content_type="application/json")
-        response["Content-Disposition"] = "attachment;" + f' filename="dataset_{dataset_id}.json"'
-        return response
+        is_locked = redis_client.set(lock_key, "processing", ex=600, nx=True)
+
+        if not is_locked:
+            return HTTPStatus.CONFLICT, ErrorResponse(error_code="export_error", detail="Error is already started")
+
+        job = run_dataset_export_task.delay(dataset_id, format_type)
+        job_result = AsyncResult(job.id)
+
+        response_data = {
+            "job_id": job.id,
+            "status": job_result.status,
+        }
+
+        return HTTPStatus.ACCEPTED, ExportStatusOut.from_orm(response_data)
+
+    def get_export_status(self, request, job_id: str) -> tuple[int, ExportStatusOut | ErrorResponse]:
+        job_result = AsyncResult(job_id)
+
+        response_data = {
+            "job_id": job_id,
+            "status": job_result.status,
+        }
+
+        if job_result.status == "SUCCESS":
+            response_data["download_url"] = job_result.result
+
+        elif job_result.status == "FAILURE":
+            response_data["error"] = str(job_result.info)
+
+        return ExportStatusOut.from_orm(response_data)
 
     def get_all_categories(self, request) -> tuple[int, list[str] | ErrorResponse]:
         categories = self._dataset_service.get_all_categories()

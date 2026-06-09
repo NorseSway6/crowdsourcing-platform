@@ -41,7 +41,7 @@ class AuthService:
 
         created = self._auth_repo.create_token(jti, user, device_id)
         if not created:
-            return exc.AuthCreateError()
+            raise exc.AuthCreateError()
 
         return TokenOut(access_token=access_token, refresh_token=refresh_token, token_type="Bearer")
 
@@ -107,7 +107,7 @@ class AuthService:
         new_user = self._user_service.create_user(data)
         user = self._user_repo.get_user_by_email(new_user.email)
         if not user:
-            return exc.UserNotFoundError()
+            raise exc.UserNotFoundError()
 
         jti = str(uuid.uuid4())
         device_id = str(uuid.uuid4())
@@ -120,7 +120,7 @@ class AuthService:
 
         created = self._auth_repo.create_token(jti, user, device_id)
         if not created:
-            return exc.AuthCreateError()
+            raise exc.AuthCreateError()
 
         return RegisterOut(
             user=UserOut.from_orm(user),
