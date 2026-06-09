@@ -1,12 +1,13 @@
 from uuid import UUID
 
+from django.core.files.storage import default_storage
 from django.db import transaction
 from ninja import UploadedFile
 
 import app.domain.exceptions as exc
 from app.db.repositories.dataset_repository import DatasetRepository
 from app.domain.entities.dataset_schema import CategoryOut, CategorySchema, DatasetOut, DatasetSchema
-from app.domain.entities.task_schema import TaskOut
+from app.domain.services.celery_tasks import process_images_upload_task
 
 
 class DatasetService:
@@ -58,11 +59,17 @@ class DatasetService:
             raise exc.DatasetDeletionError()
         return deleted
 
-    def upload_images(self, dataset_id: int, files: list[UploadedFile]) -> list[TaskOut]:
-        images = self._dataset_repo.upload_images(dataset_id, files)
-        if not images:
-            raise exc.UploadImageError()
-        return [TaskOut.from_orm(image) for image in images]
+    def upload_images(self, dataset_id: int, files: list[UploadedFile]) -> str:
+        temp_file_paths = []
+
+        for file in files:
+            temp_path = f"temp_uploads/dataset_{dataset_id}/{file.name}"
+            actual_saved_path = default_storage.save(temp_path, file)
+            temp_file_paths.append((actual_saved_path, file.name))
+
+        job = process_images_upload_task.delay(dataset_id, temp_file_paths)
+
+        return job.id
 
     def get_all_categories(self) -> list[CategoryOut]:
         categories = self._dataset_repo.get_all_categories()

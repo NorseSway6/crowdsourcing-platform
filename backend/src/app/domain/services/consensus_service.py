@@ -27,7 +27,7 @@ class ConsensusService:
         elif pool.pool_type == Pool.PoolType.VERIFICATION:
             task = self._task_repo.get_task_by_id(task_id)
             target_annotation = task.annotation if hasattr(task, "annotation") else task.data.get("target_bbox")
-            return self._calculate_verification_consensus(annotations, total_votes, target_annotation)
+            return self._calculate_verification_consensus(annotations, total_votes, target_annotation, pool.overlap)
 
         return ConsensusSchema(is_consensus_reached=False)
 
@@ -52,7 +52,7 @@ class ConsensusService:
         return updated_assignments
 
     def _calculate_verification_consensus(
-        self, annotation: list, total_votes: int, target_annotation: list
+        self, annotation: list, total_votes: int, target_annotation: list, overlap: int
     ) -> ConsensusSchema:
         if not annotation:
             return ConsensusSchema(is_consensus_reached=False)
@@ -71,4 +71,7 @@ class ConsensusService:
         elif rejection_confidence >= settings.VALIDATION_THRESHOLD:
             return ConsensusSchema(is_consensus_reached=True, verdict="REJECTED", final_annotation=target_annotation)
 
-        return ConsensusSchema(is_consensus_reached=False)
+        if total_votes < overlap:
+            return ConsensusSchema(is_consensus_reached=False)
+
+        return ConsensusSchema(is_consensus_reached=True, verdict="REJECTED", final_annotation=target_annotation)

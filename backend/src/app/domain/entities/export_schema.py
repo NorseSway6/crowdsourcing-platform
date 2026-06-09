@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from ninja import Schema
 from pydantic import Field
@@ -10,3 +10,15 @@ class CompletedTaskData(Schema):
     shapes: list[Dict[str, Any]] = Field(...)
     width: int = Field(...)
     height: int = Field(...)
+
+
+class ExportStatusOut(Schema):
+    job_id: str = Field(...)
+    status: str = Field(...)
+    download_url: Optional[str] = Field(None)
+
+
+class UploadStatusOut(Schema):
+    job_id: str = Field(...)
+    status: str = Field(...)
+    created_count: Optional[int] = Field(None)

@@ -13,6 +13,18 @@ class DomainException(Exception):
 
 
 # ===== Dataset exeptions =====
+class EmptyExportData(DomainException):
+    message = "Not found data for export"
+    error_code = "empty_export"
+    status_code = HTTPStatus.NOT_FOUND
+
+
+class ExportDatasetError(DomainException):
+    message = "Export dataset error"
+    error_code = "export_error"
+    status_code = HTTPStatus.BAD_REQUEST
+
+
 class EmptyDatasetError(DomainException):
     message = "Unassigned tasks not found for the specified dataset"
     error_code = "empty_dataset"
@@ -169,6 +181,12 @@ class AssignmentOperationError(DomainException):
     status_code = HTTPStatus.BAD_REQUEST
 
 
+class AssignmentTimeError(DomainException):
+    message = "Expired time limit"
+    error_code = "assignment_time_failed"
+    status_code = HTTPStatus.BAD_REQUEST
+
+
 class AssignmentNotFoundError(DomainException):
     message = "Assignment not found"
     error_code = "assignment_not_found"
@@ -261,3 +279,15 @@ class AuthRevokeError(DomainException):
     message = "Revoke token error"
     error_code = "failed_revoke_token"
     status_code = HTTPStatus.BAD_REQUEST
+
+
+class UnauthorizedError(DomainException):
+    message = "Unauthorized: Authentication required."
+    error_code = "unauthorized"
+    status_code = HTTPStatus.UNAUTHORIZED
+
+
+class AccessError(DomainException):
+    message = "Failed access for current role"
+    error_code = "role_access_error"
+    status_code = HTTPStatus.FORBIDDEN
