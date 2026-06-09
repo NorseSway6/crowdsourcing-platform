@@ -42,32 +42,6 @@ class DatasetRepository(IDatasetRepository):
         deleted, _ = Dataset.objects.filter(dataset_id=dataset_id).delete()
         return deleted > 0
 
-    def upload_images(self, dataset_id: int, files: list[UploadedFile]) -> list[Task]:
-        tasks_to_create = []
-
-        try:
-            with transaction.atomic():
-                for file in files:
-                    file.seek(0)
-                    with Image.open(file) as img:
-                        width, height = img.size
-                    file.seek(0)
-
-                    task = Task(dataset_id=dataset_id, width=width, height=height)
-
-                    try:
-                        task.image.save(file.name, file, save=False)
-                    except Exception:
-                        return None
-
-                    tasks_to_create.append(task)
-
-                created_tasks = Task.objects.bulk_create(tasks_to_create)
-        except IntegrityError:
-            return None
-
-        return list(created_tasks)
-
     def get_all_categories(self) -> list[DatasetCategory]:
         cached_categories = cache.get(self.CACHE_KEY)
         if cached_categories:

@@ -16,3 +16,9 @@ class ExportStatusOut(Schema):
     job_id: str = Field(...)
     status: str = Field(...)
     download_url: Optional[str] = Field(None)
+
+
+class UploadStatusOut(Schema):
+    job_id: str = Field(...)
+    status: str = Field(...)
+    created_count: Optional[int] = Field(None)

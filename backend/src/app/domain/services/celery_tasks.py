@@ -1,9 +1,14 @@
+import logging
+
 from celery import current_task, shared_task
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
+from django.db import transaction
 from django_redis import get_redis_connection
+from PIL import Image
 
 import app.domain.exceptions as exc
+from app.db.models.task import Task
 from app.db.repositories.dataset_repository import DatasetRepository
 from app.db.repositories.task_repository import TaskRepository
 from app.domain.services.export_service import ExportService
@@ -38,3 +43,39 @@ def run_dataset_export_task(self, dataset_id: int, format_type: str) -> str:
 
     finally:
         redis_client.delete(lock_key)
+
+
+@shared_task
+def process_images_upload_task(dataset_id: int, temp_files: list[list[str]]) -> int:
+    tasks_to_create = []
+
+    for s3_path, original_name in temp_files:
+        try:
+            task_repo = TaskRepository()
+            with default_storage.open(s3_path, "rb") as f:
+                with Image.open(f) as img:
+                    width, height = img.size
+
+                f.seek(0)
+                file_bytes = f.read()
+
+            task = Task(dataset_id=dataset_id, width=width, height=height)
+
+            task.image.save(original_name, ContentFile(file_bytes), save=False)
+            tasks_to_create.append(task)
+
+            default_storage.delete(s3_path)
+
+        except Exception:
+            if default_storage.exists(s3_path):
+                default_storage.delete(s3_path)
+            continue
+
+    if tasks_to_create:
+        try:
+            with transaction.atomic():
+                task_repo.bulk_cerate_task(tasks_to_create)
+            return len(tasks_to_create)
+        except Exception:
+            raise exc.UploadImageError()
+    return 0

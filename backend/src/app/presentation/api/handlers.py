@@ -8,7 +8,7 @@ from ninja import UploadedFile
 from app.domain.entities.assigment_schema import AssignmentOut, AssignmentSchema
 from app.domain.entities.auth_schema import LogIn, RefreshTokenIn, TokenOut
 from app.domain.entities.dataset_schema import CategoryOut, CategorySchema, DatasetOut, DatasetSchema
-from app.domain.entities.export_schema import ExportStatusOut
+from app.domain.entities.export_schema import ExportStatusOut, UploadStatusOut
 from app.domain.entities.pipeline_schema import PipelineIn, PipelineOut
 from app.domain.entities.platform_user_schema import RegisterOut, RegisterSchema, UserOut, UserSchema
 from app.domain.entities.pool_schema import PoolFilter, PoolOut, PoolSchema
@@ -143,9 +143,34 @@ class DatasetHandlers:
         self._dataset_service.delete_dataset(dataset_id)
         return HTTPStatus.OK, SuccessResponse(detail="Dataset delete successfully")
 
-    def upload_images(self, request, dataset_id: int, files: UploadedFile) -> tuple[int, list[TaskOut] | ErrorResponse]:
-        dataset = self._dataset_service.upload_images(dataset_id, files)
-        return HTTPStatus.CREATED, dataset
+    def upload_images(
+        self, request, dataset_id: int, files: UploadedFile
+    ) -> tuple[int, SuccessResponse | ErrorResponse]:
+        job_id = self._dataset_service.upload_images(dataset_id, files)
+        job_result = AsyncResult(job_id)
+
+        response_data = {
+            "job_id": job_id,
+            "status": job_result.status,
+        }
+
+        return HTTPStatus.ACCEPTED, UploadStatusOut.from_orm(response_data)
+
+    def get_upload_status(self, request, job_id: str) -> tuple[int, UploadStatusOut | ErrorResponse]:
+        job_result = AsyncResult(job_id)
+
+        response_data = {
+            "job_id": job_id,
+            "status": job_result.status,
+        }
+
+        if job_result.status == "SUCCESS":
+            response_data["created_count"] = job_result.result
+
+        elif job_result.status == "FAILURE":
+            return HTTPStatus.BAD_REQUEST, ErrorResponse(error_code="upload_status_error", detail=str(job_result.info))
+
+        return HTTPStatus.OK, UploadStatusOut.from_orm(response_data)
 
     def export_dataset(self, request, dataset_id: int, format_type: str) -> tuple[int, SuccessResponse | ErrorResponse]:
         redis_client = get_redis_connection("default")
@@ -178,9 +203,9 @@ class DatasetHandlers:
             response_data["download_url"] = job_result.result
 
         elif job_result.status == "FAILURE":
-            response_data["error"] = str(job_result.info)
+            return HTTPStatus.BAD_REQUEST, ErrorResponse(error_code="export_status_error", detail=str(job_result.info))
 
-        return ExportStatusOut.from_orm(response_data)
+        return HTTPStatus.OK, ExportStatusOut.from_orm(response_data)
 
     def get_all_categories(self, request) -> tuple[int, list[str] | ErrorResponse]:
         categories = self._dataset_service.get_all_categories()
