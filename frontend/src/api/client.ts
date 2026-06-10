@@ -1,4 +1,5 @@
 import axios from 'axios'
+import Cookies from 'js-cookie'
 
 export const apiClient = axios.create({
 	baseURL: 'http://localhost:8000/api',
@@ -6,23 +7,17 @@ export const apiClient = axios.create({
 	withCredentials: true
 })
 
-const getToken = () =>
-	document.cookie
-		.split('; ')
-		.find(r => r.startsWith('access_token='))
-		?.split('=')[1]
+export const getToken = () => Cookies.get('access_token')
 
-const setTokens = (access: string, refresh: string) => {
-	document.cookie = `access_token=${access}; path=/; SameSite=Strict`
-	document.cookie = `refresh_token=${refresh}; path=/; SameSite=Strict`
+export const setTokens = (access: string, refresh: string) => {
+	Cookies.set('access_token', access, { path: '/', sameSite: 'strict' })
+	Cookies.set('refresh_token', refresh, { path: '/', sameSite: 'strict' })
 }
 
-const clearTokens = () => {
-	document.cookie = 'access_token=; path=/; max-age=0'
-	document.cookie = 'refresh_token=; path=/; max-age=0'
+export const clearTokens = () => {
+	Cookies.remove('access_token')
+	Cookies.remove('refresh_token')
 }
-
-export { clearTokens, getToken, setTokens }
 
 apiClient.interceptors.request.use(config => {
 	const token = getToken()
@@ -37,10 +32,7 @@ apiClient.interceptors.response.use(
 		if (error.response?.status === 401 && !original._retry) {
 			original._retry = true
 			try {
-				const refresh = document.cookie
-					.split('; ')
-					.find(r => r.startsWith('refresh_token='))
-					?.split('=')[1]
+				const refresh = Cookies.get('refresh_token')
 				if (!refresh) throw new Error()
 				const { data } = await axios.post(
 					'http://localhost:8000/api/auth/update_tokens',

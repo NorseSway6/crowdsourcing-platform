@@ -6,60 +6,76 @@ const BASE_URL = 'http://localhost:8000/api'
 async function seed() {
 	console.log('Запускаю seeder...')
 
-	const userRes = await fetch(`${BASE_URL}/users/`, {
+	const userRes = await fetch(`${BASE_URL}/auth/register`, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify({
 			email: `student_${Date.now()}@test.com`,
 			role: 'STUDENT',
 			password: 'test1234',
+			user_profile: {
+				first_name: 'Иван',
+				last_name: 'Иванов',
+				middle_name: 'Иванович',
+				group: 'ИВТ-101',
+				institution: 'МГТУ',
+				skills: []
+			}
 		}),
 	})
-	if (!userRes.ok) { console.error('Юзер:', await userRes.text()); return }
-	const user = await userRes.json()
-	const USER_ID = user.user_id
-	console.log(`Юзер создан: ${USER_ID}`)
 
-	const profileRes = await fetch(`${BASE_URL}/users/me/profile?user_id=${USER_ID}`, {
-		method: 'PATCH',
-		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({
-			first_name: 'Иван',
-			last_name: 'Иванов',
-			middle_name: 'Иванович',
-			group: 'ИВТ-101',
-			institution: 'МГТУ',
-		}),
-	})
-	if (!profileRes.ok) console.warn('Профиль не обновился:', await profileRes.text())
-	else console.log('Профиль обновлён')
+	if (!userRes.ok) {
+		console.error('Ошибка регистрации:', await userRes.text())
+		return
+	}
+
+	const regData = await userRes.json()
+	const USER_ID = regData.user.user_id
+	console.log(`Юзер создан: ${USER_ID}`)
 
 	const datasetRes = await fetch(`${BASE_URL}/datasets/?owner_id=${USER_ID}`, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify({ name: 'Test Dataset', domain: 'general' }),
 	})
-	if (!datasetRes.ok) { console.error('Датасет:', await datasetRes.text()); return }
+
+	if (!datasetRes.ok) {
+		console.error('Датасет:', await datasetRes.text())
+		return
+	}
 	const dataset = await datasetRes.json()
 	console.log(`Датасет создан: ${dataset.dataset_id}`)
 
 	const imagesDir = path.join(process.cwd(), 'scripts', 'images')
-	if (!fs.existsSync(imagesDir)) { console.error('Папка scripts/images/ не найдена'); return }
+	if (!fs.existsSync(imagesDir)) {
+		console.error('Папка scripts/images/ не найдена')
+		return
+	}
+
 	const files = fs.readdirSync(imagesDir).filter(f =>
 		['.jpg', '.jpeg', '.png', '.webp'].includes(path.extname(f).toLowerCase())
 	)
-	if (files.length === 0) { console.error('Нет картинок в scripts/images/'); return }
+
+	if (files.length === 0) {
+		console.error('Нет картинок в scripts/images/')
+		return
+	}
 
 	const formData = new FormData()
 	for (const file of files) {
 		const buffer = fs.readFileSync(path.join(imagesDir, file))
 		formData.append('files', new Blob([buffer], { type: 'image/jpeg' }), file)
 	}
+
 	const uploadRes = await fetch(`${BASE_URL}/datasets/${dataset.dataset_id}/upload`, {
 		method: 'POST',
 		body: formData,
 	})
-	if (!uploadRes.ok) { console.error('Upload:', await uploadRes.text()); return }
+
+	if (!uploadRes.ok) {
+		console.error('Upload:', await uploadRes.text())
+		return
+	}
 	const uploadedTasks = await uploadRes.json()
 	console.log(`Загружено файлов: ${uploadedTasks.length}`)
 
@@ -92,13 +108,17 @@ async function seed() {
 			],
 		}),
 	})
-	if (!pipelineRes.ok) { console.error('Pipeline:', await pipelineRes.text()); return }
+
+	if (!pipelineRes.ok) {
+		console.error('Pipeline:', await pipelineRes.text())
+		return
+	}
+
 	const pipeline = await pipelineRes.json()
 	const annotationPool = pipeline.pools.find(p => p.pool_type === 'ANNOTATION')
 	console.log(`Pipeline создан: ${pipeline.pipeline_id}`)
 	console.log(`Пул разметки: ${annotationPool.pool_id}`)
 
-	// проверяем задачи в пуле
 	const tasksRes = await fetch(`${BASE_URL}/tasks/`)
 	const allTasks = await tasksRes.json()
 	const poolTasks = allTasks.filter(t => t.pool_id === annotationPool.pool_id)
@@ -116,7 +136,6 @@ async function seed() {
 		}
 		const assignment = await assignRes.json()
 
-		// отправляем разметку для всех кроме первого
 		if (i > 0) {
 			const submitRes = await fetch(
 				`${BASE_URL}/assignments/${assignment.assignment_id}?user_id=${USER_ID}`,
@@ -140,10 +159,10 @@ async function seed() {
 		console.log(`Assignment ${assignment.assignment_id} создан (task ${assignment.task_id})`)
 	}
 
-	console.log('\nГотово')
+	console.log('\n Готово')
 	console.log(`USER_ID = ${USER_ID}`)
 	console.log(`PIPELINE_ID = ${pipeline.pipeline_id}`)
-	console.log(`POOL_ID = ${annotationPool.pool_id}`)
+	console.log(`P OOL_ID = ${annotationPool.pool_id}`)
 	console.log(`DATASET_ID = ${dataset.dataset_id}`)
 	console.log(`assignments = ${created}`)
 	console.log(`TEMP_USER_ID = '${USER_ID}'`)
