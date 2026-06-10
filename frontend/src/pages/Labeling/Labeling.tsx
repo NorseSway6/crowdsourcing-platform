@@ -32,9 +32,8 @@ export const LabelingPage = () => {
 	const [timeLeft, setTimeLeft] = useState(TIMER_SECONDS)
 	const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-	const { current, submit } = useAssignment()
+	const { current, submit, fetchNext } = useAssignment()
 
-	// сбрасываем таймер при смене задания
 	useEffect(() => {
 		setTimeLeft(TIMER_SECONDS)
 
@@ -54,6 +53,15 @@ export const LabelingPage = () => {
 			if (timerRef.current) clearInterval(timerRef.current)
 		}
 	}, [current?.assignment.assignment_id])
+
+	useEffect(() => {
+		if (timeLeft === 0) {
+			setShapes([])
+			setHistory([[]])
+			setHistoryIndex(0)
+			fetchNext()
+		}
+	}, [timeLeft, fetchNext])
 
 	const handleSubmit = async () => {
 		if (!current || shapes.length === 0) return

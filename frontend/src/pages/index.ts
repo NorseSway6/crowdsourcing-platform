@@ -1,5 +1,7 @@
+export { LoginPage } from './Auth/Login'
+export { RegisterPage } from './Auth/Register'
 export { InProgressPage } from './InProgress/InProgress'
 export { LabelingPage } from './Labeling/Labeling'
+export { NotFoundPage } from './NotFound/NotFound'
 export { ReviewPage } from './Review/Review'
 export { TasksPage } from './Tasks/Tasks'
-export { NotFoundPage } from './NotFound/NotFound'

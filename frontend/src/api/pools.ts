@@ -28,5 +28,5 @@ export const poolsApi = {
 		apiClient.get<PoolOut[]>('/pools/', { params: filters }).then(r => r.data),
 
 	getById: (poolId: number) =>
-		apiClient.get<PoolOut>(`/pools/${poolId}`).then(r => r.data)
+		apiClient.get<PoolOut>(`/pools/${poolId}`).then(r => r.data), 
 }

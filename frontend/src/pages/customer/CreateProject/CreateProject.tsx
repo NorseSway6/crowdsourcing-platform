@@ -10,11 +10,10 @@ import {
 	Textarea
 } from '@/components/ui'
 
-import { TEMP_USER_ID } from '@/config/temp'
-
 import { useCreatePipeline } from '@/hooks/useCreatePipeline'
 
 import styles from './CreateProject.module.scss'
+import { useAuth } from '@/hooks'
 
 export const CreateProjectPage = () => {
 	const [name, setName] = useState('')
@@ -31,6 +30,8 @@ export const CreateProjectPage = () => {
 
 	const { loading, error, success, create } = useCreatePipeline()
 
+	const { user } = useAuth()
+
 	const handleFiles = (incoming: FileList | null) => {
 		if (!incoming) return
 		const arr = Array.from(incoming).filter(f =>
@@ -41,8 +42,10 @@ export const CreateProjectPage = () => {
 
 	const handleCreate = async () => {
 		if (files.length === 0 || !name.trim()) return
+		if (!user) return
+
 		await create({
-			ownerId: TEMP_USER_ID,
+			ownerId: user?.user_id,
 			name,
 			files,
 			points: Number(points),

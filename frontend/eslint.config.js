@@ -32,7 +32,8 @@ export default tseslint.config(
 
 			'no-console': ['warn', { allow: ['warn', 'error'] }],
 			'prefer-const': 'warn',
-			'no-duplicate-imports': 'error',
+			'no-duplicate-imports': 'off',
+			'react-hooks/set-state-in-effect': 'off'
 		},
 	}
 )

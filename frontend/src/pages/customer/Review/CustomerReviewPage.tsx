@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Cell, Pie, PieChart } from 'recharts'
 
-import type { AssignmentOut } from '@/api/assignments'
-import { assignmentsApi } from '@/api/assignments'
+import { type AssignmentOut, assignmentsApi } from '@/api/assignments'
 
 import styles from './Review.module.scss'
 
@@ -28,7 +27,7 @@ export const CustomerReviewPage = () => {
 	const approved = assignments.filter(a => a.status === 'APPROVED').length
 	const pending = assignments.filter(a => a.status === 'PENDING').length
 	const rejected = assignments.filter(a => a.status === 'REJECTED').length
-	
+
 	const total = approved + pending + rejected
 	const percent = total === 0 ? 0 : Math.round((approved / total) * 100)
 
@@ -46,9 +45,7 @@ export const CustomerReviewPage = () => {
 			) : (
 				<div className={styles.card}>
 					<div className={styles.cardTitle}>Статистика разметки</div>
-					<div className={styles.cardSubtitle}>
-						Описание
-					</div>
+					<div className={styles.cardSubtitle}>Описание</div>
 
 					<div className={styles.chartRow}>
 						<PieChart width={220} height={220}>

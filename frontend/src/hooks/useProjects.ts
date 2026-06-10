@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 
-import { TEMP_USER_ID } from '@/config/temp'
-
 import { assignmentsApi } from '@/api/assignments'
 import type { PipelineOut } from '@/api/pipelines'
 import { pipelinesApi } from '@/api/pipelines'
+
+import { useAuth } from './useAuth'
 
 export interface PipelineWithStats extends PipelineOut {
 	completedCount: number
@@ -16,12 +16,16 @@ export const useProjects = () => {
 	const [loading, setLoading] = useState(false)
 	const [error, setError] = useState<string | null>(null)
 
+	const { user } = useAuth()
+
 	useEffect(() => {
 		const load = async () => {
 			setLoading(true)
 			try {
+				if (!user) return
+
 				const [pipelines, assignments] = await Promise.all([
-					pipelinesApi.getMy(TEMP_USER_ID),
+					pipelinesApi.getMy(user?.user_id),
 					assignmentsApi.getAll()
 				])
 
@@ -47,7 +51,7 @@ export const useProjects = () => {
 			}
 		}
 		load()
-	}, [])
+	}, [user])
 
 	return { projects, loading, error }
 }
