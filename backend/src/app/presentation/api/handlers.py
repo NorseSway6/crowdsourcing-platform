@@ -144,9 +144,20 @@ class DatasetHandlers:
         return HTTPStatus.OK, SuccessResponse(detail="Dataset delete successfully")
 
     def upload_images(
-        self, request, dataset_id: int, files: UploadedFile
+        self, request, dataset_id: int, files: list[UploadedFile]
     ) -> tuple[int, SuccessResponse | ErrorResponse]:
         job_id = self._dataset_service.upload_images(dataset_id, files)
+        job_result = AsyncResult(job_id)
+
+        response_data = {
+            "job_id": job_id,
+            "status": job_result.status,
+        }
+
+        return HTTPStatus.ACCEPTED, UploadStatusOut.from_orm(response_data)
+
+    def upload_video(self, request, dataset_id: int, file: UploadedFile) -> tuple[int, SuccessResponse | ErrorResponse]:
+        job_id = self._dataset_service.upload_video(dataset_id, file)
         job_result = AsyncResult(job_id)
 
         response_data = {

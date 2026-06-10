@@ -61,6 +61,24 @@ class UploadImageError(DomainException):
     status_code = HTTPStatus.BAD_REQUEST
 
 
+class UploadVideoError(DomainException):
+    message = "Upload video error"
+    error_code = "video_upload_error"
+    status_code = HTTPStatus.BAD_REQUEST
+
+
+class OpenVideoError(DomainException):
+    message = "Open video error"
+    error_code = "video_open_error"
+    status_code = HTTPStatus.BAD_REQUEST
+
+
+class WrongFileForamtError(DomainException):
+    message = "Wrong file format"
+    error_code = "wrong_format"
+    status_code = HTTPStatus.BAD_REQUEST
+
+
 class CategoriesNotFoundError(DomainException):
     message = "Categories not found"
     error_code = "categories_not_found"

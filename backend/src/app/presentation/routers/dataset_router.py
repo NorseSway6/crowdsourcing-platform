@@ -60,6 +60,17 @@ def get_datasets_router(dataset_handlers: DatasetHandlers):
     )
 
     @has_roles(AuthRole.ADMIN, AuthRole.CUSTOMER)
+    def upload_video(request, dataset_id: int, file: UploadedFile):
+        return dataset_handlers.upload_video(request, dataset_id, file)
+
+    router.add_api_operation(
+        "/{int:dataset_id}/upload-video",
+        ["POST"],
+        upload_video,
+        response={202: UploadStatusOut, 400: ErrorResponse},
+    )
+
+    @has_roles(AuthRole.ADMIN, AuthRole.CUSTOMER)
     def get_upload_status(request, job_id) -> tuple[int, UploadStatusOut | ErrorResponse]:
         return dataset_handlers.get_upload_status(request, job_id)
 

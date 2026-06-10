@@ -17,7 +17,7 @@ class TaskRepository(ITaskRepository):
     def get_task_by_id(self, task_id: int) -> Task:
         return Task.objects.filter(task_id=task_id).first()
 
-    def bulk_cerate_task(self, tasks_to_create: list[Task]) -> Task:
+    def bulk_create_task(self, tasks_to_create: list[Task]) -> Task:
         try:
             task = Task.objects.bulk_create(tasks_to_create)
         except:
