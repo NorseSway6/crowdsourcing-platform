@@ -35,5 +35,11 @@ export default tseslint.config(
 			'no-duplicate-imports': 'off',
 			'react-hooks/set-state-in-effect': 'off'
 		},
+		ignores: [
+      "dist/",
+      "build/",
+      "node_modules/",
+      "scripts/",
+    ]
 	}
 )
