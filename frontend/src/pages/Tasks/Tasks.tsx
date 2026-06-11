@@ -16,10 +16,7 @@ export const TasksPage = () => {
 			<h1 className={styles.pageTitle}>Задания</h1>
 
 			<div className={styles.toolbar}>
-				<SortSelect
-					value={sort}
-					onChange={setSort}
-				/>
+				<SortSelect value={sort} onChange={setSort} />
 			</div>
 
 			<div className={styles.body}>
@@ -30,10 +27,7 @@ export const TasksPage = () => {
 						<div className={styles.empty}>Нет доступных заданий</div>
 					)}
 					{filtered.map(task => (
-						<TaskCard
-							key={task.task_id}
-							task={task}
-						/>
+						<TaskCard key={task.task_id} task={task} />
 					))}
 				</div>
 

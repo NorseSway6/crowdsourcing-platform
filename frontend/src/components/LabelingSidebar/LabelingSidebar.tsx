@@ -25,12 +25,7 @@ export const LabelingSidebar = ({
 		>
 			{submitting ? 'Отправка...' : 'Отправить'}
 		</Button>
-		<Button
-			variant='secondary'
-			full
-			onClick={onSkip}
-			disabled={submitting}
-		>
+		<Button variant='secondary' full onClick={onSkip} disabled={submitting}>
 			Пропустить
 		</Button>
 	</div>

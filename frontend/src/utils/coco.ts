@@ -29,7 +29,7 @@ export const shapesToCoco = (shapes: Shape[]): CocoAnnotation => ({
 				segmentation: [shape.points]
 			}
 		}
-		
+
 		return {
 			category_id: 1,
 			bbox: [shape.x, shape.y, 1, 1] as [number, number, number, number],

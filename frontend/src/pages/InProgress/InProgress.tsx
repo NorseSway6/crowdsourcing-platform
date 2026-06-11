@@ -16,10 +16,7 @@ export const InProgressPage = () => {
 			<h1 className={styles.pageTitle}>В работе</h1>
 
 			<div className={styles.toolbar}>
-				<SortSelect
-					value={sort}
-					onChange={setSort}
-				/>
+				<SortSelect value={sort} onChange={setSort} />
 			</div>
 
 			<div className={styles.body}>
@@ -30,11 +27,7 @@ export const InProgressPage = () => {
 						<div className={styles.empty}>Нет заданий в работе</div>
 					)}
 					{filtered.map(task => (
-						<TaskCard
-							key={task.task_id}
-							task={task}
-							variant='in_progress'
-						/>
+						<TaskCard key={task.task_id} task={task} variant='in_progress' />
 					))}
 				</div>
 

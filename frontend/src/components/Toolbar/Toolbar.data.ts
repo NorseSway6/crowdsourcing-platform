@@ -1,5 +1,6 @@
-import type { Tool } from '@/types/canvas'
 import { Hand, MapPin, MousePointer2, Pentagon, Square } from 'lucide-react'
+
+import type { Tool } from '@/types/canvas'
 
 export const toolButtons = [
 	{

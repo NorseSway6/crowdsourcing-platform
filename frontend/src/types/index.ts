@@ -6,7 +6,11 @@ export interface Task {
 	created_at: string
 }
 
-export type AssignmentStatus = 'IN_PROGRESS' | 'PENDING' | 'APPROVED' | 'REJECTED'
+export type AssignmentStatus =
+	| 'IN_PROGRESS'
+	| 'PENDING'
+	| 'APPROVED'
+	| 'REJECTED'
 
 export interface Assignment {
 	assignment_id: number

@@ -7,7 +7,6 @@ import type { ActiveAssignment } from '@/services/assignment.service'
 import { assignmentService } from '@/services/assignment.service'
 import { poolService } from '@/services/pool.service'
 
-
 interface UseAssignmentReturn {
 	current: ActiveAssignment | null
 	loading: boolean
