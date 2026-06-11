@@ -5,6 +5,7 @@ from celery.result import AsyncResult
 from django_redis import get_redis_connection
 from ninja import UploadedFile
 
+from app.domain.entities.anallytics_schema import PoolProgressOut, PoolsProgressFilter, UserInfoFilter, UserInfoOut
 from app.domain.entities.assigment_schema import AssignmentOut, AssignmentSchema
 from app.domain.entities.auth_schema import LogIn, RefreshTokenIn, TokenOut
 from app.domain.entities.dataset_schema import CategoryOut, CategorySchema, DatasetOut, DatasetSchema
@@ -16,6 +17,7 @@ from app.domain.entities.response_schema import ErrorResponse, SuccessResponse
 from app.domain.entities.skill_schema import SkillSchema
 from app.domain.entities.task_schema import TaskOut
 from app.domain.entities.user_profile_schema import ProfileSchema
+from app.domain.services.analytics_module import AnalyticsService
 from app.domain.services.assignment_service import AssignmentService
 from app.domain.services.auth_service import AuthService
 from app.domain.services.celery_tasks import run_dataset_export_task
@@ -292,3 +294,18 @@ class AuthHandlers:
     def register_user(self, request, data: RegisterSchema) -> tuple[int, RegisterOut | ErrorResponse]:
         user = self._auth_service.register_user(data)
         return HTTPStatus.CREATED, user
+
+
+class AnalyticsHandlers:
+    def __init__(self, analytics_service: AnalyticsService):
+        self._analytics_service = analytics_service
+
+    def get_pools_progress(
+        self, request, filters: PoolsProgressFilter
+    ) -> tuple[int, list[PoolProgressOut] | ErrorResponse]:
+        progress = self._analytics_service.get_pools_progress(filters)
+        return HTTPStatus.OK, progress
+
+    def get_users_info(self, request, filters: UserInfoFilter) -> tuple[int, list[UserInfoOut] | ErrorResponse]:
+        info = self._analytics_service.get_users_info(filters)
+        return HTTPStatus.OK, info

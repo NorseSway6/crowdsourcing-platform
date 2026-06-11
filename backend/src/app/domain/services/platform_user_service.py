@@ -17,7 +17,7 @@ class UserService:
     def create_user(self, user_data: RegisterSchema) -> UserOut:
         is_unique_email = self._user_repo.is_unique_email(user_data.email)
         if not is_unique_email:
-            return None
+            raise exc.UniqueEmailError()
 
         with transaction.atomic():
             user = self._user_repo.create_user(user_data)

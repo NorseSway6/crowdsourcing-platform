@@ -273,6 +273,12 @@ class UserDeletionError(DomainException):
     status_code = HTTPStatus.BAD_REQUEST
 
 
+class UniqueEmailError(DomainException):
+    message = "This email is alredy exists"
+    error_code = "email_exists_error"
+    status_code = HTTPStatus.BAD_REQUEST
+
+
 # ===== Consensus exeptions =====
 class ConsensusResolutionError(DomainException):
     message = "Failed to resolve consensus for task"
