@@ -30,7 +30,7 @@ export default tseslint.config(
 			'@typescript-eslint/no-explicit-any': 'warn',
 			'@typescript-eslint/consistent-type-imports': ['warn', { prefer: 'type-imports' }],
 
-			'no-console': ['warn', { allow: ['warn', 'error'] }],
+			'no-console': 'off',
 			'prefer-const': 'warn',
 			'no-duplicate-imports': 'off',
 			'react-hooks/set-state-in-effect': 'off'
