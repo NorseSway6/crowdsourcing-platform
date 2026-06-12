@@ -11,7 +11,8 @@ def get_analytics_router(analytics_handlers: AnalyticsHandlers):
 
     @has_roles(AuthRole.ADMIN, AuthRole.CUSTOMER)
     def get_pools_progress(request, filters: PoolsProgressFilter = Query(...)) -> list[PoolProgressOut]:
-        return analytics_handlers.get_pools_progress(request, filters)
+        user = request.auth
+        return analytics_handlers.get_pools_progress(request, user.user_id, filters)
 
     router.add_api_operation(
         "/pools-progress",

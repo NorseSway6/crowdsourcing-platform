@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from app.db.repositories.analytics_repository import AnalyticsRepository
 from app.domain.entities.anallytics_schema import PoolProgressOut, PoolsProgressFilter, UserInfoFilter, UserInfoOut
 
@@ -6,8 +8,8 @@ class AnalyticsService:
     def __init__(self, analytics_repo: AnalyticsRepository):
         self._analytics_repo = analytics_repo
 
-    def get_pools_progress(self, filters: PoolsProgressFilter) -> list[PoolProgressOut]:
-        raw_data = self._analytics_repo.get_pools_progress(filters)
+    def get_pools_progress(self, user_id: UUID, filters: PoolsProgressFilter) -> list[PoolProgressOut]:
+        raw_data = self._analytics_repo.get_pools_progress(user_id, filters)
 
         progress_list = []
         for item in raw_data:

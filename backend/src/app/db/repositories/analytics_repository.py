@@ -9,8 +9,8 @@ from app.domain.entities.anallytics_schema import PoolsProgressFilter, UserInfoF
 
 class AnalyticsRepository:
 
-    def get_pools_progress(self, filters: PoolsProgressFilter) -> list[dict[str, any]]:
-        queryset = Pool.objects.all()
+    def get_pools_progress(self, user_id: UUID, filters: PoolsProgressFilter) -> list[dict[str, any]]:
+        queryset = Pool.objects.filter(pipeline__owner__user_id=user_id)
 
         if filters.pipline_id:
             queryset = queryset.filter(pipeline_id=filters.pipline_id)

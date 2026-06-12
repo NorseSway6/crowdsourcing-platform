@@ -301,9 +301,9 @@ class AnalyticsHandlers:
         self._analytics_service = analytics_service
 
     def get_pools_progress(
-        self, request, filters: PoolsProgressFilter
+        self, request, user_id: UUID, filters: PoolsProgressFilter
     ) -> tuple[int, list[PoolProgressOut] | ErrorResponse]:
-        progress = self._analytics_service.get_pools_progress(filters)
+        progress = self._analytics_service.get_pools_progress(user_id, filters)
         return HTTPStatus.OK, progress
 
     def get_users_info(self, request, filters: UserInfoFilter) -> tuple[int, list[UserInfoOut] | ErrorResponse]:
