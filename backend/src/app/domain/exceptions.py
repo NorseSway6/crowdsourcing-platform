@@ -61,6 +61,24 @@ class UploadImageError(DomainException):
     status_code = HTTPStatus.BAD_REQUEST
 
 
+class UploadVideoError(DomainException):
+    message = "Upload video error"
+    error_code = "video_upload_error"
+    status_code = HTTPStatus.BAD_REQUEST
+
+
+class OpenVideoError(DomainException):
+    message = "Open video error"
+    error_code = "video_open_error"
+    status_code = HTTPStatus.BAD_REQUEST
+
+
+class WrongFileForamtError(DomainException):
+    message = "Wrong file format"
+    error_code = "wrong_format"
+    status_code = HTTPStatus.BAD_REQUEST
+
+
 class CategoriesNotFoundError(DomainException):
     message = "Categories not found"
     error_code = "categories_not_found"
@@ -252,6 +270,12 @@ class ProifleUpdatingError(DomainException):
 class UserDeletionError(DomainException):
     message = "User deletion error"
     error_code = "user_deletion_error"
+    status_code = HTTPStatus.BAD_REQUEST
+
+
+class UniqueEmailError(DomainException):
+    message = "This email is alredy exist"
+    error_code = "email_exist_error"
     status_code = HTTPStatus.BAD_REQUEST
 
 

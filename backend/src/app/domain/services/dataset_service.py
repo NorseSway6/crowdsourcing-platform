@@ -7,7 +7,7 @@ from ninja import UploadedFile
 import app.domain.exceptions as exc
 from app.db.repositories.dataset_repository import DatasetRepository
 from app.domain.entities.dataset_schema import CategoryOut, CategorySchema, DatasetOut, DatasetSchema
-from app.domain.services.celery_tasks import process_images_upload_task
+from app.domain.services.celery_tasks import process_images_upload_task, process_video_upload_task
 
 
 class DatasetService:
@@ -68,6 +68,15 @@ class DatasetService:
             temp_file_paths.append((actual_saved_path, file.name))
 
         job = process_images_upload_task.delay(dataset_id, temp_file_paths)
+
+        return job.id
+
+    def upload_video(self, dataset_id: int, file: UploadedFile) -> str:
+        temp_path = f"temp_uploads/video_{dataset_id}/{file.name}"
+        actual_saved_path = default_storage.save(temp_path, file)
+        temp_file_path = (actual_saved_path, file.name)
+
+        job = process_video_upload_task.delay(dataset_id, temp_file_path)
 
         return job.id
 

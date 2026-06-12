@@ -5,6 +5,7 @@ from celery.result import AsyncResult
 from django_redis import get_redis_connection
 from ninja import UploadedFile
 
+from app.domain.entities.anallytics_schema import PoolProgressOut, PoolsProgressFilter, UserInfoFilter, UserInfoOut
 from app.domain.entities.assigment_schema import AssignmentOut, AssignmentSchema
 from app.domain.entities.auth_schema import LogIn, RefreshTokenIn, TokenOut
 from app.domain.entities.dataset_schema import CategoryOut, CategorySchema, DatasetOut, DatasetSchema
@@ -16,6 +17,7 @@ from app.domain.entities.response_schema import ErrorResponse, SuccessResponse
 from app.domain.entities.skill_schema import SkillSchema
 from app.domain.entities.task_schema import TaskOut
 from app.domain.entities.user_profile_schema import ProfileSchema
+from app.domain.services.analytics_module import AnalyticsService
 from app.domain.services.assignment_service import AssignmentService
 from app.domain.services.auth_service import AuthService
 from app.domain.services.celery_tasks import run_dataset_export_task
@@ -144,9 +146,20 @@ class DatasetHandlers:
         return HTTPStatus.OK, SuccessResponse(detail="Dataset delete successfully")
 
     def upload_images(
-        self, request, dataset_id: int, files: UploadedFile
+        self, request, dataset_id: int, files: list[UploadedFile]
     ) -> tuple[int, SuccessResponse | ErrorResponse]:
         job_id = self._dataset_service.upload_images(dataset_id, files)
+        job_result = AsyncResult(job_id)
+
+        response_data = {
+            "job_id": job_id,
+            "status": job_result.status,
+        }
+
+        return HTTPStatus.ACCEPTED, UploadStatusOut.from_orm(response_data)
+
+    def upload_video(self, request, dataset_id: int, file: UploadedFile) -> tuple[int, SuccessResponse | ErrorResponse]:
+        job_id = self._dataset_service.upload_video(dataset_id, file)
         job_result = AsyncResult(job_id)
 
         response_data = {
@@ -281,3 +294,18 @@ class AuthHandlers:
     def register_user(self, request, data: RegisterSchema) -> tuple[int, RegisterOut | ErrorResponse]:
         user = self._auth_service.register_user(data)
         return HTTPStatus.CREATED, user
+
+
+class AnalyticsHandlers:
+    def __init__(self, analytics_service: AnalyticsService):
+        self._analytics_service = analytics_service
+
+    def get_pools_progress(
+        self, request, user_id: UUID, filters: PoolsProgressFilter
+    ) -> tuple[int, list[PoolProgressOut] | ErrorResponse]:
+        progress = self._analytics_service.get_pools_progress(user_id, filters)
+        return HTTPStatus.OK, progress
+
+    def get_users_info(self, request, filters: UserInfoFilter) -> tuple[int, list[UserInfoOut] | ErrorResponse]:
+        info = self._analytics_service.get_users_info(filters)
+        return HTTPStatus.OK, info
