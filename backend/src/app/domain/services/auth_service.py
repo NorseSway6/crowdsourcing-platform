@@ -4,6 +4,7 @@ from enum import Enum
 
 import jwt
 from django.contrib.auth.hashers import check_password, make_password
+from django.db import transaction
 
 import app.domain.exceptions as exc
 from app.domain.entities.auth_schema import LogIn, RefreshTokenIn, TokenOut
@@ -101,33 +102,37 @@ class AuthService:
         return TokenOut(access_token=new_access, refresh_token=new_refresh, token_type="Bearer")
 
     def register_user(self, data: RegisterSchema) -> RegisterOut:
-        hashed_password = make_password(data.password)
-        data.password = hashed_password
+        with transaction.atomic():
+            hashed_password = make_password(data.password)
+            data.password = hashed_password
 
-        new_user = self._user_service.create_user(data)
-        user = self._user_repo.get_user_by_email(new_user.email)
-        if not user:
-            raise exc.UserNotFoundError()
+            new_user = self._user_service.create_user(data)
+            user = self._user_repo.get_user_by_email(new_user.email)
+            if not user:
+                raise exc.UserNotFoundError()
 
-        jti = str(uuid.uuid4())
-        device_id = str(uuid.uuid4())
-        access_token = self._generate_token(
-            TokenType.ACCESS, user.user_id, jti, device_id, user.role, settings.JWT_ACCESS_TOKEN_LIFETIME
-        )
-        refresh_token = self._generate_token(
-            TokenType.REFRESH, user.user_id, jti, device_id, user.role, settings.JWT_REFRESH_TOKEN_LIFETIME
-        )
+            jti = str(uuid.uuid4())
+            device_id = str(uuid.uuid4())
+            access_token = self._generate_token(
+                TokenType.ACCESS, user.user_id, jti, device_id, user.role, settings.JWT_ACCESS_TOKEN_LIFETIME
+            )
+            refresh_token = self._generate_token(
+                TokenType.REFRESH, user.user_id, jti, device_id, user.role, settings.JWT_REFRESH_TOKEN_LIFETIME
+            )
 
-        created = self._auth_repo.create_token(jti, user, device_id)
-        if not created:
-            raise exc.AuthCreateError()
+            created = self._auth_repo.create_token(jti, user, device_id)
+            if not created:
+                raise exc.AuthCreateError()
 
-        return RegisterOut(
-            user=UserOut.from_orm(user),
-            tokens=TokenOut(access_token=access_token, refresh_token=refresh_token, token_type="Bearer"),
-        )
+            return RegisterOut(
+                user=UserOut.from_orm(user),
+                tokens=TokenOut(access_token=access_token, refresh_token=refresh_token, token_type="Bearer"),
+            )
 
     def _generate_token(self, token_type, user_id, jti, device_id, role, lifetime):
+        secret_key = settings.JWT_SECRET_KEY
+        if hasattr(secret_key, "get_secret_value"):
+            secret_key = secret_key.get_secret_value()
         now = datetime.now(timezone.utc)
         exp = now + lifetime
         payload = {
@@ -136,7 +141,7 @@ class AuthService:
             "type": token_type.value,
             "jti": jti,
             "device_id": device_id,
-            "role": role,
+            "role": str(role),
         }
 
-        return jwt.encode(payload, settings.JWT_SECRET_KEY, algorithm="HS256")
+        return jwt.encode(payload, str(secret_key), algorithm="HS256")

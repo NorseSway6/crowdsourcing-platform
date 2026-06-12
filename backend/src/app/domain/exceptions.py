@@ -274,8 +274,8 @@ class UserDeletionError(DomainException):
 
 
 class UniqueEmailError(DomainException):
-    message = "This email is alredy exists"
-    error_code = "email_exists_error"
+    message = "This email is alredy exist"
+    error_code = "email_exist_error"
     status_code = HTTPStatus.BAD_REQUEST
 
 

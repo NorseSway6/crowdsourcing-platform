@@ -27,7 +27,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY")
-JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+if not SECRET_KEY:
+    raise ValueError("There is no SECRET_KEY in the settings")
+
+raw_secret = os.environ.get("JWT_SECRET_KEY")
+if not raw_secret or raw_secret.lower() == "none":
+    raise ValueError("There is no JWT_SECRET_KEY in the settings or it`s no valid")
+JWT_SECRET_KEY = raw_secret
 
 JWT_ACCESS_TOKEN_LIFETIME = datetime.timedelta(minutes=15)
 JWT_REFRESH_TOKEN_LIFETIME = datetime.timedelta(days=7)
