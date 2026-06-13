@@ -41,6 +41,10 @@ class AssignmentService:
     def create_assignment(self, user_id: UUID, pool_id: int) -> AssignmentOut:
         assignmented_task = self._assignment_repo._get_active_assignment(user_id)
         if assignmented_task:
+            if assignmented_task.expires_at and timezone.now() > assignmented_task.expires_at:
+                self._assignment_repo.reject_expired_assignment(assignmented_task.assignment_id)
+                raise exc.AssignmentTimeError()
+
             return AssignmentOut.from_orm(assignmented_task)
 
         with transaction.atomic():
