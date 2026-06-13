@@ -20,7 +20,7 @@ def get_tasks_router(task_handlers: TaskHandlers):
         response={200: list[TaskOut], 404: ErrorResponse},
     )
 
-    @has_roles(AuthRole.ADMIN, AuthRole.CUSTOMER)
+    @has_roles(AuthRole.ADMIN, AuthRole.CUSTOMER, AuthRole.STUDENT)
     def get_task_by_id(request, task_id: int) -> tuple[int, TaskOut | ErrorResponse]:
         return task_handlers.get_task_by_id(request, task_id)
 
