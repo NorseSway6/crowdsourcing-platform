@@ -1,22 +1,22 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Cell, Pie, PieChart } from 'recharts'
 
-import { type AssignmentOut, assignmentsApi } from '@/api/assignments'
+import { analyticsApi, type UserInfo } from '@/api/analytics'
 
 import styles from './Review.module.scss'
 
 export const CustomerReviewPage = () => {
-	const [assignments, setAssignments] = useState<AssignmentOut[]>([])
+	const [users, setUsers] = useState<UserInfo[]>([])
 	const [loading, setLoading] = useState(false)
 
 	useEffect(() => {
 		const load = async () => {
 			setLoading(true)
 			try {
-				const all = await assignmentsApi.getAll()
-				setAssignments(all)
+				const data = await analyticsApi.getUsersInfo()
+				setUsers(data)
 			} catch {
-				setAssignments([])
+				setUsers([])
 			} finally {
 				setLoading(false)
 			}
@@ -24,16 +24,21 @@ export const CustomerReviewPage = () => {
 		load()
 	}, [])
 
-	const approved = assignments.filter(a => a.status === 'APPROVED').length
-	const pending = assignments.filter(a => a.status === 'PENDING').length
-	const rejected = assignments.filter(a => a.status === 'REJECTED').length
-
-	const total = approved + pending + rejected
-	const percent = total === 0 ? 0 : Math.round((approved / total) * 100)
+	const { approved, errors, percent } = useMemo(() => {
+		const approvedCount = users.reduce((sum, u) => sum + u.approved, 0)
+		const submittedCount = users.reduce((sum, u) => sum + u.submitted, 0)
+		const errorCount = Math.max(submittedCount - approvedCount, 0)
+		const total = approvedCount + errorCount
+		return {
+			approved: approvedCount,
+			errors: errorCount,
+			percent: total === 0 ? 0 : Math.round((approvedCount / total) * 100)
+		}
+	}, [users])
 
 	const data = [
 		{ name: 'Верно', value: approved || 1 },
-		{ name: 'Ошибки', value: pending + rejected || 0 }
+		{ name: 'Ошибки', value: errors || 0 }
 	]
 
 	return (
@@ -45,7 +50,9 @@ export const CustomerReviewPage = () => {
 			) : (
 				<div className={styles.card}>
 					<div className={styles.cardTitle}>Статистика разметки</div>
-					<div className={styles.cardSubtitle}>Описание</div>
+					<div className={styles.cardSubtitle}>
+						Агрегированные данные по всем исполнителям
+					</div>
 
 					<div className={styles.chartRow}>
 						<PieChart width={220} height={220}>
@@ -79,14 +86,14 @@ export const CustomerReviewPage = () => {
 									className={styles.legendDot}
 									style={{ background: '#4caf50' }}
 								/>
-								Разметка выполнена верно
+								Разметка выполнена верно — {approved}
 							</div>
 							<div className={styles.legendItem}>
 								<div
 									className={styles.legendDot}
 									style={{ background: '#e53935' }}
 								/>
-								Есть ошибки
+								Есть ошибки — {errors}
 							</div>
 						</div>
 					</div>

@@ -1,9 +1,11 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import type { CocoAnnotation } from '@/api/assignments'
 
-import { DEMO_ASSIGNMENTS } from '@/mock/demo'
+import { useAuth } from './useAuth'
 import type { ActiveAssignment } from '@/services/assignment.service'
+import { assignmentService } from '@/services/assignment.service'
+import { poolService } from '@/services/pool.service'
 
 interface UseAssignmentReturn {
 	current: ActiveAssignment | null
@@ -13,43 +15,107 @@ interface UseAssignmentReturn {
 	submit: (annotation: CocoAnnotation) => Promise<void>
 }
 
-let currentDemoIndex = 0
-
 export const useAssignment = (): UseAssignmentReturn => {
-	const available = DEMO_ASSIGNMENTS.filter(
-		a => a.assignment.status === 'IN_PROGRESS'
-	)
-	const [current, setCurrent] = useState<ActiveAssignment | null>(
-		available[0] ?? null
-	)
+	const [current, setCurrent] = useState<ActiveAssignment | null>(null)
 	const [loading, setLoading] = useState(false)
 	const [error, setError] = useState<string | null>(null)
+	const [poolId, setPoolId] = useState<number | null>(null)
 
-	const fetchNext = useCallback(() => {
-		currentDemoIndex++
-		const next = available[currentDemoIndex]
-		if (!next) {
-			setCurrent(null)
-			setError('Все задания выполнены!')
-			return
+	const { user } = useAuth()
+
+	const fetchNext = useCallback(async (pid: number) => {
+		setLoading(true)
+		setError(null)
+
+		try {
+			const next = await assignmentService.getNext(pid)
+			if (!next) {
+				setCurrent(null)
+				setError('Нет доступных задач в пуле')
+				return
+			}
+			setCurrent(next)
+		} catch (err) {
+			if (err instanceof Error && err.message === 'TASK_ACCESS_DENIED') {
+				setError(
+					'Бэкенд не отдаёт задачи студенту. Попросите добавить роль STUDENT на GET /tasks/{task_id}'
+				)
+				return
+			}
+			setError('Не удалось получить задание')
+		} finally {
+			setLoading(false)
 		}
-		setCurrent(next)
-	}, [available])
+	}, [])
+
+	useEffect(() => {
+		const init = async () => {
+			setLoading(true)
+			try {
+				if (!user) return
+
+				const userSkills = user.user_profile?.skills ?? []
+				const pool = await poolService.findEligiblePool(userSkills, {
+					poolType: 'ANNOTATION',
+					institution: user.user_profile?.institution
+				})
+
+				if (!pool) {
+					const hasInstitution = Boolean(user.user_profile?.institution?.trim())
+					setError(
+						hasInstitution
+							? 'Нет доступных пулов разметки. Проверьте, что институт совпадает с проектом'
+							: 'Нет доступных пулов. Укажите институт в профиле — он должен совпадать с проектом'
+					)
+					return
+				}
+
+				setPoolId(pool.pool_id)
+				await fetchNext(pool.pool_id)
+			} catch {
+				setError('Не удалось загрузить профиль пользователя')
+			} finally {
+				setLoading(false)
+			}
+		}
+
+		init()
+	}, [fetchNext, user])
 
 	const submit = useCallback(
 		async (annotation: CocoAnnotation) => {
-			if (!current) return
+			if (!current || !poolId) return
 			setLoading(true)
-			console.log(
-				'COCO annotation отправлена:',
-				JSON.stringify(annotation, null, 2)
-			)
-			await new Promise(r => setTimeout(r, 600))
-			setLoading(false)
-			fetchNext()
+			setError(null)
+
+			try {
+				await assignmentService.submit(
+					current.assignment.assignment_id,
+					annotation
+				)
+				const next = await assignmentService.getNext(poolId)
+				if (!next) {
+					setCurrent(null)
+					setError('Все задания выполнены!')
+					return
+				}
+				setCurrent(next)
+			} catch {
+				setError('Ошибка при отправке разметки')
+			} finally {
+				setLoading(false)
+			}
 		},
-		[current, fetchNext]
+		[current, poolId]
 	)
 
-	return { current, loading, error, fetchNext, submit }
+	return {
+		current,
+		loading,
+		error,
+		fetchNext: () => {
+			if (poolId) fetchNext(poolId)
+		},
+		submit
+	}
 }

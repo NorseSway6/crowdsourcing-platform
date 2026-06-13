@@ -1,6 +1,7 @@
-import { CheckCircle, Upload, X } from 'lucide-react'
-import { useRef, useState } from 'react'
+import { CheckCircle, Plus, Upload, X } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
 
+import { datasetsApi, type CategoryOut } from '@/api/datasets'
 import {
 	Accordion,
 	Button,
@@ -13,7 +14,6 @@ import {
 import { useCreatePipeline } from '@/hooks/useCreatePipeline'
 
 import styles from './CreateProject.module.scss'
-import { useAuth } from '@/hooks'
 
 export const CreateProjectPage = () => {
 	const [name, setName] = useState('')
@@ -26,11 +26,22 @@ export const CreateProjectPage = () => {
 	const [timeLimit, setTimeLimit] = useState('600')
 	const [institution, setInstitution] = useState('')
 	const [dragover, setDragover] = useState(false)
+	const [availableCategories, setAvailableCategories] = useState<CategoryOut[]>(
+		[]
+	)
+	const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+	const [newCategory, setNewCategory] = useState('')
+	const [categoryError, setCategoryError] = useState<string | null>(null)
 	const fileInputRef = useRef<HTMLInputElement>(null)
 
 	const { loading, error, success, create } = useCreatePipeline()
 
-	const { user } = useAuth()
+	useEffect(() => {
+		datasetsApi
+			.getCategories()
+			.then(setAvailableCategories)
+			.catch(() => {})
+	}, [])
 
 	const handleFiles = (incoming: FileList | null) => {
 		if (!incoming) return
@@ -40,20 +51,55 @@ export const CreateProjectPage = () => {
 		setFiles(prev => [...prev, ...arr])
 	}
 
+	const toggleCategory = (categoryName: string) => {
+		setCategoryError(null)
+		setSelectedCategories(prev =>
+			prev.includes(categoryName)
+				? prev.filter(c => c !== categoryName)
+				: [...prev, categoryName]
+		)
+	}
+
+	const handleAddCategory = async () => {
+		const trimmed = newCategory.trim()
+		if (!trimmed) return
+
+		setCategoryError(null)
+		try {
+			const created = await datasetsApi.createCategory(trimmed)
+			setAvailableCategories(prev => {
+				if (prev.some(c => c.name === created.name)) return prev
+				return [...prev, created]
+			})
+			setSelectedCategories(prev =>
+				prev.includes(created.name) ? prev : [...prev, created.name]
+			)
+			setNewCategory('')
+		} catch {
+			setCategoryError('Не удалось создать категорию')
+		}
+	}
+
 	const handleCreate = async () => {
 		if (files.length === 0 || !name.trim()) return
-		if (!user) return
+		if (selectedCategories.length === 0) {
+			setCategoryError('Выберите хотя бы одну категорию объектов')
+			return
+		}
 
 		await create({
-			ownerId: user?.user_id,
 			name,
 			files,
+			categories: selectedCategories,
 			points: Number(points),
 			tasksLimit: Number(tasksLimit),
 			timeLimit: Number(timeLimit),
 			institution: institution || undefined
 		})
 	}
+
+	const canCreate =
+		!loading && files.length > 0 && name.trim() && selectedCategories.length > 0
 
 	return (
 		<div className={styles.page}>
@@ -102,6 +148,58 @@ export const CreateProjectPage = () => {
 								{ value: 'point', label: 'Точка' }
 							]}
 						/>
+					</Field>
+
+					<Field label='Категории объектов'>
+						<div className={styles.categoriesBlock}>
+							{availableCategories.length > 0 ? (
+								<div className={styles.categoryList}>
+									{availableCategories.map(cat => (
+										<button
+											key={cat.id}
+											type='button'
+											className={`${styles.categoryChip} ${
+												selectedCategories.includes(cat.name)
+													? styles.categoryChipActive
+													: ''
+											}`}
+											onClick={() => toggleCategory(cat.name)}
+										>
+											{cat.name}
+										</button>
+									))}
+								</div>
+							) : (
+								<p className={styles.categoryHint}>
+									Категорий пока нет — создайте первую ниже
+								</p>
+							)}
+
+							<div className={styles.categoryAdd}>
+								<Input
+									placeholder='Новая категория, например: автомобиль'
+									value={newCategory}
+									onChange={e => setNewCategory(e.target.value)}
+									onKeyDown={e => {
+										if (e.key === 'Enter') {
+											e.preventDefault()
+											handleAddCategory()
+										}
+									}}
+								/>
+								<Button
+									variant='secondary'
+									onClick={handleAddCategory}
+									disabled={!newCategory.trim()}
+								>
+									<Plus size={14} />
+								</Button>
+							</div>
+
+							{categoryError && (
+								<div className={styles.categoryError}>{categoryError}</div>
+							)}
+						</div>
 					</Field>
 				</Accordion>
 
@@ -208,10 +306,7 @@ export const CreateProjectPage = () => {
 							)}
 
 							<div style={{ display: 'flex', gap: 10 }}>
-								<Button
-									onClick={handleCreate}
-									disabled={loading || files.length === 0 || !name.trim()}
-								>
+								<Button onClick={handleCreate} disabled={!canCreate}>
 									{loading
 										? 'Создаём...'
 										: `Создать проект (${files.length} файлов)`}

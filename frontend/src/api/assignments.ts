@@ -1,3 +1,5 @@
+import axios from 'axios'
+
 import { apiClient } from './client'
 
 export type AssignmentStatus =
@@ -22,6 +24,7 @@ export interface CocoAnnotation {
 	type: 'coco'
 	items: Array<{
 		category_id: number
+		type?: string
 		bbox: [number, number, number, number]
 		area: number
 		iscrowd: 0 | 1
@@ -36,35 +39,41 @@ export interface VerificationAnnotation {
 
 export type Annotation = CocoAnnotation | VerificationAnnotation
 
-export const assignmentsApi = {
-	getAll: () =>
-		apiClient.get<AssignmentOut[]>('/assignments/').then(r => r.data),
+const isNotFound = (err: unknown) =>
+	axios.isAxiosError(err) && err.response?.status === 404
 
-	getNext: (userId: string, poolId: number) =>
+export const assignmentsApi = {
+	getNext: (poolId: number) =>
 		apiClient
 			.post<AssignmentOut>('/assignments/next', null, {
-				params: { user_id: userId, pool_id: poolId }
+				params: { pool_id: poolId }
 			})
 			.then(r => r.data),
 
-	submit: (assignmentId: number, userId: string, annotation: Annotation) =>
+	submit: (assignmentId: number, annotation: Annotation) =>
 		apiClient
-			.patch<AssignmentOut>(
-				`/assignments/${assignmentId}`,
-				{ annotation },
-				{ params: { user_id: userId } }
+			.patch<AssignmentOut>(`/assignments/${assignmentId}`, { annotation })
+			.then(r => r.data),
+
+	getMyAssignments: async (): Promise<AssignmentOut[]> => {
+		try {
+			const { data } = await apiClient.get<AssignmentOut[]>('/assignments/my')
+			return data
+		} catch (err) {
+			if (isNotFound(err)) return []
+			throw err
+		}
+	},
+
+	getMyCompleted: async (): Promise<AssignmentOut[]> => {
+		try {
+			const { data } = await apiClient.get<AssignmentOut[]>(
+				'/assignments/my/completed'
 			)
-			.then(r => r.data),
-
-	getMyAssignments: (userId: string) =>
-		apiClient
-			.get<AssignmentOut[]>('/assignments/my', { params: { user_id: userId } })
-			.then(r => r.data),
-
-	getMyCompleted: (userId: string) =>
-		apiClient
-			.get<
-				AssignmentOut[]
-			>('/assignments/my/completed', { params: { user_id: userId } })
-			.then(r => r.data)
+			return data
+		} catch (err) {
+			if (isNotFound(err)) return []
+			throw err
+		}
+	}
 }

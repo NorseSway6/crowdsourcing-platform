@@ -26,6 +26,22 @@ export interface Tokens {
 	token_type: string
 }
 
+export interface RegisterProfile {
+	firstName: string
+	lastName: string
+	middleName?: string
+	group?: string
+	institution?: string
+	skills?: string[]
+}
+
+export interface RegisterData {
+	email: string
+	password: string
+	role: UserRole
+	profile: RegisterProfile
+}
+
 export const authApi = {
 	register: (data: {
 		email: string

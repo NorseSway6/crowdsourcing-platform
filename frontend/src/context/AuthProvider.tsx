@@ -1,7 +1,7 @@
 import Cookies from 'js-cookie'
 import { useCallback, useEffect, useState } from 'react'
 
-import type { AuthUser, UserRole } from '@/api/auth'
+import type { AuthUser, RegisterData } from '@/api/auth'
 import { authApi } from '@/api/auth'
 import { apiClient, clearTokens, setTokens } from '@/api/client'
 
@@ -37,24 +37,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 		await loadUser()
 	}
 
-	const register = async (data: {
-		email: string
-		password: string
-		role: UserRole
-		firstName: string
-		lastName: string
-	}) => {
+	const register = async (data: RegisterData) => {
+		const { profile } = data
 		const res = await authApi.register({
 			email: data.email,
 			password: data.password,
 			role: data.role,
 			user_profile: {
-				first_name: data.firstName,
-				last_name: data.lastName,
-				middle_name: '',
-				group: '',
-				institution: '',
-				skills: []
+				first_name: profile.firstName,
+				last_name: profile.lastName,
+				middle_name: profile.middleName || '',
+				group: profile.group || '',
+				institution: profile.institution || '',
+				skills: profile.skills || []
 			}
 		})
 		setTokens(res.tokens.access_token, res.tokens.refresh_token)

@@ -1,30 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
 
-import type { AssignmentOut } from '@/api/assignments'
-import { assignmentsApi } from '@/api/assignments'
+import type { PoolProgress, UserInfo } from '@/api/analytics'
+import { analyticsApi } from '@/api/analytics'
 import type { PoolOut } from '@/api/pools'
 import { poolsApi } from '@/api/pools'
-import type { UserOut } from '@/api/users'
-import { usersApi } from '@/api/users'
 
-interface UseAnalyticsReturn {
-	assignments: AssignmentOut[]
-	pools: PoolOut[]
-	users: Record<string, UserOut>
-	loading: boolean
-	error: string | null
-	filtered: AssignmentOut[]
-	search: string
-	setSearch: (v: string) => void
-	poolFilter: string
-	setPoolFilter: (v: string) => void
-	poolOptions: Array<{ value: string; label: string }>
-}
-
-export const useAnalytics = (): UseAnalyticsReturn => {
-	const [assignments, setAssignments] = useState<AssignmentOut[]>([])
+export const useAnalytics = () => {
 	const [pools, setPools] = useState<PoolOut[]>([])
-	const [users, setUsers] = useState<Record<string, UserOut>>({})
+	const [poolsProgress, setPoolsProgress] = useState<PoolProgress[]>([])
+	const [users, setUsers] = useState<UserInfo[]>([])
 	const [loading, setLoading] = useState(false)
 	const [error, setError] = useState<string | null>(null)
 	const [search, setSearch] = useState('')
@@ -35,18 +19,14 @@ export const useAnalytics = (): UseAnalyticsReturn => {
 			setLoading(true)
 			setError(null)
 			try {
-				const [allAssignments, allPools, allUsers] = await Promise.all([
-					assignmentsApi.getAll(),
-					poolsApi.getAll(),
-					usersApi.getAll()
+				const [allPools, progress, usersInfo] = await Promise.all([
+					poolsApi.getAll().catch(() => []),
+					analyticsApi.getPoolsProgress().catch(() => []),
+					analyticsApi.getUsersInfo().catch(() => [])
 				])
-				const usersMap = allUsers.reduce<Record<string, UserOut>>((acc, u) => {
-					acc[u.user_id] = u
-					return acc
-				}, {})
-				setAssignments(allAssignments)
 				setPools(allPools)
-				setUsers(usersMap)
+				setPoolsProgress(progress)
+				setUsers(usersInfo)
 			} catch {
 				setError('Не удалось загрузить данные')
 			} finally {
@@ -64,31 +44,27 @@ export const useAnalytics = (): UseAnalyticsReturn => {
 		}))
 	]
 
-	const filtered = useMemo(() => {
-		return assignments.filter(a => {
-			const user = users[a.user_id]
-			const name = user
-				? [
-						user.profile.last_name,
-						user.profile.first_name,
-						user.profile.middle_name
-					]
-						.filter(Boolean)
-						.join(' ')
-						.toLowerCase()
-				: ''
-			if (search && !name.includes(search.toLowerCase())) return false
-			return true
-		})
-	}, [assignments, search, users])
+	const filteredUsers = useMemo(() => {
+		if (!search) return users
+		const q = search.toLowerCase()
+		return users.filter(u =>
+			`${u.last_name} ${u.first_name} ${u.middle_name}`
+				.toLowerCase()
+				.includes(q)
+		)
+	}, [users, search])
+
+	const filteredProgress = useMemo(() => {
+		if (poolFilter === 'all') return poolsProgress
+		return poolsProgress.filter(p => String(p.pool_id) === poolFilter)
+	}, [poolsProgress, poolFilter])
 
 	return {
-		assignments,
 		pools,
-		users,
+		poolsProgress: filteredProgress,
+		users: filteredUsers,
 		loading,
 		error,
-		filtered,
 		search,
 		setSearch,
 		poolFilter,

@@ -2,35 +2,20 @@ import { Select } from '@/components/ui'
 
 import { useAnalytics } from '@/hooks/useAnalytics'
 
-import type { AssignmentOut } from '@/api/assignments'
-import type { UserOut } from '@/api/users'
-
 import styles from './Analytics.module.scss'
 
-const fullName = (user: UserOut) =>
-	[user.profile.last_name, user.profile.first_name, user.profile.middle_name]
-		.filter(Boolean)
-		.join(' ') || user.email
-
-const statusLabel = (status: AssignmentOut['status']) => {
-	switch (status) {
-		case 'APPROVED':
-			return { text: 'Завершено', done: true }
-		case 'PENDING':
-			return { text: 'На валидации', done: false }
-		case 'REJECTED':
-			return { text: 'Отклонено', done: false }
-		case 'IN_PROGRESS':
-			return { text: 'Не завершено', done: false }
-	}
-}
+const fullName = (u: {
+	last_name: string
+	first_name: string
+	middle_name: string
+}) => [u.last_name, u.first_name, u.middle_name].filter(Boolean).join(' ')
 
 export const CustomerAnalyticsPage = () => {
 	const {
+		poolsProgress,
 		users,
 		loading,
 		error,
-		filtered,
 		search,
 		setSearch,
 		poolFilter,
@@ -60,32 +45,55 @@ export const CustomerAnalyticsPage = () => {
 			{error && <div className={styles.empty}>{error}</div>}
 
 			{!loading && !error && (
-				<div className={styles.list}>
-					{filtered.length === 0 ? (
-						<div className={styles.empty}>Нет данных</div>
-					) : (
-						filtered.map(a => {
-							const user = users[a.user_id]
-							const name = user ? fullName(user) : a.user_id.slice(0, 8)
-							const { text, done } = statusLabel(a.status)
-							return (
-								<div key={a.assignment_id} className={styles.card}>
-									<div className={styles.cardHeader}>
+				<>
+					{poolsProgress.length > 0 && (
+						<div className={styles.progressSection}>
+							{poolsProgress.map(p => (
+								<div key={p.pool_id} className={styles.progressCard}>
+									<div className={styles.progressHeader}>
 										<span className={styles.cardTitle}>
-											Задание №{a.task_id}
+											Пул #{p.pool_id} — {p.pool_type}
 										</span>
-										<span className={styles.cardStudent}>Студент: {name}</span>
+										<span className={styles.cardStats}>
+											{p.completed_tasks} / {p.total_tasks} задач
+										</span>
 									</div>
-									<div
-										className={done ? styles.statusDone : styles.statusPending}
-									>
-										{text}
+									<div className={styles.progressBar}>
+										<div
+											className={styles.progressFill}
+											style={{ width: `${p.progress_percentage}%` }}
+										/>
+									</div>
+									<div className={styles.progressPercent}>
+										{Math.round(p.progress_percentage)}%
 									</div>
 								</div>
-							)
-						})
+							))}
+						</div>
 					)}
-				</div>
+
+					<div className={styles.list}>
+						{users.length === 0 ? (
+							<div className={styles.empty}>Нет данных</div>
+						) : (
+							users.map((u, i) => (
+								<div key={i} className={styles.card}>
+									<div className={styles.cardHeader}>
+										<span className={styles.cardTitle}>{fullName(u)}</span>
+										<span className={styles.cardStudent}>
+											{u.institution} · {u.group}
+										</span>
+									</div>
+									<div className={styles.userStats}>
+										<span>Отправлено: {u.submitted}</span>
+										<span>Одобрено: {u.approved}</span>
+										<span>Точность: {Math.round(u.user_accuracy * 100)}%</span>
+									</div>
+								</div>
+							))
+						)}
+					</div>
+				</>
 			)}
 		</div>
 	)

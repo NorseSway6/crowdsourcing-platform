@@ -1,16 +1,32 @@
+import axios from 'axios'
 import { useState } from 'react'
 
 import { datasetsApi } from '@/api/datasets'
 import { pipelinesApi } from '@/api/pipelines'
 
 export interface CreatePipelineParams {
-	ownerId: string
 	name: string
 	files: File[]
+	categories: string[]
 	points: number
 	tasksLimit: number
 	timeLimit: number
 	institution?: string
+}
+
+const getErrorMessage = (err: unknown): string => {
+	if (axios.isAxiosError(err)) {
+		const detail = err.response?.data?.detail
+		if (typeof detail === 'string') return detail
+		if (Array.isArray(detail)) {
+			return detail.map((d: { msg?: string }) => d.msg).filter(Boolean).join(', ')
+		}
+		const errorCode = err.response?.data?.error_code
+		if (errorCode === 'categories_not_found') {
+			return 'Указанные категории не найдены в системе'
+		}
+	}
+	return 'Не удалось создать проект'
 }
 
 export const useCreatePipeline = () => {
@@ -23,14 +39,16 @@ export const useCreatePipeline = () => {
 		setError(null)
 		setSuccess(false)
 		try {
-			const dataset = await datasetsApi.create(params.ownerId, {
+			const dataset = await datasetsApi.create({
 				name: params.name,
-				domain: 'general'
+				domain: 'general',
+				categories: params.categories
 			})
 
-			await datasetsApi.upload(dataset.dataset_id, params.files)
+			const uploadJob = await datasetsApi.upload(dataset.dataset_id, params.files)
+			await datasetsApi.waitForUpload(uploadJob.job_id)
 
-			await pipelinesApi.create(params.ownerId, {
+			await pipelinesApi.create({
 				name: params.name,
 				dataset_id: dataset.dataset_id,
 				limit: params.files.length,
@@ -57,8 +75,8 @@ export const useCreatePipeline = () => {
 			})
 
 			setSuccess(true)
-		} catch {
-			setError('Не удалось создать проект')
+		} catch (err) {
+			setError(getErrorMessage(err))
 		} finally {
 			setLoading(false)
 		}

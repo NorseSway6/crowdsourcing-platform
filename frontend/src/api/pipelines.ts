@@ -45,13 +45,9 @@ export interface CreatePipelineInput {
 }
 
 export const pipelinesApi = {
-	create: (ownerId: string, data: CreatePipelineInput) =>
-		apiClient
-			.post<PipelineOut>('/pipelines/', data, { params: { owner_id: ownerId } })
-			.then(r => r.data),
+	create: (data: CreatePipelineInput) =>
+		apiClient.post<PipelineOut>('/pipelines/', data).then(r => r.data),
 
-	getMy: (ownerId: string) =>
-		apiClient
-			.get<PipelineOut[]>('/pipelines/my', { params: { owner_id: ownerId } })
-			.then(r => r.data)
+	getMy: () =>
+		apiClient.get<PipelineOut[]>('/pipelines/my').then(r => r.data)
 }

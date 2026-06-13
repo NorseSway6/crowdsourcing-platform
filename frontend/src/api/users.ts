@@ -21,8 +21,5 @@ export interface UserOut {
 export const usersApi = {
 	getAll: () => apiClient.get<UserOut[]>('/users/').then(r => r.data),
 
-	getMe: (id: string) =>
-		apiClient
-			.get<UserOut>('/users/me', { params: { user_id: id } })
-			.then(r => r.data)
+	getMe: () => apiClient.get<UserOut>('/users/me').then(r => r.data)
 }

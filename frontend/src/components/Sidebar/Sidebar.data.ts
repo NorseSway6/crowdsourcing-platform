@@ -14,6 +14,7 @@ export interface SidebarItem {
 	label: string
 	path?: string
 	icon: LucideIcon
+	action?: 'logout'
 }
 
 export const navigationItems: SidebarItem[] = [
@@ -32,5 +33,5 @@ export const customerNavigationItems: SidebarItem[] = [
 export const bottomItems: SidebarItem[] = [
 	{ label: 'Поддержка', icon: CircleHelp },
 	{ label: 'Уведомления', icon: Bell },
-	{ label: 'Выйти из аккаунта', icon: LogOut }
+	{ label: 'Выйти из аккаунта', icon: LogOut, action: 'logout' }
 ]

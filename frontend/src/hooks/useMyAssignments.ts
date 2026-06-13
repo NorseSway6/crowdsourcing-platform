@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react'
 
 import type { AssignmentStatus } from '@/api/assignments'
 
-import { DEMO_ASSIGNMENTS } from '@/mock/demo'
+import { useAuth } from './useAuth'
 import type { ActiveAssignment } from '@/services/assignment.service'
+import { assignmentService } from '@/services/assignment.service'
 
 interface UseMyAssignmentsReturn {
 	items: ActiveAssignment[]
@@ -15,13 +16,32 @@ export const useMyAssignments = (
 	filterStatus?: AssignmentStatus
 ): UseMyAssignmentsReturn => {
 	const [items, setItems] = useState<ActiveAssignment[]>([])
+	const [loading, setLoading] = useState(false)
+	const [error, setError] = useState<string | null>(null)
+
+	const { user } = useAuth()
 
 	useEffect(() => {
-		const filtered = filterStatus
-			? DEMO_ASSIGNMENTS.filter(a => a.assignment.status === filterStatus)
-			: DEMO_ASSIGNMENTS
-		setItems(filtered)
-	}, [filterStatus])
+		const load = async () => {
+			setLoading(true)
+			setError(null)
+			try {
+				if (!user) return
 
-	return { items, loading: false, error: null }
+				const all = await assignmentService.getMyWithTasks()
+				const filtered = filterStatus
+					? all.filter(a => a.assignment.status === filterStatus)
+					: all
+
+				setItems(filtered)
+			} catch {
+				setError('Не удалось загрузить задания')
+			} finally {
+				setLoading(false)
+			}
+		}
+		load()
+	}, [filterStatus, user])
+
+	return { items, loading, error }
 }

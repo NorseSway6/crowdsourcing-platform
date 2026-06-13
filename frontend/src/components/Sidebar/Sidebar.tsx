@@ -1,4 +1,6 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
+
+import { useAuth } from '@/hooks/useAuth'
 
 import type { SidebarItem } from './Sidebar.data'
 import {
@@ -15,35 +17,55 @@ interface Props {
 export const Sidebar = ({
 	navItems = defaultNav,
 	bottomItems = defaultBottom
-}: Props) => (
-	<aside className={styles.sidebar}>
-		<nav className={styles.nav}>
-			{navItems.map(item => {
-				const Icon = item.icon
-				return (
-					<NavLink
-						key={item.path}
-						to={item.path!}
-						className={({ isActive }) =>
-							`${styles.navItem} ${isActive ? styles.active : ''}`
-						}
-					>
-						<Icon size={20} />
-						<span>{item.label}</span>
-					</NavLink>
-				)
-			})}
-		</nav>
-		<div className={styles.bottom}>
-			{bottomItems.map(item => {
-				const Icon = item.icon
-				return (
-					<a key={item.label} href='#' className={styles.navItem}>
-						<Icon size={20} />
-						<span>{item.label}</span>
-					</a>
-				)
-			})}
-		</div>
-	</aside>
-)
+}: Props) => {
+	const { logout } = useAuth()
+	const navigate = useNavigate()
+
+	const handleBottomClick = async (item: SidebarItem) => {
+		if (item.action === 'logout') {
+			await logout()
+			navigate('/login')
+		}
+	}
+
+	return (
+		<aside className={styles.sidebar}>
+			<nav className={styles.nav}>
+				{navItems.map(item => {
+					const Icon = item.icon
+					return (
+						<NavLink
+							key={item.path}
+							to={item.path!}
+							className={({ isActive }) =>
+								`${styles.navItem} ${isActive ? styles.active : ''}`
+							}
+						>
+							<Icon size={20} />
+							<span>{item.label}</span>
+						</NavLink>
+					)
+				})}
+			</nav>
+			<div className={styles.bottom}>
+				{bottomItems.map(item => {
+					const Icon = item.icon
+					return (
+						<a
+							key={item.label}
+							href='#'
+							className={styles.navItem}
+							onClick={e => {
+								e.preventDefault()
+								handleBottomClick(item)
+							}}
+						>
+							<Icon size={20} />
+							<span>{item.label}</span>
+						</a>
+					)
+				})}
+			</div>
+		</aside>
+	)
+}

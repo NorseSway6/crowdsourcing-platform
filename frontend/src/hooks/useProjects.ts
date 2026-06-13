@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import { assignmentsApi } from '@/api/assignments'
+import { analyticsApi } from '@/api/analytics'
 import type { PipelineOut } from '@/api/pipelines'
 import { pipelinesApi } from '@/api/pipelines'
 
@@ -24,22 +24,26 @@ export const useProjects = () => {
 			try {
 				if (!user) return
 
-				const [pipelines, assignments] = await Promise.all([
-					pipelinesApi.getMy(user?.user_id),
-					assignmentsApi.getAll()
+				const [pipelines, progress] = await Promise.all([
+					pipelinesApi.getMy(),
+					analyticsApi.getPoolsProgress().catch(() => [])
 				])
 
 				const withStats = pipelines.map(pipeline => {
 					const poolIds = pipeline.pools.map(p => p.pool_id)
-					const pipelineAssignments = assignments.filter(a =>
-						poolIds.includes(a.pool_id)
+					const poolProgress = progress.filter(p =>
+						poolIds.includes(p.pool_id)
 					)
 					return {
 						...pipeline,
-						completedCount: pipelineAssignments.filter(
-							a => a.status === 'APPROVED' || a.status === 'PENDING'
-						).length,
-						totalCount: pipelineAssignments.length
+						completedCount: poolProgress.reduce(
+							(sum, p) => sum + p.completed_tasks,
+							0
+						),
+						totalCount: poolProgress.reduce(
+							(sum, p) => sum + p.total_tasks,
+							0
+						)
 					}
 				})
 

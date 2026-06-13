@@ -154,3 +154,57 @@
 	font-size: 14px;
 	font-weight: 500;
 }
+
+.categoriesBlock {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	width: 100%;
+}
+
+.categoryList {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.categoryChip {
+	background: $color-sidebar-active-bg;
+	border: 1px solid $color-border;
+	border-radius: 8px;
+	padding: 6px 12px;
+	font-size: 13px;
+	color: $color-text-primary;
+	cursor: pointer;
+	transition:
+		border-color 0.15s,
+		background 0.15s,
+		color 0.15s;
+
+	&:hover {
+		border-color: $color-primary;
+	}
+
+	&Active {
+		background: $color-primary;
+		border-color: $color-primary;
+		color: #fff;
+	}
+}
+
+.categoryAdd {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+}
+
+.categoryHint {
+	font-size: 13px;
+	color: $color-text-muted;
+	margin: 0;
+}
+
+.categoryError {
+	font-size: 13px;
+	color: #e53935;
+}

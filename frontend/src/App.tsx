@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 
 import { PrivateRoute } from './components/PrivateRoute'
+import { PublicRoute } from './components/PublicRoute'
 import { MainLayout } from './layouts'
 import { CustomerLayout } from './layouts/CustomerLayout'
 import {
@@ -24,13 +25,27 @@ export default function App() {
 	return (
 		<BrowserRouter>
 			<Routes>
-				<Route path='/login' element={<LoginPage />} />
-				<Route path='/register' element={<RegisterPage />} />
+				<Route
+					path='/login'
+					element={
+						<PublicRoute>
+							<LoginPage />
+						</PublicRoute>
+					}
+				/>
+				<Route
+					path='/register'
+					element={
+						<PublicRoute>
+							<RegisterPage />
+						</PublicRoute>
+					}
+				/>
 
 				<Route
 					path='/'
 					element={
-						<PrivateRoute>
+						<PrivateRoute role='STUDENT'>
 							<MainLayout />
 						</PrivateRoute>
 					}
@@ -59,11 +74,12 @@ export default function App() {
 				<Route
 					path='/labeling'
 					element={
-						<PrivateRoute>
+						<PrivateRoute role='STUDENT'>
 							<LabelingPage />
 						</PrivateRoute>
 					}
 				/>
+
 				<Route path='*' element={<NotFoundPage />} />
 			</Routes>
 		</BrowserRouter>
