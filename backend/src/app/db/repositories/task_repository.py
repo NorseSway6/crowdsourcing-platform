@@ -17,6 +17,14 @@ class TaskRepository(ITaskRepository):
     def get_task_by_id(self, task_id: int) -> Task:
         return Task.objects.filter(task_id=task_id).first()
 
+    def bulk_create_task(self, tasks_to_create: list[Task]) -> Task:
+        try:
+            task = Task.objects.bulk_create(tasks_to_create)
+        except:
+            return None
+
+        return task
+
     def delete_task(self, task_id: int) -> bool:
         deleted, _ = Task.objects.filter(task_id=task_id).delete()
         return deleted
@@ -28,7 +36,7 @@ class TaskRepository(ITaskRepository):
         updated = Task.objects.filter(task_id__in=tasks_ids).update(pool_id=pool_id)
         return updated > 0
 
-    def get_next_task(self, user_id: UUID, pool_id: int) -> Task | None:
+    def get_next_task(self, user_id: UUID, pool_id: int) -> Task:
         valid_assignments_subquery = (
             Assignment.objects.filter(
                 task_id=OuterRef("pk"),
@@ -40,7 +48,7 @@ class TaskRepository(ITaskRepository):
             .values("cnt")
         )
 
-        candidate_id = (
+        candidate_id = list(
             Task.objects.filter(
                 pool_id=pool_id,
                 pool__status=Pool.PoolStatus.OPEN,
@@ -50,13 +58,12 @@ class TaskRepository(ITaskRepository):
             .annotate(valid_assignments_count=Coalesce(Subquery(valid_assignments_subquery), 0))
             .filter(valid_assignments_count__lt=F("pool__overlap"))
             .order_by("pk")
-            .values_list("pk", flat=True)
-            .first()
+            .values_list("pk", flat=True)[:20]
         )
         if not candidate_id:
             return None
 
-        return Task.objects.select_for_update(skip_locked=True).filter(pk=candidate_id).first()
+        return Task.objects.select_for_update(skip_locked=True).filter(pk__in=candidate_id).first()
 
     def _mark_task_completed(
         self,

@@ -111,6 +111,10 @@ class PipelineEngine(IPipelineRepository):
                 if not trying:
                     raise exc.PoolCompletionError()
 
+                trying = self._pool_service.try_complete_pool(current_pool)
+                if not trying:
+                    raise exc.PoolCompletionError()
+
     def _resolve_annotation(self, task_id: int, current_pool_id: int, consensus_result: ConsensusSchema) -> None:
         next_pool_id = self._pool_service._get_next_pool_in_pipeline(current_pool_id)
         if not next_pool_id:
@@ -139,7 +143,7 @@ class PipelineEngine(IPipelineRepository):
             if not next_pool_id:
                 marked = self._task_repo._mark_task_completed(task_id, current_pool_id)
                 if not marked:
-                    raise exc.TaskCompletionError()
+                    raise exc.TaskMarkingError()
                 return
 
             moved = self._task_repo._move_task_to_pool(

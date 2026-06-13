@@ -94,6 +94,6 @@ class PoolService:
             pipeline_id=current_pool.pipeline_id, current_order=current_pool.order
         )
         if not next_pool:
-            raise exc.PoolNotFoundError()
+            return None
 
         return next_pool.pool_id

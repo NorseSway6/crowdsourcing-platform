@@ -1,12 +1,15 @@
 from http import HTTPStatus
 from uuid import UUID
 
-from django.http import HttpResponse
+from celery.result import AsyncResult
+from django_redis import get_redis_connection
 from ninja import UploadedFile
 
+from app.domain.entities.anallytics_schema import PoolProgressOut, PoolsProgressFilter, UserInfoFilter, UserInfoOut
 from app.domain.entities.assigment_schema import AssignmentOut, AssignmentSchema
 from app.domain.entities.auth_schema import LogIn, RefreshTokenIn, TokenOut
-from app.domain.entities.dataset_schema import DatasetOut, DatasetSchema
+from app.domain.entities.dataset_schema import CategoryOut, CategorySchema, DatasetOut, DatasetSchema
+from app.domain.entities.export_schema import ExportStatusOut, UploadStatusOut
 from app.domain.entities.pipeline_schema import PipelineIn, PipelineOut
 from app.domain.entities.platform_user_schema import RegisterOut, RegisterSchema, UserOut, UserSchema
 from app.domain.entities.pool_schema import PoolFilter, PoolOut, PoolSchema
@@ -14,8 +17,10 @@ from app.domain.entities.response_schema import ErrorResponse, SuccessResponse
 from app.domain.entities.skill_schema import SkillSchema
 from app.domain.entities.task_schema import TaskOut
 from app.domain.entities.user_profile_schema import ProfileSchema
+from app.domain.services.analytics_module import AnalyticsService
 from app.domain.services.assignment_service import AssignmentService
 from app.domain.services.auth_service import AuthService
+from app.domain.services.celery_tasks import run_dataset_export_task
 from app.domain.services.dataset_service import DatasetService
 from app.domain.services.export_service import ExportService
 from app.domain.services.pipeline_engine import PipelineEngine
@@ -71,7 +76,7 @@ class PipelineHandlers:
         self, request, owner_id: UUID, pipeline_data: PipelineIn
     ) -> tuple[int, PipelineOut | ErrorResponse]:
         pipeline = self._pipeline_service.create_pools(owner_id, pipeline_data)
-        return HTTPStatus.OK, pipeline
+        return HTTPStatus.CREATED, pipeline
 
     def update_pipeline(
         self, request, pipeline_id: int, pipeline_data: PipelineIn
@@ -140,16 +145,92 @@ class DatasetHandlers:
         self._dataset_service.delete_dataset(dataset_id)
         return HTTPStatus.OK, SuccessResponse(detail="Dataset delete successfully")
 
-    def upload_images(self, request, dataset_id: int, files: UploadedFile) -> tuple[int, list[TaskOut] | ErrorResponse]:
-        dataset = self._dataset_service.upload_images(dataset_id, files)
-        return HTTPStatus.CREATED, dataset
+    def upload_images(
+        self, request, dataset_id: int, files: list[UploadedFile]
+    ) -> tuple[int, SuccessResponse | ErrorResponse]:
+        job_id = self._dataset_service.upload_images(dataset_id, files)
+        job_result = AsyncResult(job_id)
+
+        response_data = {
+            "job_id": job_id,
+            "status": job_result.status,
+        }
+
+        return HTTPStatus.ACCEPTED, UploadStatusOut.from_orm(response_data)
+
+    def upload_video(self, request, dataset_id: int, file: UploadedFile) -> tuple[int, SuccessResponse | ErrorResponse]:
+        job_id = self._dataset_service.upload_video(dataset_id, file)
+        job_result = AsyncResult(job_id)
+
+        response_data = {
+            "job_id": job_id,
+            "status": job_result.status,
+        }
+
+        return HTTPStatus.ACCEPTED, UploadStatusOut.from_orm(response_data)
+
+    def get_upload_status(self, request, job_id: str) -> tuple[int, UploadStatusOut | ErrorResponse]:
+        job_result = AsyncResult(job_id)
+
+        response_data = {
+            "job_id": job_id,
+            "status": job_result.status,
+        }
+
+        if job_result.status == "SUCCESS":
+            response_data["created_count"] = job_result.result
+
+        elif job_result.status == "FAILURE":
+            return HTTPStatus.BAD_REQUEST, ErrorResponse(error_code="upload_status_error", detail=str(job_result.info))
+
+        return HTTPStatus.OK, UploadStatusOut.from_orm(response_data)
 
     def export_dataset(self, request, dataset_id: int, format_type: str) -> tuple[int, SuccessResponse | ErrorResponse]:
-        file_bytes = self._export_service.execute(dataset_id, format_type)
+        redis_client = get_redis_connection("default")
+        lock_key = f"export_lock:dataset:{dataset_id}"  # noqa: E231
 
-        response = HttpResponse(file_bytes, content_type="application/json")
-        response["Content-Disposition"] = "attachment;" + f' filename="dataset_{dataset_id}.json"'
-        return response
+        is_locked = redis_client.set(lock_key, "processing", ex=600, nx=True)
+
+        if not is_locked:
+            return HTTPStatus.CONFLICT, ErrorResponse(error_code="export_error", detail="Error is already started")
+
+        job = run_dataset_export_task.delay(dataset_id, format_type)
+        job_result = AsyncResult(job.id)
+
+        response_data = {
+            "job_id": job.id,
+            "status": job_result.status,
+        }
+
+        return HTTPStatus.ACCEPTED, ExportStatusOut.from_orm(response_data)
+
+    def get_export_status(self, request, job_id: str) -> tuple[int, ExportStatusOut | ErrorResponse]:
+        job_result = AsyncResult(job_id)
+
+        response_data = {
+            "job_id": job_id,
+            "status": job_result.status,
+        }
+
+        if job_result.status == "SUCCESS":
+            response_data["download_url"] = job_result.result
+
+        elif job_result.status == "FAILURE":
+            return HTTPStatus.BAD_REQUEST, ErrorResponse(error_code="export_status_error", detail=str(job_result.info))
+
+        return HTTPStatus.OK, ExportStatusOut.from_orm(response_data)
+
+    def get_all_categories(self, request) -> tuple[int, list[str] | ErrorResponse]:
+        categories = self._dataset_service.get_all_categories()
+        return HTTPStatus.OK, categories
+
+    def create_category(self, request, category_data: CategorySchema) -> tuple[int, CategoryOut | ErrorResponse]:
+        category = self._dataset_service.create_category(category_data)
+        return HTTPStatus.CREATED, category
+
+    def delete_category(self, request, category_data: CategorySchema) -> tuple[int, SuccessResponse | ErrorResponse]:
+        self._dataset_service.delete_category(category_data)
+        return HTTPStatus.OK, SuccessResponse(detail="Category delete successfully")
 
 
 class TaskHandlers:
@@ -213,3 +294,18 @@ class AuthHandlers:
     def register_user(self, request, data: RegisterSchema) -> tuple[int, RegisterOut | ErrorResponse]:
         user = self._auth_service.register_user(data)
         return HTTPStatus.CREATED, user
+
+
+class AnalyticsHandlers:
+    def __init__(self, analytics_service: AnalyticsService):
+        self._analytics_service = analytics_service
+
+    def get_pools_progress(
+        self, request, user_id: UUID, filters: PoolsProgressFilter
+    ) -> tuple[int, list[PoolProgressOut] | ErrorResponse]:
+        progress = self._analytics_service.get_pools_progress(user_id, filters)
+        return HTTPStatus.OK, progress
+
+    def get_users_info(self, request, filters: UserInfoFilter) -> tuple[int, list[UserInfoOut] | ErrorResponse]:
+        info = self._analytics_service.get_users_info(filters)
+        return HTTPStatus.OK, info

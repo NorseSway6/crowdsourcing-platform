@@ -46,7 +46,11 @@ def get_auth_router(auth_handlers: AuthHandlers):
         return auth_handlers.register_user(request, data)
 
     router.add_api_operation(
-        "/register", ["POST"], register_user, response={201: RegisterOut, 400: ErrorResponse}, auth=None
+        "/register",
+        ["POST"],
+        register_user,
+        response={201: RegisterOut, 400: ErrorResponse},
+        auth=None,
     )
 
     return router

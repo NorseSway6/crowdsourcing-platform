@@ -27,14 +27,20 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY")
-JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+if not SECRET_KEY:
+    raise ValueError("There is no SECRET_KEY in the settings")
+
+raw_secret = os.environ.get("JWT_SECRET_KEY")
+if not raw_secret or raw_secret.lower() == "none":
+    raise ValueError("There is no JWT_SECRET_KEY in the settings or it`s no valid")
+JWT_SECRET_KEY = raw_secret
 
 JWT_ACCESS_TOKEN_LIFETIME = datetime.timedelta(minutes=15)
 JWT_REFRESH_TOKEN_LIFETIME = datetime.timedelta(days=7)
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv("DEBUG")
+DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
@@ -111,9 +117,26 @@ AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME")
 AWS_S3_ENDPOINT_URL = os.getenv("AWS_S3_ENDPOINT_URL")
 AWS_S3_CUSTOM_DOMAIN = os.getenv("AWS_S3_CUSTOM_DOMAIN")
-AWS_S3_USE_SSL = os.getenv("AWS_S3_USE_SSL")
-AWS_S3_FILE_OVERWRITE = os.getenv("AWS_S3_FILE_OVERWRITE")
+AWS_S3_USE_SSL = os.getenv("AWS_S3_USE_SSL", "False").lower() == "true"
+AWS_S3_FILE_OVERWRITE = os.getenv("AWS_S3_FILE_OVERWRITE", "False").lower() == "true"
 AWS_S3_URL_PROTOCOL = os.getenv("AWS_S3_URL_PROTOCOL")
+
+# Cache
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://redis:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
+    }
+}
+
+CACHE_TIMEOUT = 60 * 60 * 24
+
+# Celery
+CELERY_BROKER_URL = "redis://redis:6379/0"
+CELERY_RESULT_BACKEND = "redis://redis:6379/0"
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -160,5 +183,5 @@ DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 
 # Platform settings
 OVERLAP_ANNOTATION = 1
-OVERLAP_VERIFICATION = 2
+OVERLAP_VERIFICATION = 5
 VALIDATION_THRESHOLD = 0.8

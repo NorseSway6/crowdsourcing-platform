@@ -1,5 +1,3 @@
-version: '3.3'
-
 services:
   backend:
     container_name: backend-app
@@ -33,6 +31,31 @@ services:
         interval: 5s
         timeout: 5s
         retries: 5
+
+  redis:
+    container_name: redis-cache
+    image: redis:7.2-alpine
+    command: redis-server --save 60 1 --loglevel warning
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    depends_on:
+      - postgres
+
+  celery:
+    container_name: celery-queue
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: celery -A config worker --loglevel=info
+    volumes:
+      - ./backend:/app
+    env_file: .env
+    depends_on:
+      - redis
+    environment:
+      - REDIS_URL=redis://redis:6379/0
 
   minio:
     container_name: minio-storage
@@ -84,3 +107,4 @@ services:
 volumes:
   postgres_data:
   minio_data:
+  redis_data:

@@ -42,8 +42,6 @@ class AssignmentService:
         assignmented_task = self._assignment_repo._get_active_assignment(user_id)
         if assignmented_task:
             return AssignmentOut.from_orm(assignmented_task)
-        if not assignmented_task:
-            raise exc.AssignmentNotFoundError()
 
         with transaction.atomic():
             task = self._task_repo.get_next_task(user_id, pool_id)
@@ -67,7 +65,7 @@ class AssignmentService:
 
         if updated_assignment.expires_at and timezone.now() > updated_assignment.expires_at:
             self._assignment_repo.reject_expired_assignment(updated_assignment.assignment_id)
-            raise exc.AssignmentOperationError()
+            raise exc.AssignmentTimeError()
 
         if isinstance(annotation_data.annotation, list):
             updated_assignment.annotation = [item.model_dump() for item in annotation_data.annotation]

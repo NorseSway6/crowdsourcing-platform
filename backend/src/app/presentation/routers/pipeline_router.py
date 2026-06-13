@@ -1,16 +1,15 @@
-from uuid import UUID
-
 from ninja import NinjaAPI, Router
 
+from app.domain.auth_roles import AuthRole, has_roles
 from app.domain.entities.pipeline_schema import PipelineIn, PipelineOut
 from app.domain.entities.response_schema import ErrorResponse, SuccessResponse
-from app.presentation.api.auth import admin_auth, customer_auth
 from app.presentation.api.handlers import PipelineHandlers
 
 
 def get_pipelines_router(pipeline_handlers: PipelineHandlers):
     router = Router(tags=["pipelines"])
 
+    @has_roles(AuthRole.ADMIN, AuthRole.CUSTOMER)
     def get_pipelines_by_user(request) -> tuple[int, list[PipelineOut] | ErrorResponse]:
         user = request.auth
         return pipeline_handlers.get_pipelines_by_user(request, user.user_id)
@@ -20,9 +19,9 @@ def get_pipelines_router(pipeline_handlers: PipelineHandlers):
         ["GET"],
         get_pipelines_by_user,
         response={200: list[PipelineOut], 404: ErrorResponse},
-        auth=[customer_auth, admin_auth],
     )
 
+    @has_roles(AuthRole.ADMIN, AuthRole.CUSTOMER)
     def create_pipeline(request, data: PipelineIn) -> tuple[int, PipelineOut | ErrorResponse]:
         user = request.auth
         return pipeline_handlers.create_pipeline(request, user.user_id, data)
@@ -32,9 +31,9 @@ def get_pipelines_router(pipeline_handlers: PipelineHandlers):
         ["POST"],
         create_pipeline,
         response={201: PipelineOut, 400: ErrorResponse, 404: ErrorResponse},
-        auth=[customer_auth, admin_auth],
     )
 
+    @has_roles(AuthRole.ADMIN, AuthRole.CUSTOMER)
     def update_pipeline(request, pipeline_id: int, data: PipelineIn) -> tuple[int, PipelineOut | ErrorResponse]:
         return pipeline_handlers.update_pipeline(request, pipeline_id, data)
 
@@ -43,9 +42,9 @@ def get_pipelines_router(pipeline_handlers: PipelineHandlers):
         ["PATCH"],
         update_pipeline,
         response={200: PipelineOut, 400: ErrorResponse},
-        auth=[customer_auth, admin_auth],
     )
 
+    @has_roles(AuthRole.ADMIN, AuthRole.CUSTOMER)
     def delete_pipeline(request, pipeline_id: int) -> tuple[int, SuccessResponse | ErrorResponse]:
         return pipeline_handlers.delete_pipeline(request, pipeline_id)
 
@@ -54,7 +53,6 @@ def get_pipelines_router(pipeline_handlers: PipelineHandlers):
         ["DELETE"],
         delete_pipeline,
         response={200: SuccessResponse, 400: ErrorResponse},
-        auth=[customer_auth, admin_auth],
     )
 
     return router

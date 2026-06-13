@@ -32,8 +32,8 @@ lint-backend:
 
 lint-frontend:
 	docker run --rm $(IMAGE_FRONTEND) bun run lint
-	docker run --rm $(F_IMAGE) bun x tsc -b
-	docker run --rm $(F_IMAGE) bun x prettier --check "src/**/*.{ts,tsx,scss,css}"
+	docker run --rm $(IMAGE_FRONTEND) bun x tsc -b
+	docker run --rm $(IMAGE_FRONTEND) bun x prettier --check "src/**/*.{ts,tsx,scss,css}"
 
 build-backend:
 	docker image build -t $(IMAGE_BACKEND) ./backend

@@ -21,8 +21,6 @@ class PoolRepository(IPoolRepository):
         if filters.institution:
             queryset = queryset.filter(target_institution=filters.institution)
 
-        # добавить расчет выполения пулла (pool status = COMPLETED)
-
         return list(queryset.all())
 
     def get_pool_by_id(self, pool_id: int) -> Pool:

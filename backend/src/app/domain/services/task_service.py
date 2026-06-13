@@ -1,4 +1,5 @@
 from typing import List
+from uuid import UUID
 
 import app.domain.exceptions as exc
 from app.db.models.pool import Pool

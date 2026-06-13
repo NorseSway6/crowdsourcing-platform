@@ -13,6 +13,18 @@ class DomainException(Exception):
 
 
 # ===== Dataset exeptions =====
+class EmptyExportData(DomainException):
+    message = "Not found data for export"
+    error_code = "empty_export"
+    status_code = HTTPStatus.NOT_FOUND
+
+
+class ExportDatasetError(DomainException):
+    message = "Export dataset error"
+    error_code = "export_error"
+    status_code = HTTPStatus.BAD_REQUEST
+
+
 class EmptyDatasetError(DomainException):
     message = "Unassigned tasks not found for the specified dataset"
     error_code = "empty_dataset"
@@ -46,6 +58,42 @@ class DatasetDeletionError(DomainException):
 class UploadImageError(DomainException):
     message = "Upload image error"
     error_code = "image_upload_error"
+    status_code = HTTPStatus.BAD_REQUEST
+
+
+class UploadVideoError(DomainException):
+    message = "Upload video error"
+    error_code = "video_upload_error"
+    status_code = HTTPStatus.BAD_REQUEST
+
+
+class OpenVideoError(DomainException):
+    message = "Open video error"
+    error_code = "video_open_error"
+    status_code = HTTPStatus.BAD_REQUEST
+
+
+class WrongFileForamtError(DomainException):
+    message = "Wrong file format"
+    error_code = "wrong_format"
+    status_code = HTTPStatus.BAD_REQUEST
+
+
+class CategoriesNotFoundError(DomainException):
+    message = "Categories not found"
+    error_code = "categories_not_found"
+    status_code = HTTPStatus.NOT_FOUND
+
+
+class CreateCategoryError(DomainException):
+    message = "Create categories error"
+    error_code = "categories_create_error"
+    status_code = HTTPStatus.BAD_REQUEST
+
+
+class DeleteCategorysError(DomainException):
+    message = "Delete categories error"
+    error_code = "categories_delete_error"
     status_code = HTTPStatus.BAD_REQUEST
 
 
@@ -151,6 +199,12 @@ class AssignmentOperationError(DomainException):
     status_code = HTTPStatus.BAD_REQUEST
 
 
+class AssignmentTimeError(DomainException):
+    message = "Expired time limit"
+    error_code = "assignment_time_failed"
+    status_code = HTTPStatus.BAD_REQUEST
+
+
 class AssignmentNotFoundError(DomainException):
     message = "Assignment not found"
     error_code = "assignment_not_found"
@@ -219,6 +273,12 @@ class UserDeletionError(DomainException):
     status_code = HTTPStatus.BAD_REQUEST
 
 
+class UniqueEmailError(DomainException):
+    message = "This email is alredy exist"
+    error_code = "email_exist_error"
+    status_code = HTTPStatus.BAD_REQUEST
+
+
 # ===== Consensus exeptions =====
 class ConsensusResolutionError(DomainException):
     message = "Failed to resolve consensus for task"
@@ -227,12 +287,6 @@ class ConsensusResolutionError(DomainException):
 
 
 # ===== Auth exeptions =====
-class AuthAccessError(DomainException):
-    message = "Failed access for current role"
-    error_code = "access_failed"
-    status_code = HTTPStatus.FORBIDDEN
-
-
 class AuthLoginError(DomainException):
     message = "Wrong password or email"
     error_code = "failed_login"
@@ -249,3 +303,15 @@ class AuthRevokeError(DomainException):
     message = "Revoke token error"
     error_code = "failed_revoke_token"
     status_code = HTTPStatus.BAD_REQUEST
+
+
+class UnauthorizedError(DomainException):
+    message = "Unauthorized: Authentication required."
+    error_code = "unauthorized"
+    status_code = HTTPStatus.UNAUTHORIZED
+
+
+class AccessError(DomainException):
+    message = "Failed access for current role"
+    error_code = "role_access_error"
+    status_code = HTTPStatus.FORBIDDEN
