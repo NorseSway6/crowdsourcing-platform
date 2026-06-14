@@ -39,9 +39,6 @@ export interface VerificationAnnotation {
 
 export type Annotation = CocoAnnotation | VerificationAnnotation
 
-const isNotFound = (err: unknown) =>
-	axios.isAxiosError(err) && err.response?.status === 404
-
 export const assignmentsApi = {
 	getNext: async (poolId: number): Promise<AssignmentOut | null> => {
 		try {
