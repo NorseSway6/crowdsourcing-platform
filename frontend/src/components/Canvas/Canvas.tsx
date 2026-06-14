@@ -18,6 +18,7 @@ interface Props {
 	onHistoryChange: (h: Shape[][]) => void
 	historyIndex: number
 	onHistoryIndexChange: (i: number) => void
+	selectedCategoryId: number
 }
 
 export const Canvas = ({
@@ -28,7 +29,8 @@ export const Canvas = ({
 	history,
 	onHistoryChange,
 	historyIndex,
-	onHistoryIndexChange
+	onHistoryIndexChange,
+	selectedCategoryId
 }: Props) => {
 	const containerRef = useRef<HTMLDivElement>(null)
 	const size = useContainerSize(containerRef)
@@ -56,7 +58,8 @@ export const Canvas = ({
 		historyIndex,
 		onHistoryChange,
 		onHistoryIndexChange,
-		onShapesChange
+		onShapesChange,
+		selectedCategoryId
 	})
 
 	return (

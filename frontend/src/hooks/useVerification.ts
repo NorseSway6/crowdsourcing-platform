@@ -1,23 +1,23 @@
 import axios from 'axios'
 import { useCallback, useEffect, useState } from 'react'
 
-import type { CocoAnnotation } from '@/api/assignments'
+import type { VerificationAnnotation } from '@/api/assignments'
 
 import { useAuth } from './useAuth'
 import type { ActiveAssignment } from '@/services/assignment.service'
 import { assignmentService } from '@/services/assignment.service'
 import { poolService } from '@/services/pool.service'
 
-interface UseAssignmentReturn {
+interface UseVerificationReturn {
 	current: ActiveAssignment | null
 	loading: boolean
 	error: string | null
 	tasksFinished: boolean
 	fetchNext: () => void
-	submit: (annotation: CocoAnnotation) => Promise<void>
+	submit: (isCorrect: boolean) => Promise<void>
 }
 
-export const useAssignment = (): UseAssignmentReturn => {
+export const useVerification = (): UseVerificationReturn => {
 	const [current, setCurrent] = useState<ActiveAssignment | null>(null)
 	const [loading, setLoading] = useState(false)
 	const [error, setError] = useState<string | null>(null)
@@ -55,7 +55,7 @@ export const useAssignment = (): UseAssignmentReturn => {
 
 				const userSkills = user.user_profile?.skills ?? []
 				const pool = await poolService.findEligiblePool(userSkills, {
-					poolType: 'ANNOTATION',
+					poolType: 'VERIFICATION',
 					institution: user.user_profile?.institution
 				})
 
@@ -63,8 +63,8 @@ export const useAssignment = (): UseAssignmentReturn => {
 					const hasInstitution = Boolean(user.user_profile?.institution?.trim())
 					setError(
 						hasInstitution
-							? 'Нет доступных пулов разметки. Проверьте, что институт совпадает с проектом'
-							: 'Нет доступных пулов. Укажите институт в профиле — он должен совпадать с проектом'
+							? 'Нет доступных пулов верификации. Проверьте, что институт совпадает с проектом'
+							: 'Нет доступных пулов верификации. Укажите институт в профиле'
 					)
 					return
 				}
@@ -82,13 +82,17 @@ export const useAssignment = (): UseAssignmentReturn => {
 	}, [fetchNext, user])
 
 	const submit = useCallback(
-		async (annotation: CocoAnnotation) => {
+		async (isCorrect: boolean) => {
 			if (!current || !poolId) return
 			setLoading(true)
 			setError(null)
 
 			try {
-				await assignmentService.submit(
+				const annotation: VerificationAnnotation = {
+					type: 'verification',
+					is_correct: isCorrect
+				}
+				await assignmentService.submitVerification(
 					current.assignment.assignment_id,
 					annotation
 				)
@@ -101,10 +105,10 @@ export const useAssignment = (): UseAssignmentReturn => {
 				setCurrent(next)
 			} catch (err) {
 				if (axios.isAxiosError(err) && err.response?.status === 422) {
-					setError('Неверный формат разметки. Проверьте фигуры и попробуйте снова')
+					setError('Ошибка валидации. Попробуйте снова')
 					return
 				}
-				setError('Ошибка при отправке разметки')
+				setError('Ошибка при отправке верификации')
 			} finally {
 				setLoading(false)
 			}

@@ -1,52 +1,48 @@
-import { useState } from 'react'
-
 import { Checkbox } from '@/components/ui'
 
+import type { FilterOption } from '@/hooks/useTaskFilters'
+
 import styles from './FilterPanel.module.scss'
-import { CATEGORIES, CLIENTS } from './Filters.data'
 
-export const FilterPanel = () => {
-	const [categories, setCategories] = useState(
-		CATEGORIES.map(c => ({ ...c, checked: false }))
-	)
-	const [clients, setClients] = useState(
-		CLIENTS.map(c => ({ ...c, checked: false }))
-	)
+interface Props {
+	poolOptions: FilterOption[]
+	selectedPools: Set<string>
+	onTogglePool: (poolId: string) => void
+	onReset?: () => void
+	hasActiveFilters?: boolean
+}
 
+export const FilterPanel = ({
+	poolOptions,
+	selectedPools,
+	onTogglePool,
+	onReset,
+	hasActiveFilters
+}: Props) => {
 	return (
 		<div className={styles.panel}>
 			<div className={styles.section}>
-				<div className={styles.sectionTitle}>Фильтры</div>
-				{categories.map((cat, i) => (
-					<Checkbox
-						key={cat.label}
-						label={cat.label}
-						count={cat.count}
-						checked={cat.checked}
-						onChange={v =>
-							setCategories(prev =>
-								prev.map((c, idx) => (idx === i ? { ...c, checked: v } : c))
-							)
-						}
-					/>
-				))}
-			</div>
-
-			<div className={styles.section}>
-				<div className={styles.sectionTitle}>Заказчики</div>
-				{clients.map((client, i) => (
-					<Checkbox
-						key={client.label}
-						label={client.label}
-						count={client.count}
-						checked={client.checked}
-						onChange={v =>
-							setClients(prev =>
-								prev.map((c, idx) => (idx === i ? { ...c, checked: v } : c))
-							)
-						}
-					/>
-				))}
+				<div className={styles.sectionHeader}>
+					<div className={styles.sectionTitle}>Фильтры</div>
+					{hasActiveFilters && onReset && (
+						<button type='button' className={styles.resetBtn} onClick={onReset}>
+							Сбросить
+						</button>
+					)}
+				</div>
+				{poolOptions.length === 0 ? (
+					<p className={styles.emptyHint}>Нет данных для фильтрации</p>
+				) : (
+					poolOptions.map(option => (
+						<Checkbox
+							key={option.id}
+							label={option.label}
+							count={option.count}
+							checked={selectedPools.has(option.id)}
+							onChange={() => onTogglePool(option.id)}
+						/>
+					))
+				)}
 			</div>
 		</div>
 	)

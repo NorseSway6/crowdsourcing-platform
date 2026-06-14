@@ -1,4 +1,5 @@
 import { FilterPanel } from '@/components/FilterPanel'
+import { PageLoader } from '@/components/PageLoader'
 import { SortSelect } from '@/components/SortSelect'
 import { TaskCard } from '@/components/TaskCard'
 
@@ -9,7 +10,16 @@ export const TasksPage = () => {
 	const { current, loading, error } = useAssignment()
 
 	const tasks = current ? [current.task] : []
-	const { filtered, sort, setSort } = useTaskFilters(tasks)
+	const {
+		filtered,
+		sort,
+		setSort,
+		poolOptions,
+		selectedPools,
+		togglePool,
+		resetFilters,
+		hasActiveFilters
+	} = useTaskFilters(tasks)
 
 	return (
 		<div className={styles.page}>
@@ -21,8 +31,8 @@ export const TasksPage = () => {
 
 			<div className={styles.body}>
 				<div className={styles.list}>
-					{loading && <div className={styles.empty}>Загрузка...</div>}
-					{error && <div className={styles.empty}>{error}</div>}
+					{loading && <PageLoader />}
+					{!loading && error && <div className={styles.empty}>{error}</div>}
 					{!loading && !error && filtered.length === 0 && (
 						<div className={styles.empty}>Нет доступных заданий</div>
 					)}
@@ -31,7 +41,13 @@ export const TasksPage = () => {
 					))}
 				</div>
 
-				<FilterPanel />
+				<FilterPanel
+					poolOptions={poolOptions}
+					selectedPools={selectedPools}
+					onTogglePool={togglePool}
+					onReset={resetFilters}
+					hasActiveFilters={hasActiveFilters}
+				/>
 			</div>
 		</div>
 	)

@@ -1,5 +1,7 @@
 import { Navigate } from 'react-router-dom'
 
+import { PageLoader } from '@/components/PageLoader'
+
 import { useAuth } from '../hooks'
 
 interface Props {
@@ -10,7 +12,7 @@ interface Props {
 export const PrivateRoute = ({ children, role }: Props) => {
 	const { user, loading } = useAuth()
 
-	if (loading) return <div>Загрузка...</div>
+	if (loading) return <PageLoader fullscreen />
 	if (!user) return <Navigate to='/login' replace />
 
 	if (role && user.role !== role) {

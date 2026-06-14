@@ -28,6 +28,7 @@ interface UseCanvasProps {
 	onHistoryChange: (h: Shape[][]) => void
 	onHistoryIndexChange: (i: number) => void
 	onShapesChange: (s: Shape[]) => void
+	selectedCategoryId: number
 }
 
 export const useCanvas = ({
@@ -39,7 +40,8 @@ export const useCanvas = ({
 	historyIndex,
 	onHistoryChange,
 	onHistoryIndexChange,
-	onShapesChange
+	onShapesChange,
+	selectedCategoryId
 }: UseCanvasProps) => {
 	const stageRef = useRef<Konva.Stage>(null)
 	const isPanning = useRef(false)
@@ -84,7 +86,7 @@ export const useCanvas = ({
 			const ic = toImageCoord(pos.x, pos.y, imgOffset, imgScale)
 			pushHistory([
 				...shapes,
-				{ id: uid(), type: 'point', x: ic.x, y: ic.y } as PointShape
+				{ id: uid(), type: 'point', x: ic.x, y: ic.y, category_id: selectedCategoryId } as PointShape
 			])
 			return
 		}
@@ -102,7 +104,8 @@ export const useCanvas = ({
 							id: uid(),
 							type: 'polygon',
 							points: draftPolygon,
-							closed: true
+							closed: true,
+							category_id: selectedCategoryId
 						} as PolygonShape
 					])
 					setDraftPolygon([])
@@ -156,7 +159,8 @@ export const useCanvas = ({
 					x: ic.x,
 					y: ic.y,
 					width: draftRect.w / imgScale,
-					height: draftRect.h / imgScale
+					height: draftRect.h / imgScale,
+					category_id: selectedCategoryId
 				} as BBoxShape
 			])
 		}

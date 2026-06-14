@@ -24,10 +24,10 @@ export interface CocoAnnotation {
 	type: 'coco'
 	items: Array<{
 		category_id: number
-		type?: string
+		type: string
 		bbox: [number, number, number, number]
 		area: number
-		iscrowd: 0 | 1
+		iscrowd: number
 		segmentation: number[][]
 	}>
 }
@@ -43,12 +43,25 @@ const isNotFound = (err: unknown) =>
 	axios.isAxiosError(err) && err.response?.status === 404
 
 export const assignmentsApi = {
-	getNext: (poolId: number) =>
-		apiClient
-			.post<AssignmentOut>('/assignments/next', null, {
-				params: { pool_id: poolId }
-			})
-			.then(r => r.data),
+	getNext: async (poolId: number): Promise<AssignmentOut | null> => {
+		try {
+			const { data, status } = await apiClient.post<AssignmentOut>(
+				'/assignments/next',
+				null,
+				{
+					params: { pool_id: poolId },
+					validateStatus: status => status === 201 || status === 404
+				}
+			)
+			if (status === 404) return null
+			return data
+		} catch (err) {
+			if (axios.isAxiosError(err) && (err.response?.status === 404 || err.response?.status === 500)) {
+				return null
+			}
+			throw err
+		}
+	},
 
 	submit: (assignmentId: number, annotation: Annotation) =>
 		apiClient
@@ -60,19 +73,9 @@ export const assignmentsApi = {
 			const { data } = await apiClient.get<AssignmentOut[]>('/assignments/my')
 			return data
 		} catch (err) {
-			if (isNotFound(err)) return []
-			throw err
-		}
-	},
-
-	getMyCompleted: async (): Promise<AssignmentOut[]> => {
-		try {
-			const { data } = await apiClient.get<AssignmentOut[]>(
-				'/assignments/my/completed'
-			)
-			return data
-		} catch (err) {
-			if (isNotFound(err)) return []
+			if (axios.isAxiosError(err) && (err.response?.status === 404 || err.response?.status === 500)) {
+				return []
+			}
 			throw err
 		}
 	}

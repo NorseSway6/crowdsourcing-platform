@@ -9,7 +9,7 @@ interface Props {
 	task: Task
 	selected?: boolean
 	onClick?: (task: Task) => void
-	variant?: 'default' | 'in_progress' | 'pending' | 'approved'
+	variant?: 'default' | 'in_progress' | 'pending' | 'approved' | 'rejected'
 }
 
 export const TaskCard = ({
@@ -26,11 +26,9 @@ export const TaskCard = ({
 			onClick={() => onClick?.(task)}
 		>
 			<div className={styles.header}>
-				<span className={styles.title}>{`Задание #${task.task_id}`}</span>
+				<span className={styles.title}>{`Задание ${task.task_id}`}</span>
 				<span className={styles.category}>Категория {task.pool_id}</span>
 			</div>
-
-			<div className={styles.desc}>Описание</div>
 
 			{variant === 'default' && (
 				<Button
@@ -65,6 +63,12 @@ export const TaskCard = ({
 			{variant === 'approved' && (
 				<Button variant='success' full>
 					Проверено
+				</Button>
+			)}
+
+			{variant === 'rejected' && (
+				<Button variant='danger' full>
+					Отклонено
 				</Button>
 			)}
 		</div>

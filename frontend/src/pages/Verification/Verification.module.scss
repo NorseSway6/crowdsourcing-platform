@@ -1,0 +1,144 @@
+@use '@/styles/variables' as *;
+
+.page {
+	display: flex;
+	flex-direction: column;
+	height: 100vh;
+	background: $color-content-bg;
+}
+
+.topbar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 12px 20px;
+	background: $color-card-bg;
+	border-bottom: 1px solid $color-border;
+}
+
+.topbarLeft {
+	display: flex;
+	align-items: center;
+}
+
+.exitBtn {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	background: none;
+	border: none;
+	color: $color-text-muted;
+	cursor: pointer;
+	font-size: 14px;
+	padding: 8px 12px;
+	border-radius: 8px;
+	transition: background 0.15s;
+
+	&:hover {
+		background: $color-sidebar-active-bg;
+	}
+}
+
+.topbarCenter {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 4px;
+}
+
+.timer {
+	font-size: 24px;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+}
+
+.taskName {
+	font-size: 13px;
+	color: $color-text-muted;
+}
+
+.topbarRight {
+	display: flex;
+	align-items: center;
+}
+
+.taskBadge {
+	font-size: 12px;
+	color: $color-text-muted;
+	background: $color-sidebar-active-bg;
+	padding: 4px 10px;
+	border-radius: 6px;
+}
+
+.body {
+	display: flex;
+	flex: 1;
+	overflow: hidden;
+}
+
+.imageContainer {
+	flex: 1;
+	position: relative;
+	overflow: hidden;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: #1a1a1a;
+}
+
+.image {
+	max-width: 100%;
+	max-height: 100%;
+	object-fit: contain;
+}
+
+.annotationBox {
+	position: absolute;
+	border: 2px solid #4caf50;
+	background: rgba(76, 175, 80, 0.1);
+	pointer-events: none;
+}
+
+.annotationLabel {
+	position: absolute;
+	top: -20px;
+	left: 0;
+	font-size: 11px;
+	background: #4caf50;
+	color: #fff;
+	padding: 2px 6px;
+	border-radius: 4px;
+	white-space: nowrap;
+}
+
+.sidebar {
+	width: 280px;
+	flex-shrink: 0;
+	background: #f5f5f5;
+	border-left: 1px solid $color-border;
+	display: flex;
+	flex-direction: column;
+	padding: 25px 20px;
+	box-shadow: 1px 1px 4px #0000007f;
+	gap: 17px;
+}
+
+.question {
+	font-size: 18px;
+	font-weight: 600;
+	color: $color-text-primary;
+	text-align: center;
+	margin-bottom: 10px;
+}
+
+.annotationInfo {
+	font-size: 14px;
+	color: $color-text-muted;
+	text-align: center;
+}
+
+.error {
+	font-size: 13px;
+	color: #e53935;
+	text-align: center;
+}

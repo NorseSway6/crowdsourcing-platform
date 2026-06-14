@@ -2,6 +2,7 @@ import { LogOut } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+import { datasetsApi, type CategoryOut } from '@/api/datasets'
 import { Canvas } from '@/components/Canvas'
 import { LabelingSidebar } from '@/components/LabelingSidebar'
 import { Toolbar } from '@/components/Toolbar'
@@ -31,8 +32,20 @@ export const LabelingPage = () => {
 	const [historyIndex, setHistoryIndex] = useState(0)
 	const [timeLeft, setTimeLeft] = useState(TIMER_SECONDS)
 	const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+	const [categories, setCategories] = useState<CategoryOut[]>([])
+	const [selectedCategoryId, setSelectedCategoryId] = useState<number>(1)
 
-	const { current, submit, fetchNext } = useAssignment()
+	const { current, submit, fetchNext, tasksFinished } = useAssignment()
+
+	useEffect(() => {
+		datasetsApi.getCategories().then(setCategories).catch(() => {})
+	}, [])
+
+	useEffect(() => {
+		if (tasksFinished) {
+			navigate('/tasks')
+		}
+	}, [tasksFinished, navigate])
 
 	useEffect(() => {
 		setTimeLeft(TIMER_SECONDS)
@@ -104,7 +117,7 @@ export const LabelingPage = () => {
 						{formatTime(timeLeft)}
 					</div>
 					<div className={styles.taskName}>
-						{current ? `Задание #${current.task.task_id}` : '—'}
+						{current ? `Задание ${current.task.task_id}` : '—'}
 					</div>
 				</div>
 				<div className={styles.topbarRight}>
@@ -134,12 +147,16 @@ export const LabelingPage = () => {
 					onHistoryChange={setHistory}
 					historyIndex={historyIndex}
 					onHistoryIndexChange={setHistoryIndex}
+					selectedCategoryId={selectedCategoryId}
 				/>
 				<LabelingSidebar
 					shapes={shapes}
 					onSubmit={handleSubmit}
 					onSkip={() => navigate('/tasks')}
 					submitting={false}
+					categories={categories}
+					selectedCategoryId={selectedCategoryId}
+					onCategoryChange={setSelectedCategoryId}
 				/>
 			</div>
 		</div>

@@ -33,6 +33,14 @@ export const Sidebar = ({
 			<nav className={styles.nav}>
 				{navItems.map(item => {
 					const Icon = item.icon
+					if (item.disabled) {
+						return (
+							<span key={item.path} className={`${styles.navItem} ${styles.disabled}`}>
+								<Icon size={20} />
+								<span>{item.label}</span>
+							</span>
+						)
+					}
 					return (
 						<NavLink
 							key={item.path}
@@ -50,6 +58,31 @@ export const Sidebar = ({
 			<div className={styles.bottom}>
 				{bottomItems.map(item => {
 					const Icon = item.icon
+
+					if (item.disabled) {
+						return (
+							<span key={item.label} className={`${styles.navItem} ${styles.disabled}`}>
+								<Icon size={20} />
+								<span>{item.label}</span>
+							</span>
+						)
+					}
+
+					if (item.path) {
+						return (
+							<NavLink
+								key={item.label}
+								to={item.path}
+								className={({ isActive }) =>
+									`${styles.navItem} ${isActive ? styles.active : ''}`
+								}
+							>
+								<Icon size={20} />
+								<span>{item.label}</span>
+							</NavLink>
+						)
+					}
+
 					return (
 						<a
 							key={item.label}

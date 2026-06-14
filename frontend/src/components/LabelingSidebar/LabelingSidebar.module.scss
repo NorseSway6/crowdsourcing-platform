@@ -11,3 +11,21 @@
 	box-shadow: 1px 1px 4px #0000007f;
 	gap: 17px;
 }
+
+.categorySection {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.categoryLabel {
+	font-size: 13px;
+	font-weight: 500;
+	color: $color-text-primary;
+}
+
+.shapesCount {
+	font-size: 13px;
+	color: $color-text-muted;
+	text-align: center;
+}

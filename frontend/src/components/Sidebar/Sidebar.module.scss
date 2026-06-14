@@ -12,6 +12,7 @@
 	top: 0;
 	bottom: 0;
 	left: 0;
+	z-index: 100;
 }
 
 .logo {
@@ -64,6 +65,12 @@
 
 	svg {
 		flex-shrink: 0;
+	}
+
+	&.disabled {
+		opacity: 0.4;
+		cursor: not-allowed;
+		pointer-events: none;
 	}
 }
 

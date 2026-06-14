@@ -11,7 +11,8 @@ import {
 	NotFoundPage,
 	RegisterPage,
 	ReviewPage,
-	TasksPage
+	TasksPage,
+	VerificationPage
 } from './pages'
 import {
 	CreateProjectPage,
@@ -19,6 +20,7 @@ import {
 	CustomerReviewPage,
 	ProjectsPage
 } from './pages/customer'
+import { ProfilePage } from './pages/Profile/Profile'
 import './styles/global.scss'
 
 export default function App() {
@@ -54,6 +56,7 @@ export default function App() {
 					<Route path='tasks' element={<TasksPage />} />
 					<Route path='in-progress' element={<InProgressPage />} />
 					<Route path='review' element={<ReviewPage />} />
+					<Route path='profile' element={<ProfilePage />} />
 				</Route>
 
 				<Route
@@ -69,6 +72,7 @@ export default function App() {
 					<Route path='projects' element={<ProjectsPage />} />
 					<Route path='analytics' element={<CustomerAnalyticsPage />} />
 					<Route path='review' element={<CustomerReviewPage />} />
+					<Route path='profile' element={<ProfilePage />} />
 				</Route>
 
 				<Route
@@ -76,6 +80,15 @@ export default function App() {
 					element={
 						<PrivateRoute role='STUDENT'>
 							<LabelingPage />
+						</PrivateRoute>
+					}
+				/>
+
+				<Route
+					path='/verification'
+					element={
+						<PrivateRoute role='STUDENT'>
+							<VerificationPage />
 						</PrivateRoute>
 					}
 				/>

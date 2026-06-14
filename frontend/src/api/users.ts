@@ -1,25 +1,21 @@
 import { apiClient } from './client'
 
-export interface UserProfile {
+import type { UserProfile } from './auth'
+
+export interface UpdateProfileInput {
 	last_name: string
 	first_name: string
-	middle_name: string
-	group: string
-	institution: string
-	skills: string[]
-}
-
-export interface UserOut {
-	user_id: string
-	email: string
-	role: string
-	profile: UserProfile
-	created_at: string
-	is_active: boolean
+	middle_name?: string
+	group?: string
+	institution?: string
+	skills?: string[]
 }
 
 export const usersApi = {
-	getAll: () => apiClient.get<UserOut[]>('/users/').then(r => r.data),
+	getMe: () => apiClient.get('/users/me').then(r => r.data),
 
-	getMe: () => apiClient.get<UserOut>('/users/me').then(r => r.data)
+	updateProfile: (data: UpdateProfileInput) =>
+		apiClient.patch('/users/me/profile', data).then(r => r.data)
 }
+
+export type { UserProfile }

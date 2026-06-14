@@ -6,9 +6,7 @@ import {
 	Accordion,
 	Button,
 	Field,
-	Input,
-	Select,
-	Textarea
+	Input
 } from '@/components/ui'
 
 import { useCreatePipeline } from '@/hooks/useCreatePipeline'
@@ -17,9 +15,6 @@ import styles from './CreateProject.module.scss'
 
 export const CreateProjectPage = () => {
 	const [name, setName] = useState('')
-	const [description, setDescription] = useState('')
-	const [instruction, setInstruction] = useState('')
-	const [markupType, setMarkupType] = useState('bbox')
 	const [files, setFiles] = useState<File[]>([])
 	const [points, setPoints] = useState('10')
 	const [tasksLimit, setTasksLimit] = useState('10')
@@ -108,7 +103,7 @@ export const CreateProjectPage = () => {
 			<div className={styles.sections}>
 				<Accordion
 					title='Общая информация'
-					subtitle='Укажите название и описание'
+					subtitle='Укажите название проекта'
 					defaultOpen
 				>
 					<Field label='Название проекта'>
@@ -116,13 +111,6 @@ export const CreateProjectPage = () => {
 							placeholder='Например: Разметка медицинских снимков'
 							value={name}
 							onChange={e => setName(e.target.value)}
-						/>
-					</Field>
-					<Field label='Описание'>
-						<Textarea
-							placeholder='Опишите цель проекта'
-							value={description}
-							onChange={e => setDescription(e.target.value)}
 						/>
 					</Field>
 					<Field label='Институт (необязательно)'>
@@ -138,17 +126,11 @@ export const CreateProjectPage = () => {
 					title='Интерфейс задания'
 					subtitle='Настройте внешний вид заданий у исполнителей'
 				>
-					<Field label='Тип разметки'>
-						<Select
-							value={markupType}
-							onChange={setMarkupType}
-							options={[
-								{ value: 'bbox', label: 'Bounding Box' },
-								{ value: 'polygon', label: 'Полигон' },
-								{ value: 'point', label: 'Точка' }
-							]}
-						/>
-					</Field>
+					<p className={styles.placeholder}>
+						Тип разметки определяется автоматически на основе конфигурации
+						пула. Исполнители получат все доступные инструменты: рамки,
+						полигоны и точки.
+					</p>
 
 					<Field label='Категории объектов'>
 						<div className={styles.categoriesBlock}>
@@ -205,15 +187,12 @@ export const CreateProjectPage = () => {
 
 				<Accordion
 					title='Инструкция для исполнителей'
-					subtitle='Введите инструкцию, которую увидят исполнители'
+					subtitle='Инструкции будут добавлены в будущем'
 				>
-					<Field label='Инструкция'>
-						<Textarea
-							placeholder='Опишите как правильно выполнять задание...'
-							value={instruction}
-							onChange={e => setInstruction(e.target.value)}
-						/>
-					</Field>
+					<p className={styles.placeholder}>
+						В настоящее время инструкции для исполнителей недоступны.
+						Исполнители будут использовать стандартные инструменты разметки.
+					</p>
 				</Accordion>
 
 				<div className={styles.poolSection}>
