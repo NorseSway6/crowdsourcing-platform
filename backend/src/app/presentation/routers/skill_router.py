@@ -9,7 +9,6 @@ from app.presentation.api.handlers import SkillHandlers
 def get_skills_router(skill_handlers: SkillHandlers):
     router = Router(tags=["skills"])
 
-    @has_roles(AuthRole.ADMIN, AuthRole.CUSTOMER, AuthRole.STUDENT)
     def get_all_skills(request):
         return skill_handlers.get_all_skills(request)
 
@@ -18,6 +17,7 @@ def get_skills_router(skill_handlers: SkillHandlers):
         ["GET"],
         get_all_skills,
         response={200: list[str], 404: ErrorResponse},
+        auth=None,
     )
 
     @has_roles(AuthRole.ADMIN)
