@@ -5,10 +5,10 @@ from django.db.models import Count, Q
 from app.db.models.pool import Pool
 from app.db.models.user_profile import UserProfile
 from app.domain.entities.anallytics_schema import PoolsProgressFilter, UserInfoFilter
+from app.domain.interfaces.analytics_repository import IAnalyticsRepository
 
 
-class AnalyticsRepository:
-
+class AnalyticsRepository(IAnalyticsRepository):
     def get_pools_progress(self, user_id: UUID, filters: PoolsProgressFilter) -> list[dict[str, any]]:
         queryset = Pool.objects.filter(pipeline__owner__user_id=user_id)
 

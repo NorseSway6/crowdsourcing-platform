@@ -12,7 +12,14 @@ from app.domain.entities.dataset_schema import CategoryOut, CategorySchema, Data
 from app.domain.entities.export_schema import ExportStatusOut, UploadStatusOut
 from app.domain.entities.pipeline_schema import PipelineIn, PipelineOut
 from app.domain.entities.platform_user_schema import RegisterOut, RegisterSchema, UserOut, UserSchema
-from app.domain.entities.pool_schema import PoolFilter, PoolOut, PoolSchema
+from app.domain.entities.pool_schema import (
+    PoolDetailOut,
+    PoolFilter,
+    PoolInstructionOut,
+    PoolInstructionSchema,
+    PoolOut,
+    PoolSchema,
+)
 from app.domain.entities.response_schema import ErrorResponse, SuccessResponse
 from app.domain.entities.skill_schema import SkillSchema
 from app.domain.entities.task_schema import TaskOut
@@ -62,6 +69,20 @@ class PoolHandlers:
     def update_pool(self, request, pool_id: int, pool_data: PoolSchema) -> tuple[int, PoolOut | ErrorResponse]:
         updated = self._pool_service.update_pool(pool_id, pool_data)
         return HTTPStatus.OK, updated
+
+    def create_instruction(
+        self, request, pool_id: int, instruction: PoolInstructionSchema
+    ) -> tuple[int, PoolDetailOut | ErrorResponse]:
+        created = self._pool_service.create_instruction(pool_id, instruction)
+        return HTTPStatus.CREATED, created
+
+    def get_instruction_by_id(self, request, instruction_id: int) -> tuple[int, PoolInstructionOut | ErrorResponse]:
+        instruction = self._pool_service.get_instruction_by_id(instruction_id)
+        return HTTPStatus.OK, instruction
+
+    def get_instruction_by_pool(self, request, pool_id: int) -> tuple[int, PoolInstructionOut | ErrorResponse]:
+        instruction = self._pool_service.get_instruction_by_pool(pool_id)
+        return HTTPStatus.OK, instruction
 
 
 class PipelineHandlers:

@@ -8,12 +8,20 @@ from pydantic import ConfigDict, Field, PastDatetime, PositiveInt, field_validat
 class PoolType(str, Enum):
     ANNOTATION = "ANNOTATION"
     VERIFICATION = "VERIFICATION"
-    CLASSIFICATION = "CLASSIFICATION"
 
 
 class PoolStatus(str, Enum):
     OPEN = "OPEN"
     COMPLETED = "COMPLETED"
+
+
+class PoolInstructionSchema(Schema):
+    title: str = Field(...)
+    content_markdown: str = Field(...)
+
+
+class PoolInstructionOut(PoolInstructionSchema):
+    id: int = Field(...)
 
 
 class PoolSchema(Schema):
@@ -23,6 +31,7 @@ class PoolSchema(Schema):
     target_institution: Optional[str] = Field(None)
     tasks_limit: int = Field(...)
     time_limit: int = Field(...)
+    instruction_id: Optional[int] = Field(None)
 
 
 class PoolOut(PoolSchema):
@@ -46,6 +55,10 @@ class PoolOut(PoolSchema):
             return [skill.name if hasattr(skill, "name") else str(skill) for skill in v]
 
         return v
+
+
+class PoolDetailOut(PoolOut):
+    instruction: Optional[PoolInstructionOut] = Field(None)
 
 
 class PoolFilter(Schema):

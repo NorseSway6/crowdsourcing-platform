@@ -3,7 +3,7 @@ from app.domain.entities.skill_schema import SkillSchema
 
 
 class ISkillRepository:
-    def get_all_skills(self) -> list[str]:
+    def get_all_skills(self) -> list[Skill]:
         pass
 
     def create_skill(self, skill_data: SkillSchema) -> Skill:

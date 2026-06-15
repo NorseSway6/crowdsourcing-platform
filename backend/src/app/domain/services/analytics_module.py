@@ -1,11 +1,11 @@
 from uuid import UUID
 
-from app.db.repositories.analytics_repository import AnalyticsRepository
 from app.domain.entities.anallytics_schema import PoolProgressOut, PoolsProgressFilter, UserInfoFilter, UserInfoOut
+from app.domain.interfaces.analytics_repository import IAnalyticsRepository
 
 
 class AnalyticsService:
-    def __init__(self, analytics_repo: AnalyticsRepository):
+    def __init__(self, analytics_repo: IAnalyticsRepository):
         self._analytics_repo = analytics_repo
 
     def get_pools_progress(self, user_id: UUID, filters: PoolsProgressFilter) -> list[PoolProgressOut]:

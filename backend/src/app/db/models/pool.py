@@ -4,11 +4,15 @@ from app.db.models.pipeline import Pipeline
 from app.db.models.skill import Skill
 
 
+class PoolInstruction(models.Model):
+    title = models.CharField(max_length=255)
+    content_markdown = models.TextField()
+
+
 class Pool(models.Model):
     class PoolType(models.TextChoices):
         ANNOTATION = "ANNOTATION", "Annotation"
         VERIFICATION = "VERIFICATION", "Verification"
-        CLASSIFICATION = "CLASSIFICATION", "Classification"
 
     class PoolStatus(models.TextChoices):
         OPEN = "OPEN", "Open"
@@ -28,6 +32,9 @@ class Pool(models.Model):
     target_institution = models.CharField(max_length=100, blank=True, null=True, verbose_name="target_institution")
     tasks_limit = models.IntegerField(default=10, verbose_name="tasks_limit")
     time_limit = models.IntegerField(default=600, verbose_name="time_limit")
+    instruction = models.ForeignKey(
+        PoolInstruction, on_delete=models.SET_NULL, null=True, blank=True, related_name="pool_instruction"
+    )
 
     @property
     def skill_names(self):

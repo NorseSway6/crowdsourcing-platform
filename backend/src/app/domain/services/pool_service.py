@@ -2,7 +2,15 @@ from django.db import transaction
 
 import app.domain.exceptions as exc
 from app.db.models.pool import Pool
-from app.domain.entities.pool_schema import PoolFilter, PoolOut, PoolSchema, PoolType
+from app.domain.entities.pool_schema import (
+    PoolDetailOut,
+    PoolFilter,
+    PoolInstructionOut,
+    PoolInstructionSchema,
+    PoolOut,
+    PoolSchema,
+    PoolType,
+)
 from app.domain.interfaces.pool_interface import IPoolRepository
 from app.domain.interfaces.skill_interface import ISkillRepository
 from app.domain.interfaces.task_interface import ITaskRepository
@@ -94,6 +102,34 @@ class PoolService:
             pipeline_id=current_pool.pipeline_id, current_order=current_pool.order
         )
         if not next_pool:
-            return None
+            raise exc.PoolNotFoundError()
 
         return next_pool.pool_id
+
+    def create_instruction(self, pool_id: int, instruction: PoolInstructionSchema) -> PoolDetailOut:
+        with transaction.atomic():
+            new_instruction = self._pool_repo.create_instruction(instruction.content_markdown, instruction.title)
+            if not new_instruction:
+                raise exc.InstructionCreationFailedError()
+
+            pool = self._pool_repo.get_pool_by_id(pool_id)
+            if not pool:
+                raise exc.PoolNotFoundError()
+
+            updated_pool = self._pool_repo.update_pool_instruction(pool, new_instruction.id)
+            if not updated_pool:
+                raise exc.PoolUpdatingError()
+
+            return PoolDetailOut.from_orm(updated_pool)
+
+    def get_instruction_by_id(self, instruction_id: int) -> PoolInstructionOut:
+        instruction = self._pool_repo.get_instruction_by_id(instruction_id)
+        if not instruction:
+            raise exc.InstructionNotFoundError()
+        return PoolInstructionOut.from_orm(instruction)
+
+    def get_instruction_by_pool(self, pool_id: int) -> PoolInstructionOut:
+        instruction = self._pool_repo.get_instruction_by_pool(pool_id)
+        if not instruction:
+            raise exc.InstructionNotFoundError()
+        return PoolInstructionOut.from_orm(instruction)

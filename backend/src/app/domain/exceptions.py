@@ -130,6 +130,18 @@ class PoolUpdatingError(DomainException):
     status_code = HTTPStatus.BAD_REQUEST
 
 
+class InstructionNotFoundError(DomainException):
+    message = "Instruction not found"
+    error_code = "instruction_not_found"
+    status_code = HTTPStatus.NOT_FOUND
+
+
+class InstructionCreationFailedError(DomainException):
+    message = "Failed to create instruction configuration"
+    error_code = "instruction_creation_failed"
+    status_code = HTTPStatus.BAD_REQUEST
+
+
 # ===== Pipeline exeptions =====
 class PipelineCreationFailedError(DomainException):
     message = "Failed to create pipeline configuration"

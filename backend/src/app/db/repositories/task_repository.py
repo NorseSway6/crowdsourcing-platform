@@ -65,11 +65,7 @@ class TaskRepository(ITaskRepository):
 
         return Task.objects.select_for_update(skip_locked=True).filter(pk__in=candidate_id).first()
 
-    def _mark_task_completed(
-        self,
-        task_id: int,
-        pool_id: int,
-    ) -> bool:
+    def _mark_task_completed(self, task_id: int, pool_id: int) -> bool:
         updated = Task.objects.filter(task_id=task_id, pool_id=pool_id).update(status=Task.Status.COMPLETED)
         return updated > 0
 

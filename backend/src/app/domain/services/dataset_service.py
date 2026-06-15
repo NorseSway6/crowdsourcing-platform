@@ -5,13 +5,13 @@ from django.db import transaction
 from ninja import UploadedFile
 
 import app.domain.exceptions as exc
-from app.db.repositories.dataset_repository import DatasetRepository
 from app.domain.entities.dataset_schema import CategoryOut, CategorySchema, DatasetOut, DatasetSchema
+from app.domain.interfaces.datset_interface import IDatasetRepository
 from app.domain.services.celery_tasks import process_images_upload_task, process_video_upload_task
 
 
 class DatasetService:
-    def __init__(self, dataset_repo: DatasetRepository):
+    def __init__(self, dataset_repo: IDatasetRepository):
         self._dataset_repo = dataset_repo
 
     def get_dataset_by_id(self, dataset_id: int) -> DatasetOut:

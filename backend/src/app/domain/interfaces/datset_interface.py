@@ -1,10 +1,7 @@
 from uuid import UUID
 
-from ninja import UploadedFile
-
-from app.db.models.dataset import Dataset
-from app.db.models.task import Task
-from app.domain.entities.dataset_schema import DatasetOut, DatasetSchema
+from app.db.models.dataset import Dataset, DatasetCategory
+from app.domain.entities.dataset_schema import CategorySchema, DatasetOut, DatasetSchema
 
 
 class IDatasetRepository:
@@ -17,11 +14,23 @@ class IDatasetRepository:
     def create_dataset(self, owner_id: UUID, dataset_data: DatasetSchema) -> Dataset:
         pass
 
-    def update_dataset(self, dataset_id: int, dataset_data: DatasetSchema) -> Dataset:
+    def get_categories_by_names(self, categories: list[str]) -> list[DatasetCategory]:
+        pass
+
+    def get_categories_by_dataset(self, dataset_id: int) -> list[DatasetCategory]:
+        pass
+
+    def update_dataset(self, dataset_id: int, dataset_data: DatasetSchema) -> bool:
         pass
 
     def delete_dataset(self, dataset_id: int) -> bool:
         pass
 
-    def upload_images(self, dataset_id: int, files: list[UploadedFile]) -> list[Task]:
+    def get_all_categories(self) -> list[DatasetCategory]:
+        pass
+
+    def create_category(self, category_data: CategorySchema) -> DatasetCategory:
+        pass
+
+    def delete_category(self, category_data: CategorySchema) -> bool:
         pass
