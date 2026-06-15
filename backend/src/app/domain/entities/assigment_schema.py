@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 from enum import Enum
 from typing import List, Literal, Optional, Union
 
@@ -44,4 +45,11 @@ class AssignmentOut(AssignmentSchema):
     started_at: PastDatetime = Field(...)
     status: AssignmentStatus = Field(...)
     completed_at: Optional[PastDatetime] = Field(...)
+
+
+class AssignmentActiveOut(AssignmentOut):
     expires_at: Optional[FutureDatetime] = Field(...)
+
+
+class AssignmentHistoryOut(AssignmentOut):
+    expires_at: Optional[datetime] = Field(...)

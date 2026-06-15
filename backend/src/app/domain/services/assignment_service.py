@@ -6,7 +6,7 @@ from django.utils import timezone
 
 import app.domain.exceptions as exc
 from app.db.models.assignments import Assignment
-from app.domain.entities.assigment_schema import AssignmentOut, AssignmentSchema
+from app.domain.entities.assigment_schema import AssignmentActiveOut, AssignmentHistoryOut, AssignmentSchema
 from app.domain.interfaces.assignment_interface import IAssignmentRepository
 from app.domain.interfaces.pool_interface import IPoolRepository
 from app.domain.interfaces.task_interface import ITaskRepository
@@ -26,26 +26,33 @@ class AssignmentService:
         self._pipeline_engine = pipeline_engine
         self._pool_repo = pool_repo
 
-    def get_assignments_by_user(self, user_id: UUID) -> list[AssignmentOut]:
+    def get_assignments_by_user(self, user_id: UUID) -> list[AssignmentHistoryOut]:
         assignments = self._assignment_repo.get_assignments_by_user(user_id)
         if not assignments:
             raise exc.AssignmentNotFoundError()
-        return [AssignmentOut.from_orm(a) for a in assignments]
+        result = []
+        for a in assignments:
+            if self._is_expired(a):
+                self._assignment_repo.reject_expired_assignment(a.assignment_id)
+            result.append(AssignmentHistoryOut.from_orm(a))
+        return result
 
-    def get_completed_assignments_by_user(self, user_id: UUID) -> list[AssignmentOut]:
+    def get_completed_assignments_by_user(self, user_id: UUID) -> list[AssignmentHistoryOut]:
         assignments = self._assignment_repo.get_completed_assignments_by_user(user_id)
         if not assignments:
             raise exc.AssignmentNotFoundError()
-        return [AssignmentOut.from_orm(a) for a in assignments]
+        result = []
+        for a in assignments:
+            if self._is_expired(a):
+                self._assignment_repo.reject_expired_assignment(a.assignment_id)
+            result.append(AssignmentHistoryOut.from_orm(a))
+        return result
 
-    def create_assignment(self, user_id: UUID, pool_id: int) -> AssignmentOut:
+    def create_assignment(self, user_id: UUID, pool_id: int) -> AssignmentHistoryOut | AssignmentActiveOut:
         assignmented_task = self._assignment_repo._get_active_assignment(user_id)
-        if assignmented_task:
-            if assignmented_task.expires_at and timezone.now() > assignmented_task.expires_at:
-                self._assignment_repo.reject_expired_assignment(assignmented_task.assignment_id)
-                raise exc.AssignmentTimeError()
-
-            return AssignmentOut.from_orm(assignmented_task)
+        if assignmented_task and self._is_expired(assignmented_task):
+            self._assignment_repo.reject_expired_assignment(assignmented_task.assignment_id)
+            return AssignmentHistoryOut.from_orm(assignmented_task)
 
         with transaction.atomic():
             task = self._task_repo.get_next_task(user_id, pool_id)
@@ -60,14 +67,16 @@ class AssignmentService:
             assignment = self._assignment_repo.create_assignment(user_id, task.task_id, pool_id, expires_at)
             if not assignment:
                 raise exc.AssignmentCreationError()
-        return AssignmentOut.from_orm(assignment)
+        return AssignmentActiveOut.from_orm(assignment)
 
-    def update_assignment(self, user_id: UUID, assignment_id: int, annotation_data: AssignmentSchema) -> AssignmentOut:
+    def update_assignment(
+        self, user_id: UUID, assignment_id: int, annotation_data: AssignmentSchema
+    ) -> AssignmentActiveOut:
         updated_assignment = self._assignment_repo.get_assignment_by_id(user_id, assignment_id)
         if not updated_assignment:
             raise exc.AssignmentNotFoundError()
 
-        if updated_assignment.expires_at and timezone.now() > updated_assignment.expires_at:
+        if self._is_expired(updated_assignment):
             self._assignment_repo.reject_expired_assignment(updated_assignment.assignment_id)
             raise exc.AssignmentTimeError()
 
@@ -85,4 +94,7 @@ class AssignmentService:
 
         self._pipeline_engine._evaluate_stage_completion(assignment.task_id, assignment.task.pool_id)
 
-        return AssignmentOut.from_orm(assignment)
+        return AssignmentActiveOut.from_orm(assignment)
+
+    def _is_expired(self, assignment: Assignment) -> bool:
+        return assignment.status == Assignment.Status.IN_PROGRESS and assignment.expires_at < timezone.now()

@@ -9,14 +9,16 @@ from app.domain.interfaces.assignment_interface import IAssignmentRepository
 
 class AssignmentRepository(IAssignmentRepository):
     def get_assignments_by_user(self, user_id: UUID) -> list[Assignment]:
-        return list(Assignment.objects.filter(user_id=user_id))
+        return list(Assignment.objects.filter(user_id=user_id, status=Assignment.Status.IN_PROGRESS))
 
     def get_assignment_by_id(self, user_id: UUID, assignment_id: int) -> Assignment:
         return Assignment.objects.select_related("task").filter(assignment_id=assignment_id, user_id=user_id).first()
 
     def get_completed_assignments_by_user(self, user_id: UUID) -> list[Assignment]:
         return list(
-            Assignment.objects.select_related("task").filter(user_id=user_id, status=Assignment.Status.APPROVED)
+            Assignment.objects.select_related("task").filter(
+                user_id=user_id, status__in=[Assignment.Status.APPROVED, Assignment.Status.REJECTED]
+            )
         )
 
     def create_assignment(self, user_id: UUID, task_id: int, pool_id: int, expires_at: datetime) -> Assignment:

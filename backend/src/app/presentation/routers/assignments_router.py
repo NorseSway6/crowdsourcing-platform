@@ -1,7 +1,7 @@
 from ninja import NinjaAPI, Router
 
 from app.domain.auth_roles import AuthRole, has_roles
-from app.domain.entities.assigment_schema import AssignmentOut, AssignmentSchema
+from app.domain.entities.assigment_schema import AssignmentActiveOut, AssignmentHistoryOut, AssignmentSchema
 from app.domain.entities.response_schema import ErrorResponse
 from app.presentation.api.handlers import AssignmentHandlers
 
@@ -10,7 +10,7 @@ def get_assignments_router(assigment_handlers: AssignmentHandlers):
     router = Router(tags=["assignments"])
 
     @has_roles(AuthRole.ADMIN, AuthRole.STUDENT)
-    def get_assignments_by_user(request) -> tuple[int, list[AssignmentOut] | ErrorResponse]:
+    def get_assignments_by_user(request) -> tuple[int, list[AssignmentHistoryOut] | ErrorResponse]:
         user = request.auth
         return assigment_handlers.get_assignments_by_user(request, user.user_id)
 
@@ -18,11 +18,11 @@ def get_assignments_router(assigment_handlers: AssignmentHandlers):
         "/my",
         ["GET"],
         get_assignments_by_user,
-        response={200: list[AssignmentOut], 404: ErrorResponse},
+        response={200: list[AssignmentHistoryOut], 404: ErrorResponse},
     )
 
     @has_roles(AuthRole.ADMIN, AuthRole.STUDENT)
-    def get_completed_assignments_by_user(request) -> tuple[int, list[AssignmentOut] | ErrorResponse]:
+    def get_completed_assignments_by_user(request) -> tuple[int, list[AssignmentHistoryOut] | ErrorResponse]:
         user = request.auth
         return assigment_handlers.get_completed_assignments_by_user(request, user.user_id)
 
@@ -30,11 +30,13 @@ def get_assignments_router(assigment_handlers: AssignmentHandlers):
         "/my/completed",
         ["GET"],
         get_completed_assignments_by_user,
-        response={200: list[AssignmentOut], 404: ErrorResponse},
+        response={200: list[AssignmentHistoryOut], 404: ErrorResponse},
     )
 
     @has_roles(AuthRole.ADMIN, AuthRole.STUDENT)
-    def create_assignment(request, pool_id: int) -> tuple[int, AssignmentOut | ErrorResponse]:
+    def create_assignment(
+        request, pool_id: int
+    ) -> tuple[int, AssignmentHistoryOut | AssignmentActiveOut | ErrorResponse]:
         user = request.auth
         return assigment_handlers.create_assignment(request, user.user_id, pool_id)
 
@@ -42,13 +44,13 @@ def get_assignments_router(assigment_handlers: AssignmentHandlers):
         "/next",
         ["POST"],
         create_assignment,
-        response={201: AssignmentOut, 400: ErrorResponse, 404: ErrorResponse},
+        response={201: AssignmentHistoryOut | AssignmentActiveOut, 400: ErrorResponse, 404: ErrorResponse},
     )
 
     @has_roles(AuthRole.ADMIN, AuthRole.STUDENT)
     def update_assignment(
         request, assignment_id: int, data: AssignmentSchema
-    ) -> tuple[int, AssignmentOut | ErrorResponse]:
+    ) -> tuple[int, AssignmentActiveOut | ErrorResponse]:
         user = request.auth
         return assigment_handlers.update_assignment(request, user.user_id, assignment_id, data)
 
@@ -56,7 +58,7 @@ def get_assignments_router(assigment_handlers: AssignmentHandlers):
         "/{int:assignment_id}",
         ["PATCH"],
         update_assignment,
-        response={200: AssignmentOut, 400: ErrorResponse, 404: ErrorResponse},
+        response={200: AssignmentActiveOut, 400: ErrorResponse, 404: ErrorResponse},
     )
 
     return router
