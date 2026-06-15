@@ -11,7 +11,7 @@ class ProfileSchema(Schema):
     group: Optional[str] = Field(None, max_length=15)
     institution: Optional[str] = Field(None, max_length=100)
 
-    skills: List[Any] = Field(default=[])
+    skills: Optional[List[Any]] = Field(default=[])
 
     model_config = ConfigDict(from_attributes=True)
 

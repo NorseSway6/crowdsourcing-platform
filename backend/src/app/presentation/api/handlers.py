@@ -6,7 +6,7 @@ from django_redis import get_redis_connection
 from ninja import UploadedFile
 
 from app.domain.entities.anallytics_schema import PoolProgressOut, PoolsProgressFilter, UserInfoFilter, UserInfoOut
-from app.domain.entities.assigment_schema import AssignmentOut, AssignmentSchema
+from app.domain.entities.assigment_schema import AssignmentActiveOut, AssignmentHistoryOut, AssignmentSchema
 from app.domain.entities.auth_schema import LogIn, RefreshTokenIn, TokenOut
 from app.domain.entities.dataset_schema import CategoryOut, CategorySchema, DatasetOut, DatasetSchema
 from app.domain.entities.export_schema import ExportStatusOut, UploadStatusOut
@@ -254,23 +254,25 @@ class AssignmentHandlers:
     def __init__(self, assignment_service: AssignmentService):
         self._assignment_service = assignment_service
 
-    def get_assignments_by_user(self, request, user_id: UUID) -> tuple[int, list[AssignmentOut] | ErrorResponse]:
+    def get_assignments_by_user(self, request, user_id: UUID) -> tuple[int, list[AssignmentHistoryOut] | ErrorResponse]:
         assignments = self._assignment_service.get_assignments_by_user(user_id)
         return HTTPStatus.OK, assignments
 
     def get_completed_assignments_by_user(
         self, request, user_id: UUID
-    ) -> tuple[int, list[AssignmentOut] | ErrorResponse]:
+    ) -> tuple[int, list[AssignmentHistoryOut] | ErrorResponse]:
         assignments = self._assignment_service.get_completed_assignments_by_user(user_id)
         return HTTPStatus.OK, assignments
 
-    def create_assignment(self, request, user_id: UUID, pool_id: int) -> tuple[int, AssignmentOut | ErrorResponse]:
+    def create_assignment(
+        self, request, user_id: UUID, pool_id: int
+    ) -> tuple[int, AssignmentHistoryOut | AssignmentActiveOut | ErrorResponse]:
         assignment = self._assignment_service.create_assignment(user_id, pool_id)
         return HTTPStatus.CREATED, assignment
 
     def update_assignment(
         self, request, user_id: UUID, assignment_id: int, annotation_data: AssignmentSchema
-    ) -> tuple[int, AssignmentOut | ErrorResponse]:
+    ) -> tuple[int, AssignmentActiveOut | ErrorResponse]:
         updated = self._assignment_service.update_assignment(user_id, assignment_id, annotation_data)
         return HTTPStatus.OK, updated
 
