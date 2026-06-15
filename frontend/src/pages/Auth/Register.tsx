@@ -1,8 +1,9 @@
 import axios from 'axios'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
 import type { RegisterData, UserRole } from '@/api/auth'
+import { skillsApi } from '@/api/skills'
 import { Button, Field, Input, Select } from '@/components/ui'
 
 import { useAuth } from '@/hooks/useAuth'
@@ -34,8 +35,25 @@ export const RegisterPage = () => {
 	const [role, setRole] = useState<UserRole>('STUDENT')
 	const [error, setError] = useState<string | null>(null)
 	const [loading, setLoading] = useState(false)
+	const [availableSkills, setAvailableSkills] = useState<string[]>([])
+	const [selectedSkills, setSelectedSkills] = useState<Set<string>>(new Set())
 
 	const isStudent = role === 'STUDENT'
+
+	useEffect(() => {
+		skillsApi.getAll()
+			.then(skills => setAvailableSkills(skills))
+			.catch(() => {})
+	}, [])
+
+	const toggleSkill = (skill: string) => {
+		setSelectedSkills(prev => {
+			const next = new Set(prev)
+			if (next.has(skill)) next.delete(skill)
+			else next.add(skill)
+			return next
+		})
+	}
 
 	const validate = (): string | null => {
 		if (!firstName.trim() || !lastName.trim()) return 'Укажите имя и фамилию'
@@ -67,7 +85,8 @@ export const RegisterPage = () => {
 				lastName: lastName.trim(),
 				middleName: middleName.trim() || undefined,
 				group: isStudent ? group.trim() : undefined,
-				institution: institution.trim() || undefined
+				institution: institution.trim() || undefined,
+				skills: isStudent ? [...selectedSkills] : undefined
 			}
 		}
 
@@ -145,6 +164,22 @@ export const RegisterPage = () => {
 									onChange={e => setInstitution(e.target.value)}
 								/>
 							</Field>
+							{availableSkills.length > 0 && (
+								<Field label='Навыки'>
+									<div className={styles.skillsChips}>
+										{availableSkills.map(skill => (
+											<button
+												key={skill}
+												type='button'
+												className={`${styles.skillChip} ${selectedSkills.has(skill) ? styles.skillChipActive : ''}`}
+												onClick={() => toggleSkill(skill)}
+											>
+												{skill}
+											</button>
+										))}
+									</div>
+								</Field>
+							)}
 						</>
 					) : (
 						<Field label='Организация (необязательно)'>

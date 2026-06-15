@@ -40,6 +40,11 @@ export const useAssignment = (): UseAssignmentReturn => {
 			}
 			setCurrent(next)
 		} catch (err) {
+			if (axios.isAxiosError(err) && err.response?.status === 404) {
+				setError('Нет доступных задач. Возможно, все задания уже взяты другими студентами')
+				setTasksFinished(true)
+				return
+			}
 			setError('Не удалось получить задание')
 			console.log(err)
 		} finally {

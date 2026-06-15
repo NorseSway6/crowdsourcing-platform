@@ -1,6 +1,8 @@
-import { Select } from '@/components/ui'
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
-import { useAnalytics } from '@/hooks/useAnalytics'
+import { analyticsApi, type UserInfo } from '@/api/analytics'
+import { Button, Select } from '@/components/ui'
 
 import styles from './Analytics.module.scss'
 
@@ -10,18 +12,45 @@ const fullName = (u: {
 	middle_name: string
 }) => [u.last_name, u.first_name, u.middle_name].filter(Boolean).join(' ')
 
+type SortOption = 'name' | 'accuracy' | 'status'
+
 export const CustomerAnalyticsPage = () => {
-	const {
-		poolsProgress,
-		users,
-		loading,
-		error,
-		search,
-		setSearch,
-		poolFilter,
-		setPoolFilter,
-		poolOptions
-	} = useAnalytics()
+	const navigate = useNavigate()
+	const [users, setUsers] = useState<UserInfo[]>([])
+	const [loading, setLoading] = useState(true)
+	const [error, setError] = useState<string | null>(null)
+	const [search, setSearch] = useState('')
+	const [sort, setSort] = useState<SortOption>('name')
+
+	useEffect(() => {
+		const load = async () => {
+			setLoading(true)
+			try {
+				const data = await analyticsApi.getUsersInfo()
+				setUsers(data)
+			} catch {
+				setError('Не удалось загрузить данные')
+			} finally {
+				setLoading(false)
+			}
+		}
+		load()
+	}, [])
+
+	const filtered = users
+		.filter(u => {
+			if (u.submitted === 0) return false
+			if (!search.trim()) return true
+			const name = fullName(u).toLowerCase()
+			return name.includes(search.toLowerCase())
+		})
+		.sort((a, b) => {
+			if (sort === 'name') return fullName(a).localeCompare(fullName(b))
+			if (sort === 'accuracy') return b.user_accuracy - a.user_accuracy
+			const aCompleted = a.submitted > 0 && a.user_accuracy >= 0.8 ? 1 : 0
+			const bCompleted = b.submitted > 0 && b.user_accuracy >= 0.8 ? 1 : 0
+			return bCompleted - aCompleted
+		})
 
 	return (
 		<div className={styles.page}>
@@ -29,13 +58,17 @@ export const CustomerAnalyticsPage = () => {
 
 			<div className={styles.filters}>
 				<Select
-					value={poolFilter}
-					onChange={setPoolFilter}
-					options={poolOptions}
+					value={sort}
+					onChange={val => setSort(val as SortOption)}
+					options={[
+						{ value: 'name', label: 'По имени' },
+						{ value: 'accuracy', label: 'По точности' },
+						{ value: 'status', label: 'По статусу' }
+					]}
 				/>
 				<input
 					className={styles.searchInput}
-					placeholder='Иванов Иван Иванович'
+					placeholder='Поиск по имени...'
 					value={search}
 					onChange={e => setSearch(e.target.value)}
 				/>
@@ -45,55 +78,40 @@ export const CustomerAnalyticsPage = () => {
 			{error && <div className={styles.empty}>{error}</div>}
 
 			{!loading && !error && (
-				<>
-					{poolsProgress.length > 0 && (
-						<div className={styles.progressSection}>
-							{poolsProgress.map(p => (
-								<div key={p.pool_id} className={styles.progressCard}>
-									<div className={styles.progressHeader}>
-										<span className={styles.cardTitle}>
-											Пул #{p.pool_id} — {p.pool_type}
-										</span>
-										<span className={styles.cardStats}>
-											{p.completed_tasks} / {p.total_tasks} задач
-										</span>
-									</div>
-									<div className={styles.progressBar}>
-										<div
-											className={styles.progressFill}
-											style={{ width: `${p.progress_percentage}%` }}
-										/>
-									</div>
-									<div className={styles.progressPercent}>
-										{Math.round(p.progress_percentage)}%
-									</div>
-								</div>
-							))}
-						</div>
-					)}
-
-					<div className={styles.list}>
-						{users.length === 0 ? (
-							<div className={styles.empty}>Нет данных</div>
-						) : (
-							users.map((u, i) => (
+				<div className={styles.list}>
+					{filtered.length === 0 ? (
+						<div className={styles.empty}>Нет данных</div>
+					) : (
+						filtered.map((u, i) => {
+							const isCompleted = u.submitted > 0 && u.user_accuracy >= 0.8
+							return (
 								<div key={i} className={styles.card}>
-									<div className={styles.cardHeader}>
-										<span className={styles.cardTitle}>{fullName(u)}</span>
-										<span className={styles.cardStudent}>
-											{u.institution} · {u.group}
-										</span>
+									<div className={styles.cardLeft}>
+										<span className={styles.taskName}>Задание №{i + 1}</span>
+										<div className={styles.statusRow}>
+											{isCompleted ? (
+												<>
+													<span className={styles.statusTextDone}>Завершено</span>
+													<Button
+														variant='secondary'
+														onClick={() => navigate('/customer/review')}
+													>
+														К проверке
+													</Button>
+												</>
+											) : (
+												<span className={styles.statusTextPending}>Не завершено</span>
+											)}
+										</div>
 									</div>
-									<div className={styles.userStats}>
-										<span>Отправлено: {u.submitted}</span>
-										<span>Одобрено: {u.approved}</span>
-										<span>Точность: {Math.round(u.user_accuracy * 100)}%</span>
+									<div className={styles.cardRight}>
+										<span className={styles.userName}>{fullName(u)}</span>
 									</div>
 								</div>
-							))
-						)}
-					</div>
-				</>
+							)
+						})
+					)}
+				</div>
 			)}
 		</div>
 	)

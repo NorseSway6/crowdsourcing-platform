@@ -68,3 +68,35 @@
 		}
 	}
 }
+
+.skillsChips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.skillChip {
+	padding: 6px 14px;
+	border-radius: 20px;
+	font-size: 13px;
+	font-family: inherit;
+	cursor: pointer;
+	transition: all 0.15s;
+	background: #f0f0f0;
+	color: $color-text-secondary;
+	border: 1.5px solid transparent;
+
+	&:hover {
+		background: #e8e8e8;
+	}
+
+	&Active {
+		background: $color-primary;
+		color: #fff;
+		border-color: $color-primary;
+
+		&:hover {
+			background: darken($color-primary, 8%);
+		}
+	}
+}

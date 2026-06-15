@@ -34,12 +34,6 @@
 	gap: 16px;
 }
 
-.skills {
-	display: flex;
-	flex-direction: column;
-	gap: 10px;
-}
-
 .error {
 	font-size: 13px;
 	color: #e53935;
@@ -54,4 +48,36 @@
 	padding: 10px 14px;
 	background: #e8f5e9;
 	border-radius: 8px;
+}
+
+.skillsChips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.skillChip {
+	padding: 6px 14px;
+	border-radius: 20px;
+	font-size: 13px;
+	font-family: inherit;
+	cursor: pointer;
+	transition: all 0.15s;
+	background: #f0f0f0;
+	color: $color-text-secondary;
+	border: 1.5px solid transparent;
+
+	&:hover {
+		background: #e8e8e8;
+	}
+
+	&Active {
+		background: $color-primary;
+		color: #fff;
+		border-color: $color-primary;
+
+		&:hover {
+			background: #6b5ce7;
+		}
+	}
 }

@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 
 import { skillsApi } from '@/api/skills'
 import { usersApi } from '@/api/users'
-import { Button, Checkbox, Field, Input } from '@/components/ui'
+import { Button, Field, Input } from '@/components/ui'
 import { PageLoader } from '@/components/PageLoader'
 
 import { useAuth } from '@/hooks/useAuth'
@@ -153,16 +153,18 @@ export const ProfilePage = () => {
 						</Field>
 					)}
 
-					{availableSkills.length > 0 && (
+					{isStudent && availableSkills.length > 0 && (
 						<Field label='Навыки'>
-							<div className={styles.skills}>
+							<div className={styles.skillsChips}>
 								{availableSkills.map(skill => (
-									<Checkbox
+									<button
 										key={skill}
-										label={skill}
-										checked={selectedSkills.has(skill)}
-										onChange={() => toggleSkill(skill)}
-									/>
+										type='button'
+										className={`${styles.skillChip} ${selectedSkills.has(skill) ? styles.skillChipActive : ''}`}
+										onClick={() => toggleSkill(skill)}
+									>
+										{skill}
+									</button>
 								))}
 							</div>
 						</Field>

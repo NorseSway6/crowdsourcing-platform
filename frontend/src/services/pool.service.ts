@@ -13,6 +13,7 @@ export const poolService = {
 	): Promise<PoolOut | null> => {
 		try {
 			const pools = await poolsApi.getAll()
+			console.log('All pools:', pools)
 
 			const eligible = pools.filter(p => {
 				if (p.status !== 'OPEN') return false
@@ -25,10 +26,13 @@ export const poolService = {
 				return p.skills.some(s => userSkills.includes(s))
 			})
 
+			console.log('Eligible pools:', eligible)
+
 			if (eligible.length === 0) return null
 
 			return eligible.sort((a, b) => a.order - b.order)[0]
-		} catch {
+		} catch (err) {
+			console.error('Error finding pool:', err)
 			return null
 		}
 	}

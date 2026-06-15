@@ -18,6 +18,7 @@ import {
 	CreateProjectPage,
 	CustomerAnalyticsPage,
 	CustomerReviewPage,
+	ProjectDetailPage,
 	ProjectsPage
 } from './pages/customer'
 import { ProfilePage } from './pages/Profile/Profile'
@@ -70,6 +71,7 @@ export default function App() {
 					<Route index element={<Navigate to='/customer/create' replace />} />
 					<Route path='create' element={<CreateProjectPage />} />
 					<Route path='projects' element={<ProjectsPage />} />
+					<Route path='projects/:id' element={<ProjectDetailPage />} />
 					<Route path='analytics' element={<CustomerAnalyticsPage />} />
 					<Route path='review' element={<CustomerReviewPage />} />
 					<Route path='profile' element={<ProfilePage />} />

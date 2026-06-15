@@ -21,6 +21,7 @@ export interface PoolFilters {
 	min_points?: number
 	max_points?: number
 	institution?: string
+	pool_type?: string
 }
 
 export const poolsApi = {

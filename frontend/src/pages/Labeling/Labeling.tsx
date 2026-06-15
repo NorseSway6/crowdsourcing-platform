@@ -38,7 +38,15 @@ export const LabelingPage = () => {
 	const { current, submit, fetchNext, tasksFinished } = useAssignment()
 
 	useEffect(() => {
-		datasetsApi.getCategories().then(setCategories).catch(() => {})
+		datasetsApi.getCategories()
+			.then(setCategories)
+			.catch(() => {
+				setCategories([
+					{ id: 1, name: 'Объект' },
+					{ id: 2, name: 'Человек' },
+					{ id: 3, name: 'Машина' }
+				])
+			})
 	}, [])
 
 	useEffect(() => {

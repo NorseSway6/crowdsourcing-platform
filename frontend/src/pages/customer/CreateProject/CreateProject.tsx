@@ -123,15 +123,9 @@ export const CreateProjectPage = () => {
 				</Accordion>
 
 				<Accordion
-					title='Интерфейс задания'
-					subtitle='Настройте внешний вид заданий у исполнителей'
+					title='Категории объектов'
+					subtitle='Укажите какие объекты нужно размечать'
 				>
-					<p className={styles.placeholder}>
-						Тип разметки определяется автоматически на основе конфигурации
-						пула. Исполнители получат все доступные инструменты: рамки,
-						полигоны и точки.
-					</p>
-
 					<Field label='Категории объектов'>
 						<div className={styles.categoriesBlock}>
 							{availableCategories.length > 0 ? (

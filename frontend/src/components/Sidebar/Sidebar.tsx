@@ -12,11 +12,13 @@ import styles from './Sidebar.module.scss'
 interface Props {
 	navItems?: SidebarItem[]
 	bottomItems?: SidebarItem[]
+	verificationAvailable?: boolean
 }
 
 export const Sidebar = ({
 	navItems = defaultNav,
-	bottomItems = defaultBottom
+	bottomItems = defaultBottom,
+	verificationAvailable = false
 }: Props) => {
 	const { logout } = useAuth()
 	const navigate = useNavigate()
@@ -33,7 +35,8 @@ export const Sidebar = ({
 			<nav className={styles.nav}>
 				{navItems.map(item => {
 					const Icon = item.icon
-					if (item.disabled) {
+					const isDisabled = item.disabled || (item.path === '/verification' && !verificationAvailable)
+					if (isDisabled) {
 						return (
 							<span key={item.path} className={`${styles.navItem} ${styles.disabled}`}>
 								<Icon size={20} />

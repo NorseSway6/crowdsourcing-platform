@@ -43,7 +43,10 @@ apiClient.interceptors.response.use(
 				return apiClient(original)
 			} catch {
 				clearTokens()
-				window.location.href = '/login'
+				const path = window.location.pathname
+				if (path !== '/login' && path !== '/register') {
+					window.location.href = '/login'
+				}
 			}
 		}
 		return Promise.reject(error)

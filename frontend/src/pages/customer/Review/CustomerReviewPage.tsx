@@ -25,8 +25,9 @@ export const CustomerReviewPage = () => {
 	}, [])
 
 	const { approved, errors, percent } = useMemo(() => {
-		const approvedCount = users.reduce((sum, u) => sum + u.approved, 0)
-		const submittedCount = users.reduce((sum, u) => sum + u.submitted, 0)
+		const activeUsers = users.filter(u => u.submitted > 0)
+		const approvedCount = activeUsers.reduce((sum, u) => sum + u.approved, 0)
+		const submittedCount = activeUsers.reduce((sum, u) => sum + u.submitted, 0)
 		const errorCount = Math.max(submittedCount - approvedCount, 0)
 		const total = approvedCount + errorCount
 		return {
