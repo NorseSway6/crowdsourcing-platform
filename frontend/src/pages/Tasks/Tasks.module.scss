@@ -15,6 +15,13 @@
 	letter-spacing: -0.5px;
 }
 
+.pageSubtitle {
+	font-size: 14px;
+	color: $color-text-muted;
+	margin-bottom: 20px;
+	margin-top: -12px;
+}
+
 .toolbar {
 	margin-bottom: 20px;
 }
@@ -59,4 +66,16 @@
 	color: $color-text-muted;
 	padding: 40px;
 	font-size: 15px;
+}
+
+.inProgressBanner {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 14px 20px;
+	background: #fff3e0;
+	border-radius: 10px;
+	margin-bottom: 20px;
+	font-size: 14px;
+	color: #e65100;
 }

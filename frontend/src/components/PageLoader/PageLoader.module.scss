@@ -1,0 +1,35 @@
+@use '@/styles/variables' as *;
+
+.loader {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	pointer-events: none;
+}
+
+.fullscreen {
+	position: fixed;
+	inset: 0;
+	z-index: 9999;
+	background: rgba($color-bg, 0.72);
+	backdrop-filter: blur(2px);
+}
+
+.inline {
+	padding: 40px 0;
+}
+
+.spinner {
+	width: 36px;
+	height: 36px;
+	border: 3px solid rgba($color-primary, 0.2);
+	border-top-color: $color-primary;
+	border-radius: 50%;
+	animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+	to {
+		transform: rotate(360deg);
+	}
+}

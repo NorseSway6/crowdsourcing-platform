@@ -7,6 +7,7 @@ export interface BBoxShape {
 	y: number
 	width: number
 	height: number
+	category_id: number
 }
 
 export interface PointShape {
@@ -14,6 +15,7 @@ export interface PointShape {
 	type: 'point'
 	x: number
 	y: number
+	category_id: number
 }
 
 export interface PolygonShape {
@@ -21,6 +23,7 @@ export interface PolygonShape {
 	type: 'polygon'
 	points: number[]
 	closed: boolean
+	category_id: number
 }
 
 export type Shape = BBoxShape | PointShape | PolygonShape

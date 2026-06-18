@@ -41,11 +41,7 @@ export const Toolbar = ({
 
 			<div className={styles.divider} />
 
-			<button
-				className={styles.btn}
-				title='Умная разметка'
-				disabled
-			>
+			<button className={styles.btn} title='Умная разметка' disabled>
 				<Bot size={24} />
 			</button>
 

@@ -2,7 +2,7 @@ import styles from './Button.module.scss'
 
 interface Props {
 	children: React.ReactNode
-	variant?: 'primary' | 'secondary' | 'success' | 'pending'
+	variant?: 'primary' | 'secondary' | 'success' | 'pending' | 'danger'
 	full?: boolean
 	disabled?: boolean
 	onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void

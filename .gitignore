@@ -4,3 +4,4 @@
 /.env*
 .idea
 docker-compose.override.yml
+bun.lock

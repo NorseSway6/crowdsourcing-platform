@@ -1,6 +1,6 @@
 import { Select } from '@/components/ui'
 
-import type { SortOption } from '@/hooks'
+import type { SortOption } from '@/hooks/useTaskFilters'
 
 interface Props {
 	value: SortOption
@@ -14,6 +14,6 @@ export const SortSelect = ({ value, onChange }: Props) => (
 			{ value: 'newest', label: 'Сначала новые' },
 			{ value: 'oldest', label: 'Сначала старые' }
 		]}
-		onChange={v => onChange(v as SortOption)}
+		onChange={onChange}
 	/>
 )

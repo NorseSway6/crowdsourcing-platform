@@ -8,6 +8,9 @@ IMAGE_FRONTEND := $(REGISTRY)/$(REPO_NAME)-frontend:$(SHA)
 migrate:
 	docker compose -f docker-compose.prod.yml run --rm backend python3 manage.py migrate
 
+init-skills:
+	docker compose -f docker-compose.prod.yml exec backend python3 manage.py init_skills
+
 makemigrations:
 	docker compose -f docker-compose.prod.yml exec -T backend python3 manage.py makemigrations
 	sudo chown -R $USER:$(id -gn $USER) backend/src/app/migrations/

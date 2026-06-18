@@ -19,7 +19,32 @@
 	font-size: 20px;
 	font-weight: 500;
 	color: $color-text-primary;
+}
+
+.sectionHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
 	margin-bottom: 20px;
+}
+
+.resetBtn {
+	background: none;
+	border: none;
+	font-size: 12px;
+	color: $color-primary;
+	cursor: pointer;
+	padding: 0;
+
+	&:hover {
+		text-decoration: underline;
+	}
+}
+
+.emptyHint {
+	font-size: 13px;
+	color: $color-text-muted;
+	line-height: 1.4;
 }
 
 .item {

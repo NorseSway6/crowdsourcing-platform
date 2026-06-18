@@ -1,47 +1,52 @@
+import axios from 'axios'
 import { useCallback, useEffect, useState } from 'react'
 
-import type { CocoItem } from '@/utils/coco'
+import type { CocoAnnotation } from '@/api/assignments'
 
-import { apiClient } from '@/api/client'
-
+import { useAuth } from './useAuth'
 import type { ActiveAssignment } from '@/services/assignment.service'
 import { assignmentService } from '@/services/assignment.service'
 import { poolService } from '@/services/pool.service'
-
-interface UserMe {
-	user_id: string
-	email: string
-	role: string
-	profile: {
-		skills: string[]
-	}
-}
 
 interface UseAssignmentReturn {
 	current: ActiveAssignment | null
 	loading: boolean
 	error: string | null
+	tasksFinished: boolean
 	fetchNext: () => void
-	submit: (annotation: CocoItem[]) => Promise<void>
+	submit: (annotation: CocoAnnotation) => Promise<void>
 }
 
 export const useAssignment = (): UseAssignmentReturn => {
 	const [current, setCurrent] = useState<ActiveAssignment | null>(null)
 	const [loading, setLoading] = useState(false)
 	const [error, setError] = useState<string | null>(null)
-
-	const [userId, setUserId] = useState<string | null>(null)
 	const [poolId, setPoolId] = useState<number | null>(null)
+	const [tasksFinished, setTasksFinished] = useState(false)
 
-	const fetchNext = useCallback(async (uid: string, pid: number) => {
+	const { user } = useAuth()
+
+	const fetchNext = useCallback(async (pid: number) => {
 		setLoading(true)
 		setError(null)
+		setTasksFinished(false)
 
 		try {
-			const next = await assignmentService.getNext(uid, pid)
+			const next = await assignmentService.getNext(pid)
+			if (!next) {
+				setCurrent(null)
+				setTasksFinished(true)
+				return
+			}
 			setCurrent(next)
-		} catch {
-			setError('Нет доступных задач в пуле')
+		} catch (err) {
+			if (axios.isAxiosError(err) && err.response?.status === 404) {
+				setError('Нет доступных задач. Возможно, все задания уже взяты другими студентами')
+				setTasksFinished(true)
+				return
+			}
+			setError('Не удалось получить задание')
+			console.log(err)
 		} finally {
 			setLoading(false)
 		}
@@ -51,24 +56,26 @@ export const useAssignment = (): UseAssignmentReturn => {
 		const init = async () => {
 			setLoading(true)
 			try {
-				// TODO: вынести в auth
-				const TEMP_USER_ID = '5ca80a4b-31f5-42f8-8579-cb4b5cbc74a2'
-				
-				const me = await apiClient
-					.get<UserMe>('/users/me', { params: { id: TEMP_USER_ID } })
-					.then(r => r.data)
-				const userSkills = me.profile.skills
+				if (!user) return
 
-				const pool = await poolService.findEligiblePool(userSkills)
+				const userSkills = user.user_profile?.skills ?? []
+				const pool = await poolService.findEligiblePool(userSkills, {
+					poolType: 'ANNOTATION',
+					institution: user.user_profile?.institution
+				})
+
 				if (!pool) {
-					setError('Нет доступных пулов для вашего профиля')
+					const hasInstitution = Boolean(user.user_profile?.institution?.trim())
+					setError(
+						hasInstitution
+							? 'Нет доступных пулов разметки. Проверьте, что институт совпадает с проектом'
+							: 'Нет доступных пулов. Укажите институт в профиле — он должен совпадать с проектом'
+					)
 					return
 				}
 
-				setUserId(me.user_id)
 				setPoolId(pool.pool_id)
-
-				await fetchNext(me.user_id, pool.pool_id)
+				await fetchNext(pool.pool_id)
 			} catch {
 				setError('Не удалось загрузить профиль пользователя')
 			} finally {
@@ -77,41 +84,46 @@ export const useAssignment = (): UseAssignmentReturn => {
 		}
 
 		init()
-	}, [fetchNext])
+	}, [fetchNext, user])
 
 	const submit = useCallback(
-		async (annotation: CocoItem[]) => {
-			if (!current || !userId || !poolId) return
+		async (annotation: CocoAnnotation) => {
+			if (!current || !poolId) return
 			setLoading(true)
 			setError(null)
 
 			try {
 				await assignmentService.submit(
 					current.assignment.assignment_id,
-					userId,
 					annotation
 				)
-				try {
-					await fetchNext(userId, poolId)
-				} catch {
+				const next = await assignmentService.getNext(poolId)
+				if (!next) {
 					setCurrent(null)
-					setError('Все задания выполнены!')
+					setTasksFinished(true)
+					return
 				}
-			} catch {
+				setCurrent(next)
+			} catch (err) {
+				if (axios.isAxiosError(err) && err.response?.status === 422) {
+					setError('Неверный формат разметки. Проверьте фигуры и попробуйте снова')
+					return
+				}
 				setError('Ошибка при отправке разметки')
 			} finally {
 				setLoading(false)
 			}
 		},
-		[current, userId, poolId, fetchNext]
+		[current, poolId]
 	)
 
 	return {
 		current,
 		loading,
 		error,
+		tasksFinished,
 		fetchNext: () => {
-			if (userId && poolId) fetchNext(userId, poolId)
+			if (poolId && !tasksFinished) fetchNext(poolId)
 		},
 		submit
 	}

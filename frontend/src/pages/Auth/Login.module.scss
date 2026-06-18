@@ -1,0 +1,102 @@
+@use '@/styles/variables' as *;
+
+.page {
+	min-height: 100vh;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: $color-bg;
+}
+
+.card {
+	background: #fff;
+	border-radius: 20px;
+	padding: 40px;
+	width: 100%;
+	max-width: 420px;
+	box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+}
+
+.cardWide {
+	max-width: 460px;
+	max-height: 90vh;
+	overflow-y: auto;
+}
+
+.title {
+	font-size: 24px;
+	font-weight: 700;
+	color: $color-text-primary;
+	margin-bottom: 8px;
+	letter-spacing: -0.5px;
+}
+
+.subtitle {
+	font-size: 14px;
+	color: $color-text-muted;
+	margin-bottom: 28px;
+}
+
+.form {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.error {
+	font-size: 13px;
+	color: #e53935;
+	padding: 10px 14px;
+	background: #fdecea;
+	border-radius: 8px;
+}
+
+.footer {
+	margin-top: 20px;
+	text-align: center;
+	font-size: 13px;
+	color: $color-text-muted;
+
+	a {
+		color: $color-primary;
+		cursor: pointer;
+		font-weight: 500;
+		text-decoration: none;
+
+		&:hover {
+			text-decoration: underline;
+		}
+	}
+}
+
+.skillsChips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.skillChip {
+	padding: 6px 14px;
+	border-radius: 20px;
+	font-size: 13px;
+	font-family: inherit;
+	cursor: pointer;
+	transition: all 0.15s;
+	background: #f0f0f0;
+	color: $color-text-secondary;
+	border: 1.5px solid transparent;
+
+	&:hover {
+		background: #e8e8e8;
+	}
+
+	&Active {
+		background: $color-primary;
+		color: #fff;
+		border-color: $color-primary;
+
+		&:hover {
+			background: darken($color-primary, 8%);
+		}
+	}
+}

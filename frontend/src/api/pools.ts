@@ -1,28 +1,33 @@
 import { apiClient } from './client'
+import type { PoolStatus, PoolType } from './pipelines'
 
 export interface PoolOut {
 	pool_id: number
+	pipeline_id: number
 	points: number
-	overlap: number
-	is_active: boolean
-	created_at: string
 	skills: string[]
+	pool_type: PoolType
+	target_institution: string | null
+	tasks_limit: number
+	time_limit: number
+	overlap: number
+	order: number
+	created_at: string
+	status: PoolStatus
 }
 
-export interface CreatePoolInput {
-	points: number
-	skills: string[]
-	overlap: number
-	dataset_id: number
-	limit: number
+export interface PoolFilters {
+	skills?: string[]
+	min_points?: number
+	max_points?: number
+	institution?: string
+	pool_type?: string
 }
 
 export const poolsApi = {
-	getAll: () => apiClient.get<PoolOut[]>('/pools/').then(r => r.data),
+	getAll: (filters?: PoolFilters) =>
+		apiClient.get<PoolOut[]>('/pools/', { params: filters }).then(r => r.data),
 
 	getById: (poolId: number) =>
-		apiClient.get<PoolOut>(`/pools/${poolId}`).then(r => r.data),
-
-	create: (data: CreatePoolInput) =>
-		apiClient.post<PoolOut>('/pools/', data).then(r => r.data)
+		apiClient.get<PoolOut>(`/pools/${poolId}`).then(r => r.data)
 }
